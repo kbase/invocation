@@ -1,6 +1,6 @@
 base=Bio::KBase::InvocationService
 compile_typespec \
-	-impl $base::Impl \
+	-impl $base::InvocationServiceImpl \
 	-service $base::Service \
 	-client $base::Client \
 	-js InvocationService \
