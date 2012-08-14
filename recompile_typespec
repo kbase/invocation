@@ -1,0 +1,8 @@
+base=Bio::KBase::InvocationService
+compile_typespec \
+	-impl $base::Impl \
+	-service $base::Service \
+	-client $base::Client \
+	-js InvocationService \
+	-py InvocationService \
+	InvocationService.spec lib
