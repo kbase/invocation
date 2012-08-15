@@ -6,17 +6,37 @@ use Bio::KBase::InvocationService::Service;
 use Data::Dumper;
 use Plack::Request;
 use URI::Dispatch;
+use Config::Simple;
 
 my @dispatch;
 
-my $storage_dir = -d "/private/tmp" ? "/private/tmp/storage" : "/tmp/storage";
+my $storage_dir;
 
-my $kb_storage_dir = "/xfs/kb_inst/iris_storage";
-
-if (-d $kb_storage_dir && -w $kb_storage_dir)
+if (my $e = $ENV{KB_DEPLOYMENT_CONFIG})
 {
-    $storage_dir = $kb_storage_dir;
+    my $service = $ENV{KB_SERVICE_NAME};
+    my $c = Config::Simple->new();
+    $c->read($e);
+    $storage_dir = $c->param("$service.storage-dir");
 }
+
+if (!$storage_dir)
+{
+    $storage_dir = -d "/private/tmp" ? "/private/tmp/storage" : "/tmp/storage";
+    my $kb_storage_dir = "/xfs/kb_inst/iris_storage";
+
+    if (-d $kb_storage_dir && -w $kb_storage_dir)
+    {
+	$storage_dir = $kb_storage_dir;
+    }
+    warn "No deployment configuration found; falling back to $storage_dir";
+}
+
+if (!-d $storage_dir)
+{
+    die "Storage directory $storage_dir does not exist";
+}
+warn "Using storage directory $storage_dir\n";
 
 my $obj = Bio::KBase::InvocationService::InvocationServiceImpl->new($storage_dir);
 push(@dispatch, 'InvocationService' => $obj);
