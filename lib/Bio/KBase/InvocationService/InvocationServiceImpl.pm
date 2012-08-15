@@ -28,6 +28,12 @@ use Bio::KBase::InvocationService::ValidCommands;
 
 my @command_path = ("/kb/deployment/bin", "/home/olson/FIGdisk/FIG/bin", "/kb/deployment/modeling");
 
+my $kb_top = $ENV{KB_TOP};
+if ($kb_top)
+{
+    @command_path = ($kb_top);
+}
+
 my @valid_shell_commands = qw(sort grep cut cat head tail date echo wc diff join uniq);
 my %valid_shell_commands = map { $_ => 1 } @valid_shell_commands;
 
