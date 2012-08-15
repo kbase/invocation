@@ -35,7 +35,7 @@ deploy-monit:
 	$(TPAGE) $(TPAGE_ARGS) service/process.$(SERVICE).tt > $(TARGET)/services/$(SERVICE)/process.$(SERVICE)
 
 deploy-doc:
-	$(DEPLOY_RUNTIME)/bin/pod2html -t "Invocation Service API" lib/IDServerAPIImpl.pm > doc/idserver_api.html
-	cp doc/*html $(SERVICE_DIR)/webroot/.
+	-mkdir -p doc 
+	$(DEPLOY_RUNTIME)/bin/perl $(DEPLOY_RUNTIME)/bin/pod2html -t "Invocation Service API" lib/Bio/KBase/InvocationService/InvocationServiceImpl.pm > doc/idserver_api.html
 
 include $(TOP_DIR)/tools/Makefile.common.rules
