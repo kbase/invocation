@@ -31,7 +31,7 @@ my @command_path = ("/kb/deployment/bin", "/home/olson/FIGdisk/FIG/bin", "/kb/de
 my $kb_top = $ENV{KB_TOP};
 if ($kb_top)
 {
-    @command_path = ($kb_top);
+    @command_path = ("$kb_top/bin");
 }
 
 my @valid_shell_commands = qw(sort grep cut cat head tail date echo wc diff join uniq);
