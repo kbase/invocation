@@ -1,0 +1,101 @@
+
+html, body, #wrapper {
+    min-height: 100%; /*Sets the min height to the
+                        height of the viewport.*/
+    width: 100%;
+    height: 100%; /*Effectively, this is min height
+                    for IE5+/Win, since IE wrongly expands
+                    an element to enclose its content.
+                    This mis-behavior screws up modern  
+                    browsers*/
+    margin: 0;
+    padding: 0;
+    }
+
+html>body #wrapper {
+    height: auto; /*this undoes the IE hack, hiding it
+                    from IE using the child selector*/
+    }
+    
+html {
+    background-color: #fff;
+    }
+
+body {
+    font: 100% verdana, helvetica, sans-serif;
+    color: #333;
+//    background: #eee url(navcolbg.jpg) repeat-y;
+    position: relative;
+    width: 80%;
+    margin: 0 auto;
+    outline: 1px dotted red;
+    }
+
+p {
+    font-size: 1em;
+    margin: 1em 0;  /*required for IE's buggy behavior
+                      with collapsing margins*/
+    }
+
+h1, h2 {
+    font-family: georgia, serif;
+    text-align: center;
+    text-transform: capitalize;
+    }
+
+#wrapper {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    }
+
+#main {
+    overflow: hidden;
+    height: auto;
+    padding-bottom: 3em;   /*Keeps content above footer. Originally
+                           used margin, but a bug in Opera7 seemed
+                           to add spurious margin, pushing the
+                           footer beyond the viewport even with
+                           short content. */
+    }
+    
+#navcol {
+    width: 160px;
+    padding: 5px;
+    float: left;
+    }
+    
+#terminal {
+	height: 675px;
+    overflow: auto;
+}
+
+#content {
+    margin-left: 10px;
+    padding: 5px;
+    }
+
+#pageheader {
+    padding: 5px;
+    border-bottom: 1px solid black;
+    background-color: #eee;
+    }
+
+#footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    background-color: #eef;
+    border-top: 1px solid #aaf;
+    }
+ 
+#footer textarea {
+    width: 100%;
+    height: 100%;
+}
+
+.command {
+	font-family : "courier new",courier,monospace;
+	font-weight: bold;
+}
