@@ -129,6 +129,8 @@ our @command_groups = (
 	{ cmd => 'sort_by_id', link => '' },
 	{ cmd => 'sort_by_loc', link => '' },
 	{ cmd => 'tabs2rel', link => '' },
+	{ cmd => 'pneumococcal_repeat_annotation.pl', link => '' },
+	{ cmd => 'suis_repeat_annotation.pl', link => '' },
    ]},
    { name => 'er_scripts', title => 'Entity Relationship Scripts', items => [
 	{ cmd => 'all_entities_AlignmentTree', link => '' },
