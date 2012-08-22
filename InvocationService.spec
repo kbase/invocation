@@ -26,6 +26,8 @@ typedef structure {
     funcdef get_file(string session_id, string filename, string cwd) returns (string contents);
     funcdef run_pipeline(string session_id, string pipeline, list<string> input, int max_output_size, string cwd)
 	returns (list<string> output, list<string> errors);
+    funcdef run_pipeline2(string session_id, string pipeline, list<string> input, int max_output_size, string cwd)
+	returns (list<string> output, list<string> errors, string stdweb);
     funcdef exit_session(string session_id) returns ();
 
     typedef structure {

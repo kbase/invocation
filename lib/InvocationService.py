@@ -207,6 +207,22 @@ class InvocationService:
         else:
             return None
 
+    def run_pipeline2(self, session_id, pipeline, input, max_output_size, cwd):
+
+        arg_hash = { 'method': 'InvocationService.run_pipeline2',
+                     'params': [session_id, pipeline, input, max_output_size, cwd],
+                     'version': '1.1'
+                     }
+
+        body = json.dumps(arg_hash)
+        resp_str = urllib.urlopen(self.url, body).read()
+        resp = json.loads(resp_str)
+
+        if 'result' in resp:
+            return resp['result']
+        else:
+            return None
+
     def exit_session(self, session_id):
 
         arg_hash = { 'method': 'InvocationService.exit_session',

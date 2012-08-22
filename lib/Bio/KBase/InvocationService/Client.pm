@@ -659,6 +659,60 @@ sub run_pipeline
 
 
 
+=head2 $result = run_pipeline2(session_id, pipeline, input, max_output_size, cwd)
+
+
+
+=cut
+
+sub run_pipeline2
+{
+    my($self, @args) = @_;
+
+    if ((my $n = @args) != 5)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function run_pipeline2 (received $n, expecting 5)");
+    }
+    {
+	my($session_id, $pipeline, $input, $max_output_size, $cwd) = @args;
+
+	my @_bad_arguments;
+        (!ref($session_id)) or push(@_bad_arguments, "Invalid type for argument 1 \"session_id\" (value was \"$session_id\")");
+        (!ref($pipeline)) or push(@_bad_arguments, "Invalid type for argument 2 \"pipeline\" (value was \"$pipeline\")");
+        (ref($input) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument 3 \"input\" (value was \"$input\")");
+        (!ref($max_output_size)) or push(@_bad_arguments, "Invalid type for argument 4 \"max_output_size\" (value was \"$max_output_size\")");
+        (!ref($cwd)) or push(@_bad_arguments, "Invalid type for argument 5 \"cwd\" (value was \"$cwd\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to run_pipeline2:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'run_pipeline2');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "InvocationService.run_pipeline2",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'run_pipeline2',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method run_pipeline2",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'run_pipeline2',
+				       );
+    }
+}
+
+
+
 =head2 $result = exit_session(session_id)
 
 

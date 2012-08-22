@@ -34,6 +34,7 @@ if ($kb_top)
     @command_path = ("$kb_top/bin");
 }
 
+
 my @valid_shell_commands = qw(sort grep cut cat head tail date echo wc diff join uniq);
 my %valid_shell_commands = map { $_ => 1 } @valid_shell_commands;
 
@@ -1343,6 +1344,252 @@ sub run_pipeline
 							       method_name => 'run_pipeline');
     }
     return($output, $errors);
+}
+
+
+
+
+=head2 run_pipeline2
+
+  $output, $errors, $stdweb = $obj->run_pipeline2($session_id, $pipeline, $input, $max_output_size, $cwd)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$session_id is a string
+$pipeline is a string
+$input is a reference to a list where each element is a string
+$max_output_size is an int
+$cwd is a string
+$output is a reference to a list where each element is a string
+$errors is a reference to a list where each element is a string
+$stdweb is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$session_id is a string
+$pipeline is a string
+$input is a reference to a list where each element is a string
+$max_output_size is an int
+$cwd is a string
+$output is a reference to a list where each element is a string
+$errors is a reference to a list where each element is a string
+$stdweb is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub run_pipeline2
+{
+    my $self = shift;
+    my($session_id, $pipeline, $input, $max_output_size, $cwd) = @_;
+
+    my @_bad_arguments;
+    (!ref($session_id)) or push(@_bad_arguments, "Invalid type for argument \"session_id\" (value was \"$session_id\")");
+    (!ref($pipeline)) or push(@_bad_arguments, "Invalid type for argument \"pipeline\" (value was \"$pipeline\")");
+    (ref($input) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument \"input\" (value was \"$input\")");
+    (!ref($max_output_size)) or push(@_bad_arguments, "Invalid type for argument \"max_output_size\" (value was \"$max_output_size\")");
+    (!ref($cwd)) or push(@_bad_arguments, "Invalid type for argument \"cwd\" (value was \"$cwd\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to run_pipeline2:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'run_pipeline2');
+    }
+
+    my $ctx = $Bio::KBase::InvocationService::Service::CallContext;
+    my($output, $errors, $stdweb);
+    #BEGIN run_pipeline2
+
+    print STDERR "Parse: '$pipeline'\n";
+    $pipeline =~ s/\xA0/ /g;
+    print STDERR "Parse: '$pipeline'\n";
+    my $parser = Bio::KBase::InvocationService::PipelineGrammar->new;
+    $parser->input($pipeline);
+    my $tree = $parser->Run();
+
+    if (!$tree)
+    {
+	die "Error parsing command line";
+    }
+
+    #
+    # construct pipeline for IPC::Run
+    #
+
+    my @cmds;
+
+    print STDERR Dumper($tree);
+
+    $output = [];
+    $errors = [];
+
+    my $harness;
+
+    my $dir = $self->validate_path($session_id, $cwd);
+    my @cmd_list;
+    my @saved_stderr;
+ PIPELINE:
+    for my $idx (0..$#$tree)
+    {
+	my $ent = $tree->[$idx];
+	
+	my $cmd = $ent->{cmd};
+	my $redirect = $ent->{redir};
+	my $args = $ent->{args};
+
+	my $cmd_path = $self->_validate_command($cmd);
+	if (!$cmd_path)
+	{
+	    push(@$errors, "$cmd: invalid command");
+	    next;
+	}
+
+	
+	if (@cmds)
+	{
+	    push(@cmds, '|');
+	}
+	$saved_stderr[$idx] = [];
+	push(@cmd_list, $cmd);
+	if ($cmd eq 'sort')
+	{
+	    if (!grep { $_ eq '-t' } @$args)
+	    {
+		unshift(@$args, "-t", "\t");
+	    }
+	}
+	push(@cmds, [$cmd_path, map { s/\\t/\t/g; $_ } @$args]);
+	push @cmds, init => sub {
+	    chdir $dir or die $!;
+	    $ENV{KB_STDWEB} = 3;
+	};
+	my $have_output_redirect;
+	my $have_stderr_redirect;
+	my $have_stdin_redirect;
+	for my $r (@$redirect)
+	{
+	    my($what, $file) = @$r;
+	    if ($what eq '<')
+	    {
+		my $path = $self->_expand_filename($session_id, $file, $cwd);
+		if (! -f $path)
+		{
+		    push(@$errors, "$file: input not found");
+		    next PIPELINE;
+		}
+		$have_stdin_redirect = 1;
+		push(@cmds, '<', $path);
+	    }
+	    elsif ($what eq '>' || $what eq '>>' || $what eq '2>' || $what eq '2>>')
+	    {
+		my $path = $self->_expand_filename($session_id, $file, $cwd);
+		push(@cmds, $what, $path);
+		if ($what =~ /^2/)
+		{
+		    $have_stderr_redirect = 1;
+		}
+		else
+		{
+		    $have_output_redirect = 1;
+		}
+	    }
+	    
+	}
+	if ($idx == 0)
+	{
+	    if (!$have_stdin_redirect)
+	    {
+		push(@cmds, '<', '/dev/null');
+	    }
+	}
+	if ($idx == $#$tree)
+	{
+	    if (!$have_output_redirect)
+	    {
+		push(@cmds, '>', IPC::Run::new_chunker, sub {
+		    my($l) = @_;
+		    push(@$output, $l);
+		    if ($max_output_size > 0 && @$output >= $max_output_size)
+		    {
+			push(@$errors, "Output truncated to $max_output_size lines");
+			$harness->kill_kill;
+		    }
+		});
+	    }
+	    push(@cmds, "3>", \$stdweb);
+	}
+	if (!$have_stderr_redirect)
+	{
+	    push(@cmds, '2>', IPC::Run::new_chunker, sub {
+		my($l) = @_;
+		push(@{$saved_stderr[$idx]}, $l);
+	    });
+	}
+    }
+
+    print STDERR Dumper(\@cmds);
+    $output = [];
+
+    if (@$errors == 0)
+    {
+	my $h = IPC::Run::start(@cmds);
+	$harness = $h;
+	eval {
+	    $h->finish();
+	};
+
+	my $err = $@;
+	if ($err)
+	{
+	    push(@$errors, "Error invoking pipeline");
+	    warn "error invooking pipeline: $err";
+	}
+	
+	my @res = $h->results();
+	for (my $i = 0; $i <= $#res; $i++)
+	{
+	    push(@$errors, "Return code from $cmd_list[$i]: $res[$i]");
+	    push(@$errors, @{$saved_stderr[$i]});
+	}
+    }
+
+    if ($max_output_size > 0 && @$output > $max_output_size)
+    {
+	my $removed = @$output - $max_output_size;
+	$#$output = $max_output_size - 1;
+	push(@$errors, "Elided $removed lines of output");
+    }
+	
+    
+    #END run_pipeline2
+    my @_bad_returns;
+    (ref($output) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    (ref($errors) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"errors\" (value was \"$errors\")");
+    (!ref($stdweb)) or push(@_bad_returns, "Invalid type for return variable \"stdweb\" (value was \"$stdweb\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to run_pipeline2:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'run_pipeline2');
+    }
+    return($output, $errors, $stdweb);
 }
 
 
