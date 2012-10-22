@@ -32,6 +32,7 @@ our @command_groups = (
 	{ cmd => 'tree_to_html', link => '' },
    ]},
    { name => 'scripts', title => 'CDMI Scripts', items => [
+	{ cmd => 'aliases_to_fids', link => '' },
 	{ cmd => 'all_roles_used_in_models', link => '' },
 	{ cmd => 'all_roles_used_in_models_and_subsystems', link => '' },
 	{ cmd => 'alleles_to_bp_locs', link => '' },
