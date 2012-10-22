@@ -49,6 +49,7 @@ our @command_groups = (
 	{ cmd => 'dump_relationship', link => '' },
 	{ cmd => 'equiv_sequence_assertions', link => '' },
 	{ cmd => 'ermodel_to_text', link => '' },
+	{ cmd => 'external_ids_to_fids', link => '' },
 	{ cmd => 'fids_to_annotations', link => '' },
 	{ cmd => 'fids_to_atomic_regulons', link => '' },
 	{ cmd => 'fids_to_co_occurring_fids', link => '' },
