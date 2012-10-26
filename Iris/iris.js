@@ -6,7 +6,7 @@ var CommandHistory = new Class(
 	items: [],
 
 	initialize: function() {
-	    
+
 	},
 	length: function() {
 	    return this.items.length;
@@ -82,25 +82,25 @@ var CommandHistoryPosition = new Class(
 var Terminal = new Class(
 {
     maxOutput: 100,
-    
+
     initialize: function(container) {
 
 	this.tutorial_position = 1;
 
 	this.commandHistory = new CommandHistory();
 	this.commandHistoryPosition =  new CommandHistoryPosition(this.commandHistory);
-	
+
 	//this.baseUrl = 'http://bio-data-1.mcs.anl.gov:5000';
-	//this.baseUrl = 'http://bio-data-1.mcs.anl.gov/services/invocation';
-	this.baseUrl = 'http://ash.mcs.anl.gov:5000';
+	this.baseUrl = 'http://bio-data-1.mcs.anl.gov/services/invocation';
+	//this.baseUrl = 'http://ash.mcs.anl.gov:5000';
 	this.client = new InvocationService(this.baseUrl);
-	
+
 	this.terminal = container;
-	
+
 	this.fx = new Fx.Scroll(this.terminal);
 	this.out('Welcome to the interactive KBase.');
 	this.out_line();
-	
+
 	this.path = '.';
 	this.cwd = "/";
 
@@ -120,11 +120,11 @@ var Terminal = new Class(
 	    debug: true,
 	    onProgress: function() { this.resize_contents(container) } .bind(this),
 	    onComplete: function() { this.resize_contents(container) } .bind(this)
-	});	
+	});
 	this.resize_contents(container);
-	
+
     },
-    
+
     set_session: function(session) {
 	this.sessionId = session;
 	this.uploader.setParams({ session_id: this.sessionId,
@@ -132,7 +132,7 @@ var Terminal = new Class(
 				  onComplete: function() { this.resize_contents(this.terminal) } .bind(this)
 				});
     },
-    
+
     resize_contents: function(container) {
 	var newx = window.getSize().y - document.id(pageheader).getSize().y - document.id(footer).getSize().y - 35;
 	container.style.height = newx;
@@ -196,7 +196,7 @@ var Terminal = new Class(
 
     scroll: function() {
     },
-	
+
     // Executes a command
     run: function(command) {
 
@@ -212,17 +212,22 @@ var Terminal = new Class(
 	this.scroll();
 
 	var m;
-	command = command.replace("logon", "login"); 
+	command = command.replace("logon", "login");
 	if (m = command.match(/^login\s*(.*)/))
 	{
 	    var args = m[1].split(/\s+/)
-	    dbg("got args " + args);
 	    if (args.length != 1)
 	    {
 		this.out_to_div(commandDiv, "Invalid login syntax.");
 		return;
 	    }
 	    sid = args[0];
+
+	    $("#login-dialog").data('username', sid);
+	    $("#login-dialog").dialog('open');
+	    return;
+
+	    //old login code. copy and pasted into iris.html.
 	    this.client.start_session_async(sid,
 					    function (newsid)
 					    {
@@ -238,6 +243,23 @@ var Terminal = new Class(
 					   );
 	    return;
 	}
+
+	if (m = command.match(/^authenticate\s*(.*)/))
+	{
+	    var args = m[1].split(/\s+/)
+	    if (args.length != 1)
+	    {
+		this.out_to_div(commandDiv, "Invalid login syntax.");
+		return;
+	    }
+	    sid = args[0];
+
+	    $("#login-dialog").data('username', sid);
+	    $("#login-dialog").dialog('open');
+
+	    return;
+	}
+
 
 	if (!this.sessionId)
 	{
@@ -266,13 +288,12 @@ var Terminal = new Class(
 	{
 	    command = this.commandHistory.item(m[1]);
 	}
-	
+
 
 	if (m = command.match(/^cd\s*(.*)/))
 	{
 	    var obj = this;
 	    var args = m[1].split(/\s+/)
-	    dbg("got args " + args);
             if (args.length != 1)
             {
                 this.out_to_div(commandDiv, "Invalid cd syntax.");
@@ -284,7 +305,7 @@ var Terminal = new Class(
 			{
 				this.cwd = path;
 			}. bind(this),
-			function (err) 
+			function (err)
 			{
 				var m = err.message.replace("/\n", "<br>\n");
                              	obj.out_to_div(commandDiv, "<i>Error received:<br>" + err.code + "<br>" + m + "</i>");
@@ -292,13 +313,12 @@ var Terminal = new Class(
 		);
 	    return;
 	}
-        
+
 
 	if (m = command.match(/^cp\s*(.*)/))
 	{
 	    var obj = this;
 	    var args = m[1].split(/\s+/)
-	    dbg("got args " + args);
             if (args.length != 2)
             {
                 this.out_to_div(commandDiv, "Invalid cp syntax.");
@@ -306,8 +326,8 @@ var Terminal = new Class(
             }
             from = args[0];
             to  = args[1];
-	    this.client.copy_async(this.sessionId, this.cwd, from, to, 
-			  function () {}, 
+	    this.client.copy_async(this.sessionId, this.cwd, from, to,
+			  function () {},
 			  function (err)
 				 {
 				     var m = err.message.replace("\n", "<br>\n");
@@ -319,7 +339,6 @@ var Terminal = new Class(
 	if (m = command.match(/^mv\s*(.*)/))
 	{
 	    var args = m[1].split(/\s+/)
-	    dbg("got args " + args);
             if (args.length != 2)
             {
                 this.out_to_div(commandDiv, "Invalid mv syntax.");
@@ -333,7 +352,6 @@ var Terminal = new Class(
 	if (m = command.match(/^mkdir\s*(.*)/))
 	{
 	    var args = m[1].split(/\s+/)
-	    dbg("got args " + args);
             if (args.length != 1)
             {
                 this.out_to_div(commandDiv, "Invalid mkdir syntax.");
@@ -346,7 +364,6 @@ var Terminal = new Class(
 	if (m = command.match(/^rmdir\s*(.*)/))
 	{
 	    var args = m[1].split(/\s+/)
-	    dbg("got args " + args);
             if (args.length != 1)
             {
                 this.out_to_div(commandDiv, "Invalid rmdir syntax.");
@@ -359,7 +376,6 @@ var Terminal = new Class(
 	if (m = command.match(/^rm\s*(.*)/))
 	{
 	    var args = m[1].split(/\s+/)
-	    dbg("got args " + args);
             if (args.length != 1)
             {
                 this.out_to_div(commandDiv, "Invalid rm syntax.");
@@ -383,7 +399,7 @@ var Terminal = new Class(
 	    this.tutorial_position = 1;
 	    command = "show_tutorial";
 	}
-	
+
 	if (command == 'show_tutorial')
 	{
 	    this.client.get_tutorial_text_async(this.tutorial_position,
@@ -411,7 +427,7 @@ var Terminal = new Class(
 						}.bind(this));
 	    return;
 	}
-	    
+
 	if (command == 'commands')
 	{
 	    this.client.valid_commands_async(function (cmds)
@@ -460,7 +476,7 @@ var Terminal = new Class(
 	    var obj = this;
             if (args.length == 0) {
 		d = ".";
-            } else { 
+            } else {
 		    if (args.length != 1) {
 			this.out_to_div(commandDiv, "Invalid ls syntax.");
 			return;
@@ -469,7 +485,7 @@ var Terminal = new Class(
 		   }
 	    }
 
-	    var f = this.client.list_files_async(this.sessionId, this.cwd, d, 
+	    var f = this.client.list_files_async(this.sessionId, this.cwd, d,
 			 function (filelist)
 			 {
 			     var dirs = filelist[0];
@@ -477,8 +493,8 @@ var Terminal = new Class(
 
 			     var tbl = document.createElement('table');
 			     tbl.setAttribute('border', 1);
-			     
-    			     for (var d=0; d < dirs.length; d++) 
+
+    			     for (var d=0; d < dirs.length; d++)
 			     {
 				 var row = document.createElement('tr')
 				 var cell = document.createElement('td');
@@ -525,7 +541,7 @@ var Terminal = new Class(
 			 {
 			     var m = err.message.replace("\n", "<br>\n");
 			     obj.out_to_div(commandDiv, "<i>Error received:<br>" + err.code + "<br>" + m + "</i>");
-			 }	
+			 }
 			);
 	    return;
 	}
@@ -547,14 +563,14 @@ var Terminal = new Class(
 					       {
 						   obj.out_to_div(commandDiv, stdweb);
 						   return;
-					       }       
+					       }
 
 					       if (output.length > 0 && output[0].indexOf("\t") >= 0)
 					       {
 
 						   var tbl = document.createElement('table');
 						   tbl.setAttribute('border', 1);
-						   
+
 						   for (var i=0; i < output.length; i++)
 						   {
 						       var parts = output[i].split("\t");
@@ -567,10 +583,10 @@ var Terminal = new Class(
 							   row.appendChild(cell);
 						       }
 						       tbl.appendChild(row);
-											     
+
 						   }
 						   commandDiv.appendChild(tbl);
-								  
+
 					       }
 					       else
 					       {
@@ -594,7 +610,7 @@ var Terminal = new Class(
 					       obj.out_to_div(commandDiv, "Error running command.");
 					   }
 				       });
-	
+
     }
 });
 
