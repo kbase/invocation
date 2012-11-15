@@ -6,7 +6,7 @@ html, body, #wrapper {
     height: 100%; /*Effectively, this is min height
                     for IE5+/Win, since IE wrongly expands
                     an element to enclose its content.
-                    This mis-behavior screws up modern  
+                    This mis-behavior screws up modern
                     browsers*/
     margin: 0;
     padding: 0;
@@ -16,7 +16,7 @@ html>body #wrapper {
     height: auto; /*this undoes the IE hack, hiding it
                     from IE using the child selector*/
     }
-    
+
 html {
     background-color: #fff;
     }
@@ -58,13 +58,13 @@ h1, h2 {
                            footer beyond the viewport even with
                            short content. */
     }
-    
+
 #navcol {
     width: 160px;
     padding: 5px;
     float: left;
     }
-    
+
 #terminal {
 	height: 675px;
     overflow: auto;
@@ -89,7 +89,7 @@ h1, h2 {
     background-color: #eef;
     border-top: 1px solid #aaf;
     }
- 
+
 #footer textarea {
     width: 100%;
     height: 100%;
@@ -99,3 +99,6 @@ h1, h2 {
 	font-family : "courier new",courier,monospace;
 	font-weight: bold;
 }
+
+
+.ui-widget-content { font : 62.5% "Trebuchet MS", sans-serif !important}

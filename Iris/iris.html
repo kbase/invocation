@@ -6,190 +6,56 @@
 
 <script src="valums-file-uploader-b3b20b1/client/fileuploader.js" type="text/javascript" charset="utf-8"></script>
 <script src="json2.js" type="text/javascript" charset="utf-8"></script>
-<script src="jquery-1.7.2.js" type="text/javascript" charset="utf-8"></script>
+<!--<script src="jquery-1.7.2.js" type="text/javascript" charset="utf-8"></script>-->
 <script src="mootools.js" type="text/javascript" charset="utf-8"></script>
 <script src="../lib/InvocationService.js" type="text/javascript" charset="utf-8"></script>
 <script src="iris.js" type="text/javascript" charset="utf-8"></script>
 
-        <!--<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>-->
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
         <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/jquery-ui.min.js"></script>
 
+
         <link type = 'text/css' href = 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/themes/smoothness/jquery-ui.css' rel = 'stylesheet' />
+
+        <script src = 'http://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.2/jquery.cookie.js'></script>
+        <script src="./jquery.kbase.login.js"></script>
 
 
         <script type = 'text/javascript'>
             <!--
                 $(function() {
 
-                    var $ld = $("#login-dialog");
+					window.$ld = $("<div></div>").login(
+						{
+							style : 'hidden',
+							login_callback : function(args) {
+								if (args.success) {
+									var commandDiv = new Element('div');
+									window.terminal.terminal.grab(commandDiv);
+									window.terminal.out_line();
+									window.terminal.scroll();
+									window.terminal.client.start_session_async(args.user_id,
+										function (newsid) {
+											window.terminal.set_session(args.user_id);
+											window.terminal.commandHistory.load(window.terminal.client, args.user_id);
+											window.terminal.out_to_div(commandDiv, "Set session to " + args.user_id);
+										}.bind(window.terminal),
+										function (err) {
+											window.terminal.out_to_div(commandDiv, "<i>Error on session_start:<br>" +
+												err.message.replace("\n", "<br>\n") + "</i>");
+										}.bind(window.terminal)
+									);
 
-                    $ld.dialog(
-                        {
-                            autoOpen : false,
-                            modal : true,
-                            resizable: false,
-                            buttons : {
-                                Cancel : function () {
-                                    $( this ).dialog('close');
-                                },
-                                Login : function() {
-
-                                    var username = $("#login-username").val();
-                                    var password = $("#login-password").val();
-
-                                    $(this).trigger('message', username);
-
-                                    login.call(this, username, password, function(success, args) {
-
-                                        if ( success ) {
-                                            $(this).trigger('clearMessages');
-
-                                            $(this).trigger('clearMessages');
-
-//                                            window.terminal.run('login ' + args.username);
-
-	var commandDiv = new Element('div');
-	window.terminal.terminal.grab(commandDiv);
-	window.terminal.out_line();
-	window.terminal.scroll();
-	    window.terminal.client.start_session_async(sid,
-					    function (newsid)
-					    {
-						window.terminal.set_session(args.username);
-						window.terminal.commandHistory.load(window.terminal.client, args.username);
-						window.terminal.out_to_div(commandDiv, "Set session to " + args.username);
-					    }.bind(window.terminal),
-					    function (err)
-					    {
-						window.terminal.out_to_div(commandDiv, "<i>Error on session_start:<br>" +
-						   		err.message.replace("\n", "<br>\n") + "</i>");
-					    }.bind(window.terminal)
-					   );
-    window.terminal.client.authToken = args.token;
-
-                                            $(this).dialog('close');
-                                        }
-                                        else {
-                                            $(this).trigger('error', args.message);
-                                        }
-                                    });
-
-                                },
-                            },
-                            open : function() {
-                                $('form', $(this))[0].reset();
-                                //assign the username, if one is provided.
-                                $("#login-username").val( $(this).data('username') );
-                                $(this).trigger('clearMessages');
-                                $(this).unbind('keypress');
-                                $(this).keypress(function(e) {
-                                    if (e.keyCode == $.ui.keyCode.ENTER) {
-                                        $('button:last', $(this).parent()).trigger("click");
-                                        e.stopPropagation();
-                                    }
-                                });
-                            },
-                        }
-                    );
-
-                    $ld.bind('error', function(event, msg) {
-                        $(this).trigger('clearMessages');
-                        $("#login-error").show();
-                        $("#login-errormsg").html(msg);
-                    });
-
-                    $ld.bind('message', function(event, msg) {
-                        $(this).trigger('clearMessages');
-                        $("#login-pending").show();
-                        $("#login-pendinguser").html(msg);
-                    });
-
-                    $ld.bind('clearMessages', function(event) {
-                        $("#login-error").hide();
-                        $("#login-pending").hide();
-                    });
-
-                    $( "#login-widget button" ).button();
-
-                });
-
-            function login(username, password, callback) {
-
-                //this is the boolean that gets passed into the callback to determine whether or not it was a succesful login.
-                var status = 1;
-                //and the arbitrary args, pre-populated with the username for your convenience.
-                var args = { username : username };
-
-
-                // here's a couple of simple cases that need to be handled somewhere. Figured I'd just toss 'em into this function
-                // to keep 'em all in one place.
-                var that = this;
-                if (username.length == 0) {
-                    args.message = 'Cannot login w/o username';
-                    status = 0;
-                    callback.call(that, status, args);
-                } else if (password.length == 0) {
-                    args.message = 'Cannot login w/o password';
-                    status = 0;
-                    callback.call(that, status, args);
-
-                } else {
-
-                    $.ajax({ type: "GET",
-		             url: "http://140.221.92.45:7039/Sessions/Login",
-			     data : { 'user_id' : username,
-			              'password' : password },
-			     dataType: "json",
-			     crossDomain : true,
-			     xhrFields: { withCredentials: true },
-			     success: function (data,res,jqXHR) {
-			                  var args = {};
-					  if ('token' in data) {
-				              args.username = data.user_id;
-				              args.token = data.token;
-					      args.session_id = data.kbase_sessionid;
-					      callback.call(that,1,args)
-					  } else {
-				              args.message = data.error_msg;
-					      callback.call(that,0,args);
-					  }
-
-				      },
-			     xhrFields: {
-			         withCredentials: true
-				 },
-			     beforeSend : function(xhr){
-			         // make cross-site requests
-			         xhr.withCredentials = true;
-			         },
-			     });
-		 }
-	    }
-
-            function logout() {
-
-                // the rest of this is just housekeeping.
-                $("#login-userdisplay").hide();
-                $("#login-entrance").show();
-
-                //automatically prompt to log in again
-                $('#login-dialog').dialog('open');
-            }
+									window.terminal.client.authToken = args.kbase_sessionid;
+									$('#input_box').focus();
+								}
+							}
+						}
+					);
+				});
 
             //-->
         </script>
-
-		<style type="text/css">
-            #login-dialog form div label {
-                width : 70px;
-                float : left;
-                margin-right : 10px;
-                margin-bottom : 5px;
-                clear : left;
-                text-align : right;
-            }
-
-		</style>
 
 </head>
 <body>
@@ -209,33 +75,6 @@
     </div>
     <div id="footer">
       <textarea id="input_box" width="90%" height="90%"></textarea>
-    </div>
-
-    <div id="login-dialog" title="Login" style = 'font: 62.5% "Trebuchet MS", sans-serif;'>
-        <form name = 'login-form' id = 'login-form'>
-            <fieldset class="ui-helper-reset">
-                <div class="ui-widget" id = 'login-error' style = 'display : none'>
-                    <div class="ui-state-error ui-corner-all" style="padding: 0 .7em;">
-                        <p><span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
-                        <strong>Error:</strong> <span id = 'login-errormsg'></span></p>
-                    </div>
-                </div>
-                <div class="ui-widget" id = 'login-pending' style = 'display : none'>
-                    <div class="ui-state-highlight ui-corner-all" style="padding: 0 .7em;">
-                        <p>
-                            <span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
-                            <strong>Logging in as <span id = 'login-pendinguser'></span>...</strong>
-                        </p>
-                    </div>
-                </div>
-                <div class = 'inputbox'>
-                    <label for = 'login-username'>Username:</label> <input type = 'text' name = 'login-username' id = 'login-username' size = '20'>
-                </div>
-                <div class = 'inputbox'>
-                    <label for = 'login-password'>Password:</label> <input type = 'password' name = 'login-password' id = 'login-password' size = '20'>
-                </div>
-            </fieldset>
-        </form>
     </div>
 
 </body>
