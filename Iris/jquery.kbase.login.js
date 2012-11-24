@@ -23,8 +23,8 @@
 
     There are a couple of useful things to know about. You can extract the user_id and kbase_sessionid:
 
-        $(#"fizzlefazzle").login('user_id');
-        $(#"fizzlefazzle").login('kbase_sessionid');
+        $(#"fizzlefazzle").login('session', 'user_id');
+        $(#"fizzlefazzle").login('session', 'kbase_sessionid');
 
     When you're setting it up, you have a few options:
 
@@ -58,19 +58,27 @@
             style : 'button',
             loginURL : "https://kbase.us/services/authorization/Sessions/Login",
             login_button_options : {label : 'Login'},
+            fields : ['fullname', 'kbase_sessionid', 'user_id'],
         },
 
     get_kbase_cookie : function () {
 
         var chips = {};
 
-        var m = /un=(\w+)\|kbase_sessionid=([^\|]+)/g.exec( $.cookie('kbase_session') );
+        var cookieString = $.cookie('kbase_session');
 
-        if (m) {
-            chips.user_id = m[1];
-            chips.kbase_sessionid = m[2];
-            chips.success = 1;
+        if (cookieString == undefined) {
+            return chips;
         }
+
+        var pairs = cookieString.split('\|');
+
+        for (var i = 0; i < pairs.length; i++) {
+            var set = pairs[i].split('=');
+            chips[set[0]] = set[1];
+        }
+
+        chips.success = 1;
 
         return chips;
     },
@@ -96,6 +104,9 @@
                 if (this.options.prior_login_callback) {
                     this.options.prior_login_callback.call(this, kbaseCookie);
                 }
+
+                this.data('_session', kbaseCookie);
+
             }
 
         },
@@ -136,31 +147,33 @@
 
         populateLoginInfo : function (args) {
             if (args.success) {
-                this._user_id = args.user_id;
-                this._kbase_sessionid = args.kbase_sessionid;
+                this.data('_session', args);
                 this._error = undefined;
             }
             else {
-                this._user_id = undefined;
-                this._kbase_sessionid = undefined;
+                this.data('_session', {});
                 this._error = args.message;
             }
         },
 
-        user_id : function(new_id) {
-            if (new_id) {
-                this._user_id = new_id;
+        session : function(key, value) {
+
+            if (this.data('_session') == undefined) {
+                this.data('_session', {});
             }
 
-            return this._user_id;
-        },
+            var session = this.data('_session');
 
-        kbase_sessionid : function(new_id) {
-            if (new_id) {
-                this._kbase_sessionid = new_id;
+            if (arguments.length == 2) {
+                session[key] = value;
             }
 
-            return this._kbase_sessionid;
+            if (arguments.length > 0) {
+                return session[key];
+            }
+            else {
+                return session;
+            }
         },
 
         error : function(new_error) {
@@ -285,7 +298,7 @@
                         this.data("entrance").hide();
                         this.data('user_id').val('');
                         this.data('password').val('');
-                        this.data("loggedinuser_id").text(args.user_id);
+                        this.data("loggedinuser_id").text(args.fullname);
                         this.data("userdisplay").show();
                     }
                     else {
@@ -397,7 +410,7 @@
                         this.data('loginbutton').tooltip(
                             {
                                 disabled : false,
-                                content : 'Logged in as ' + args.user_id
+                                content : 'Logged in as ' + args.fullname
                             }
                         );
 
@@ -497,7 +510,7 @@
                     if ( args.success ) {
                         this.data('loginDialog').trigger('clearMessages');
                         this.data("entrance").hide();
-                        this.data("loggedinuser_id").text(args.user_id);
+                        this.data("loggedinuser_id").text(args.fullname);
                         this.data("userdisplay").show();
                         this.data('loginDialog').dialog('close');
                     }
@@ -665,9 +678,9 @@
                             $('form', $ld).get(0).reset();
                             //assign the user_id, if one is provided.
                             $ld.data("user_id").focus();
-                            $ld.data("user_id").val( this.user_id() || this.options.user_id );
+                            $ld.data("user_id").val( this.session('user_id') || this.options.user_id );
                             delete this.options.user_id;
-                            this.user_id(undefined);
+                            this.session('user_id',undefined);
                             if ($ld.data('user_id').val()) {
                             	$ld.data('password').focus();
                             }
@@ -731,6 +744,8 @@
             else {
                 args.password = password;
                 args.cookie = 1;
+                args.fields = this.options.fields.join(',');
+
                 $.ajax(
                     {
                         type            : "POST",
@@ -744,12 +759,22 @@
 
                                 if (data.token) {
 
-									$.cookie('kbase_session',
-										  'un=' + data.username
-										+ '|'
-										+ 'kbase_sessionid=' + data.kbase_sessionid);
+									//$.cookie('kbase_session',
+								    //	  'un=' + data.user_id
+									//	+ '|'
+									//	+ 'kbase_sessionid=' + data.kbase_sessionid);
 
-                                    var args = this.get_kbase_cookie();
+                                    var cookieArray = [];
+
+                                    var args = { success : 1 };//this.get_kbase_cookie();
+                                    var fields = this.options.fields;
+
+                                    for (var i = 0; i < fields.length; i++) {
+                                        args[fields[i]] = data[fields[i]];
+                                        cookieArray.push(fields[i] + '=' + data[fields[i]]);
+                                    }
+
+                                    $.cookie('kbase_session', cookieArray.join('|'));
 
                                     this.populateLoginInfo(args);
                                     callback.call(this,args)

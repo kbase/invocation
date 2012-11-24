@@ -223,11 +223,9 @@ var Terminal = new Class(
 	    }
 	    sid = args[0];
 
-		window.$ld.login('user_id', sid);
+		window.$ld.login('session', 'user_id', sid);
 		window.$ld.login('openDialog');
 
-	    $("#login-dialog").data('username', sid);
-	    $("#login-dialog").dialog('open');
 	    return;
 
 	    //old login code. copy and pasted into iris.html.
