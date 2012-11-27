@@ -22,8 +22,8 @@ bin: $(BIN_PERL)
 
 deploy: deploy-service
 
-deploy-service: deploy-dir-service deploy-scripts deploy-libs deploy-services deploy-monit deploy-doc
-deploy-client: deploy-scripts deploy-libs  deploy-doc
+deploy-service: deploy-dir-service deploy-scripts deploy-libs deploy-services deploy-monit deploy-docs
+deploy-client: deploy-scripts deploy-libs  deploy-docs
 
 deploy-services:
 	$(TPAGE) $(TPAGE_ARGS) service/start_service.tt > $(TARGET)/services/$(SERVICE)/start_service
@@ -34,8 +34,10 @@ deploy-services:
 deploy-monit:
 	$(TPAGE) $(TPAGE_ARGS) service/process.$(SERVICE).tt > $(TARGET)/services/$(SERVICE)/process.$(SERVICE)
 
-deploy-doc:
-	-mkdir -p doc 
-	$(DEPLOY_RUNTIME)/bin/perl $(DEPLOY_RUNTIME)/bin/pod2html -t "Invocation Service API" lib/Bio/KBase/InvocationService/InvocationServiceImpl.pm > doc/idserver_api.html
+deploy-docs:
+	-mkdir -p doc
+	rm doc/*html
+	$(DEPLOY_RUNTIME)/bin/perl $(DEPLOY_RUNTIME)/bin/pod2html -t "Invocation Service API" lib/Bio/KBase/InvocationService/InvocationServiceImpl.pm > doc/invocation_api.html
+	cp doc/*html $(SERVICE_DIR)/webroot
 
 include $(TOP_DIR)/tools/Makefile.common.rules
