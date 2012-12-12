@@ -38,8 +38,8 @@ deploy-monit:
 	$(TPAGE) $(TPAGE_ARGS) service/process.$(SERVICE).tt > $(TARGET)/services/$(SERVICE)/process.$(SERVICE)
 
 deploy-docs:
-	-mkdir -p doc
-	rm doc/*html
+	mkdir -p doc
+	rm -f doc/*html
 	$(DEPLOY_RUNTIME)/bin/perl $(DEPLOY_RUNTIME)/bin/pod2html -t "Invocation Service API" lib/Bio/KBase/InvocationService/InvocationServiceImpl.pm > doc/invocation_api.html
 	cp doc/*html $(SERVICE_DIR)/webroot
 
