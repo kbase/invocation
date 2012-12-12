@@ -39,6 +39,7 @@ deploy-monit:
 
 deploy-docs:
 	mkdir -p doc
+	mkdir -p $(SERVICE_DIR)/webroot
 	rm -f doc/*html
 	$(DEPLOY_RUNTIME)/bin/perl $(DEPLOY_RUNTIME)/bin/pod2html -t "Invocation Service API" lib/Bio/KBase/InvocationService/InvocationServiceImpl.pm > doc/invocation_api.html
 	cp doc/*html $(SERVICE_DIR)/webroot
