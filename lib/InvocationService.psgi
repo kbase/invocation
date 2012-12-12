@@ -29,6 +29,7 @@ if (!$storage_dir)
     {
 	$storage_dir = $kb_storage_dir;
     }
+    mkdir $storage_dir unless (-d $storage_dir);
     warn "No deployment configuration found; falling back to $storage_dir";
 }
 
