@@ -42,6 +42,6 @@ print "test 3".Dumper ( test_for_response( $url, [ $session_id, 'test_file', 'I 
 print "test 4".Dumper ( test_for_response( $url, [ $session_id, 'test_file2', 'I contain data', '/' ],   "InvocationService.put_file") );
 print "test 5".Dumper ( test_for_response( $url, [ $session_id, '/', '' ],                               "InvocationService.list_files") );
 print "test 6".Dumper ( test_for_response( $url, [ $session_id, '/', 'test_file' ],                      "InvocationService.remove_files") );
-
+print "test 7".Dumper ( test_for_response( $url, [ '2' ] ,                                               "InvocationService.get_tutorial_text") );
 #[session_id, pipeline, input, max_output_size, cwd]
 print Dumper ( test_for_response( $url, [ $session_id, 'echo "foo"', [], undef, '/' ],          "InvocationService.run_pipeline2") );
