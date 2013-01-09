@@ -52,13 +52,14 @@
 (function( $, undefined ) {
 
 
-    $.widget("kbase.login", {
+    $.widget("kbase.login", $.kbase.widget, {
         version: "1.0.0",
         options: {
             style : 'button',
-            loginURL : "https://kbase.us/services/authorization/Sessions/Login",
+            loginURL : "http://kbase.us/services/authorization/Sessions/Login",
             login_button_options : {label : 'Login'},
-            fields : ['fullname', 'kbase_sessionid', 'user_id'],
+            possibleFields : ['verified','name','opt_in','kbase_sessionid','token','groups','user_id','email','system_admin'],
+            fields : ['name', 'kbase_sessionid', 'user_id'],
         },
 
     get_kbase_cookie : function () {
@@ -109,37 +110,6 @@
 
             }
 
-        },
-
-        data : function (key, val) {
-            if (this.options._storage == undefined) {
-                this.options._storage = {};
-            }
-
-            if (arguments.length == 2) {
-                this.options._storage[key] = val;
-            }
-
-            return this.options._storage[key];
-        },
-
-        _rewireIds : function($elem, $target) {
-
-            if ($target == undefined) {
-                $target = $elem;
-            }
-
-            $elem.removeAttr('id');
-
-            $.each(
-                $elem.find('[id]'),
-                function(idx) {
-                    $target.data($(this).attr('id'), $(this));
-                    $(this).removeAttr('id');
-                    }
-            );
-
-            return $elem;
         },
 
         registerLoginFunc  : function() { return this.registerLogin },
@@ -298,7 +268,7 @@
                         this.data("entrance").hide();
                         this.data('user_id').val('');
                         this.data('password').val('');
-                        this.data("loggedinuser_id").text(args.fullname);
+                        this.data("loggedinuser_id").text(args.name);
                         this.data("userdisplay").show();
                     }
                     else {
@@ -410,7 +380,7 @@
                         this.data('loginbutton').tooltip(
                             {
                                 disabled : false,
-                                content : 'Logged in as ' + args.fullname
+                                content : 'Logged in as ' + args.name
                             }
                         );
 
@@ -447,7 +417,7 @@
                 .attr('style', 'width : 250px;')
                 .append(
                     $('<h3></h3>')
-                        .attr('class', 'ui-widget-header ui-corner-all')
+                        .attr('class', 'ui-widget-header ui-corner-top')
                         .attr('style', 'padding : 5px; margin-top : 0px ')
                         .append('User\n')
                 )
@@ -510,7 +480,7 @@
                     if ( args.success ) {
                         this.data('loginDialog').trigger('clearMessages');
                         this.data("entrance").hide();
-                        this.data("loggedinuser_id").text(args.fullname);
+                        this.data("loggedinuser_id").text(args.name);
                         this.data("userdisplay").show();
                         this.data('loginDialog').dialog('close');
                     }
@@ -757,7 +727,7 @@
                         success            : $.proxy(
                             function (data,res,jqXHR) {
 
-                                if (data.token) {
+                                if (data.kbase_sessionid) {
 
 									//$.cookie('kbase_session',
 								    //	  'un=' + data.user_id
@@ -790,8 +760,10 @@
                         ),
                         error: $.proxy(
                             function (jqXHR, textStatus, errorThrown) {
+
                                 // If we have a useless error message, replace with
                                 // friendly, but useless error message
+
                                 if (textStatus == "error") {
                                     textStatus = "Error connecting to KBase login server";
                                 }
