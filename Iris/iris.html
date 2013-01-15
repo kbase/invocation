@@ -102,6 +102,7 @@
 
                     $('#command-list').commands(
                         {
+                            client : window.terminal.client,
                             englishCommands : 0,
                             link : function (evt) {
                                 document.getElementById('input_box').value += $(this).attr('title') + ' ';
