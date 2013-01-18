@@ -92,11 +92,13 @@
                         var commandDiv = new Element('div');
                         window.terminal.terminal.grab(commandDiv);
                         window.terminal.out_line();
-                        window.terminal.scroll();
-                        window.terminal.out_to_div(commandDiv, 'Already logged in as ' + cookie.fullname);
-                        window.terminal.set_session(cookie.user_id);
-                        window.terminal.commandHistory.load(window.terminal.client, cookie.user_id);
-                        window.terminal.out_to_div(commandDiv, "Set session to " + cookie.user_id);
+                        if (cookie.user_id) {
+                            window.terminal.scroll();
+                            window.terminal.out_to_div(commandDiv, 'Already logged in as ' + cookie.name);
+                            window.terminal.set_session(cookie.user_id);
+                            window.terminal.commandHistory.load(window.terminal.client, cookie.user_id);
+                            window.terminal.out_to_div(commandDiv, "Set session to " + cookie.user_id);
+                        }
 
                     }
 
