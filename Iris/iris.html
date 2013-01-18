@@ -24,49 +24,50 @@
 
         <script type = 'text/javascript'>
             <!--
-$(function() {
+                $(function() {
 
-	window.$ld = $("<div></div>").login(
-	    {
-	    style : 'hidden',
-	    login_callback : function(args) {
-		    if (args.success) {
-			var commandDiv = new Element('div');
-			window.terminal.terminal.grab(commandDiv);
-			window.terminal.out_line();
-			window.terminal.scroll();
-			window.terminal.client.start_session_async(args.user_id,
-								   function (newsid) {
-								       window.terminal.set_session(args.user_id);
-								       window.terminal.commandHistory.load(window.terminal.client, args.user_id);
-								       window.terminal.out_to_div(commandDiv, "Set session to " + args.user_id);
-								   }.bind(window.terminal),
-								   function (err) {
-								       window.terminal.out_to_div(commandDiv, "<i>Error on session_start:<br>" +
-												  err.message.replace("\n", "<br>\n") + "</i>");
-								   }.bind(window.terminal)
-			    );
+					window.$ld = $("<div></div>").login(
+						{
+							style : 'hidden',
+							login_callback : function(args) {
+								if (args.success) {
+									var commandDiv = new Element('div');
+									window.terminal.terminal.grab(commandDiv);
+									window.terminal.out_line();
+									window.terminal.scroll();
+									window.terminal.client.start_session_async(args.user_id,
+										function (newsid) {
+											window.terminal.set_session(args.user_id);
+											window.terminal.commandHistory.load(window.terminal.client, args.user_id);
+											window.terminal.out_to_div(commandDiv, "Set session to " + args.user_id);
+										}.bind(window.terminal),
+										function (err) {
+											window.terminal.out_to_div(commandDiv, "<i>Error on session_start:<br>" +
+												err.message.replace("\n", "<br>\n") + "</i>");
+										}.bind(window.terminal)
+									);
 
-			window.terminal.client.kbase_sessionid = args.kbase_sessionid;
-			$('#input_box').focus();
-		    }
-		}
-	    }
-	    );
+									window.terminal.client.kbase_sessionid = args.kbase_sessionid;
+									$('#input_box').focus();
+								}
+							}
+						}
+					);
 
-	var cookie;
-	if (cookie = window.$ld.login('get_kbase_cookie')) {
-	    var commandDiv = new Element('div');
-	    window.terminal.terminal.grab(commandDiv);
-	    window.terminal.out_line();
-	    window.terminal.scroll();
-	    window.terminal.out_to_div(commandDiv, 'Already logged in as ' + cookie.fullname);
-	    window.terminal.set_session(cookie.user_id);
-	    window.terminal.commandHistory.load(window.terminal.client, cookie.user_id);
-	    window.terminal.out_to_div(commandDiv, "Set session to " + cookie.user_id);
-                        
-	}
-    });
+                    var cookie;
+                    if (cookie = window.$ld.login('get_kbase_cookie')) {
+                        var commandDiv = new Element('div');
+                        window.terminal.terminal.grab(commandDiv);
+                        window.terminal.out_line();
+                        if (cookie.user_id) {
+                            window.terminal.scroll();
+                            window.terminal.out_to_div(commandDiv, 'Already logged in as ' + cookie.name);
+                            window.terminal.set_session(cookie.user_id);
+                            window.terminal.commandHistory.load(window.terminal.client, cookie.user_id);
+                            window.terminal.out_to_div(commandDiv, "Set session to " + cookie.user_id);
+                        }
+                    }
+				});
 
             //-->
         </script>
