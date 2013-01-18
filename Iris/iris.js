@@ -201,7 +201,7 @@ var Terminal = new Class(
     run: function(command) {
 
 	if (command == 'help') {
-	    this.out('Show some help');
+	    this.out('There is an introductory Iris tutorial available <a target="_blank" href="http://kbase.us/developer-zone/tutorials/iris/introduction-to-the-kbase-iris-interface/">on the KBase tutorials website</a>.');
 	    this.scroll();
 	    return;
 	}
@@ -212,8 +212,8 @@ var Terminal = new Class(
 	this.scroll();
 
 	var m;
-	command = command.replace("logon", "login");
-	if (m = command.match(/^login\s*(.*)/))
+
+	if (m = command.match(/^log[io]n\s*(.*)/))
 	{
 	    var args = m[1].split(/\s+/)
 	    if (args.length != 1)
@@ -223,8 +223,8 @@ var Terminal = new Class(
 	    }
 	    sid = args[0];
 
-		window.$ld.login('session', 'user_id', sid);
-		window.$ld.login('openDialog');
+	    window.$ld.login('session', 'user_id', sid);
+	    window.$ld.login('openDialog');
 
 	    return;
 
