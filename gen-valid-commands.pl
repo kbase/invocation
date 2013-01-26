@@ -14,22 +14,57 @@ my @groups;
 # We assume we are running from a directory in the modules directory
 # of a KBase dev container. 
 #
+# Use the module-order script that is part of the dev_container
+# to retrieve the list of modules in topological order; we reverse
+# that order to get the "most general" modules first.
+#
+# If that fails for some reason, revert to the list of directories that
+# contain a Makefile.
+#
 
-my @cmd_files = <../*/COMMANDS>;
+my @modules;
 
-my %groups;
-my %group_names;
-
-for my $cmd_file (@cmd_files)
+if (open(P, "-|", "../../tools/module-order", ".."))
 {
-    print STDERR "Process $cmd_file\n";
-    process_cmd_file(\%groups, \%group_names, $cmd_file);
+    while (<P>)
+    {
+	chomp;
+	unshift(@modules, $_);
+    }
+    close(P);
+}
+else
+{
+    opendir(D, "..") or die "Cannot opendir ..: $!";
+    while (my $d = readdir(D))
+    {
+	if (-f "../$d/Makefile")
+	{
+	    push(@modules, $d);
+	}
+    }
+    closedir(D);
 }
 
-my @gkeys = sort { $group_names{$a} cmp $group_names{$b} or $a cmp $b } keys %groups;
-
 my @groups;
-for my $gkey (@gkeys)
+my %groups;
+my %group_names;
+my %groups_seen;
+
+for my $module (@modules)
+{
+    my $cmd_file = "../$module/COMMANDS";
+    if (! -f $cmd_file)
+    {
+	$cmd_file = "module_commands/$module";
+    }
+    next unless -f $cmd_file;
+    print STDERR "Process $cmd_file\n";
+    process_cmd_file(\%groups_seen, \@groups, \%groups, \%group_names, $module, $cmd_file);
+}
+
+my @group_ents;
+for my $gkey (@groups)
 {
     my @items = map { { cmd => $_, link => '' } } sort { $a cmp $b } @{$groups{$gkey}};
     my $group = {
@@ -37,10 +72,10 @@ for my $gkey (@gkeys)
 	name => $gkey,
 	items => \@items,
     };
-    push(@groups, $group);
+    push(@group_ents, $group);
 }
 
-my %data = ( groups => \@groups );
+my %data = ( groups => \@group_ents );
 #print Dumper(\%data);
 my $tmpl = Template->new();
 $tmpl->process("ValidCommands.pm.tt", \%data);
@@ -48,13 +83,13 @@ $tmpl->process("ValidCommands.pm.tt", \%data);
 
 sub process_cmd_file
 {
-    my($groups, $group_names, $cmd_file) = @_;
+    my($groups_seen, $group_list, $groups, $group_names, $module, $cmd_file) = @_;
 
     open(F, "<", $cmd_file) or die "Cannot open $cmd_file: $!";
 
     my @list;
     my $have_re;
-    my $dir = dirname($cmd_file);
+    my $dir = "../$module";
 
     while (<F>)
     {
@@ -67,6 +102,8 @@ sub process_cmd_file
 	    {
 		die "Invalid #group-name line at line $.";
 	    }
+	    push(@$group_list, $fields[1]) if (!$groups_seen->{$fields[1]});
+	    $groups_seen->{$fields[1]} = 1;
 	    $group_names{$fields[1]} = $fields[2];
 	}
 	elsif ($fields[0] eq '#command-set')
@@ -78,11 +115,15 @@ sub process_cmd_file
 	    my $reg = $fields[1];
 	    my $re = qr/^$reg/;
 	    my $group = $fields[2];
+	    push(@$group_list, $group) if (!$groups_seen->{$group});
+	    $groups_seen->{$group} = 1;
 	    push(@list, ['regexp', $re, $group]);
 	    $have_re++;
 	}
 	elsif (@fields == 2)
 	{
+	    push(@$group_list, $fields[1]) if (!$groups_seen->{$fields[1]});
+	    $groups_seen->{$fields[1]} = 1;
 	    push(@list, ['explicit', $fields[0], $fields[1]]);
 	}
     }

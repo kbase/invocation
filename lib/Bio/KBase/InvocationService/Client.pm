@@ -46,13 +46,10 @@ sub new
 	
 	if ($token->error_message)
 	{
-	    warn "Authentication failed: " . $token->error_message;
+	    die "Authentication failed: " . $token->error_message;
 	}
-	else
-	{
-	    $self->{token} = $token->token;
-	    $self->{client}->{token} = $token->token;
-	}
+	$self->{token} = $token->token;
+	$self->{client}->{token} = $token->token;
     }
 
     my $ua = $self->{client}->ua;	 

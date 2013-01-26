@@ -1,0 +1,2 @@
+#group-name	modeling	Modeling Scripts
+#command-set	scripts/(kb.*).pl	modeling

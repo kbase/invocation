@@ -92,7 +92,7 @@ var Terminal = new Class(
 
 	//this.baseUrl = 'http://bio-data-1.mcs.anl.gov:5000';
 	this.baseUrl = 'http://bio-data-1.mcs.anl.gov/services/invocation';
-	this.baseUrl = 'http://localhost:5000';
+	this.baseUrl = 'http://140.221.84.184/services/invocation';
 	this.client = new InvocationService(this.baseUrl);
 
 	this.terminal = container;

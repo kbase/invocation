@@ -152,7 +152,7 @@ use strict;
 use base 'Class::Accessor';
 
 BEGIN {
-    __PACKAGE__->mk_accessors(qw(auth_storage_dir nonauth_storage_dir valid_commands_hash command_path));
+    __PACKAGE__->mk_accessors(qw(auth_storage_dir nonauth_storage_dir valid_commands_hash command_path verbose_status));
 }
 
 sub new

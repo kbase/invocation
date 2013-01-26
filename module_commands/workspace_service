@@ -1,0 +1,2 @@
+#group-name	ws	Workspace Service Scripts
+#command-set	scripts/(kb.*).pl	ws
