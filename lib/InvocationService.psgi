@@ -4,42 +4,30 @@ use Bio::KBase::InvocationService::InvocationServiceImpl;
 use Bio::KBase::InvocationService::Service;
 
 use Data::Dumper;
+use File::Path qw(make_path);
 use Plack::Request;
 use URI::Dispatch;
-use Config::Simple;
+use Bio::KBase::DeploymentConfig;
+use Cwd 'abs_path';
 
 my @dispatch;
 
-my $storage_dir;
+my $tmpdir = abs_path("/tmp");
 
-if (my $e = $ENV{KB_DEPLOYMENT_CONFIG})
-{
-    my $service = $ENV{KB_SERVICE_NAME};
-    my $c = Config::Simple->new();
-    $c->read($e);
-    $storage_dir = $c->param("$service.storage-dir");
-}
+my $cfg = Bio::KBase::DeploymentConfig->new("InvocationService", {
+    'authenticated-storage' => "$tmpdir/InvocationService/authenticated-storage",
+    'nonauthenticated-storage' => "$tmpdir/InvocationService/nonauthenticated-storage",
+});
 
-if (!$storage_dir)
-{
-    $storage_dir = -d "/private/tmp" ? "/private/tmp/storage" : "/tmp/storage";
-    my $kb_storage_dir = "/xfs/kb_inst/iris_storage";
+my $auth_storage = $cfg->setting('authenticated-storage');
+my $nonauth_storage = $cfg->setting('nonauthenticated-storage');
 
-    if (-d $kb_storage_dir && -w $kb_storage_dir)
-    {
-	$storage_dir = $kb_storage_dir;
-    }
-    mkdir $storage_dir unless (-d $storage_dir);
-    warn "No deployment configuration found; falling back to $storage_dir";
-}
+make_path($auth_storage);
+make_path($nonauth_storage);
 
-if (!-d $storage_dir)
-{
-    die "Storage directory $storage_dir does not exist";
-}
-warn "Using storage directory $storage_dir\n";
+print STDERR "auth=$auth_storage nonauth=$nonauth_storage\n";
 
-my $obj = Bio::KBase::InvocationService::InvocationServiceImpl->new($storage_dir);
+my $obj = Bio::KBase::InvocationService::InvocationServiceImpl->new($cfg);
 push(@dispatch, 'InvocationService' => $obj);
 
 my $server = Bio::KBase::InvocationService::Service->new(instance_dispatch => { @dispatch },

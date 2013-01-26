@@ -134,8 +134,8 @@ var Terminal = new Class(
     },
 
     resize_contents: function(container) {
-	var newx = window.getSize().y - document.id(pageheader).getSize().y - document.id(footer).getSize().y - 35;
-	container.style.height = newx;
+//	var newx = window.getSize().y - document.id(footer).getSize().y - 35;
+//	container.style.height = newx;
     },
 
     keypress: function(event) {

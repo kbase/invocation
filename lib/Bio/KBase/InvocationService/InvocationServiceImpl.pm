@@ -1,6 +1,9 @@
 package Bio::KBase::InvocationService::InvocationServiceImpl;
 use strict;
 use Bio::KBase::Exceptions;
+# Use Semantic Versioning (2.0.0-rc.1)
+# http://semver.org 
+our $VERSION = "0.1.0";
 
 =head1 NAME
 
@@ -8,171 +11,23 @@ InvocationService
 
 =head1 DESCRIPTION
 
+The Invocation Service provides a mechanism by which KBase clients may
+invoke command-line programs hosted on the KBase infrastructure. 
 
+The service provides a simple directory structure for storage of intermediate
+files, and exposes a limited set of shell command functionality.
 
 =cut
 
 #BEGIN_HEADER
-use IPC::Run;
-use Data::Dumper;
-use Digest::MD5 'md5_hex';    
-use Bio::KBase::InvocationService::PipelineGrammar;
-use POSIX qw(strftime);
-use Cwd;
-use Cwd 'abs_path';
-use File::Path;
-use File::Basename;
-use File::Copy;
 
+use Bio::KBase::DeploymentConfig;
+use Bio::KBase::InvocationService::UserSession;
 use Bio::KBase::InvocationService::ValidCommands;
 
-my @command_path = ("/kb/deployment/bin", "/home/olson/FIGdisk/FIG/bin", "/kb/deployment/modeling");
+use base 'Class::Accessor';
 
-my $kb_top = $ENV{KB_TOP};
-if ($kb_top)
-{
-    @command_path = ("$kb_top/bin");
-}
-
-
-my @valid_shell_commands = qw(sort grep cut cat head tail date echo wc diff join uniq);
-my %valid_shell_commands = map { $_ => 1 } @valid_shell_commands;
-
-sub validate_path
-{
-    my($self, $session_id, $cwd) = @_;
-    my $base = $self->_session_dir($session_id);
-    my $dir = $base.$cwd;
-    my $ap = abs_path($dir);
-    if ($ap =~ /^$base/ || $ap eq '/dev/null') {
-        return $ap;
-    } else {
-        die "Invalid path $ap";
-    }
-}
-
-sub _prepend_cwd
-{
-    my($cwd, $path) = @_;
-    if ($path =~ m,^/,)
-    {
-	return $path;
-    }
-    else
-    {
-	return $cwd . "/" . $ path;
-    }
-}
-     
-
-sub _valid_session_name
-{
-    my($self, $session) = @_;
-
-    return $session =~ /^[a-zA-Z0-9._-]+$/;
-}
-
-sub _validate_session
-{
-    my($self, $session) = @_;
-    my $d = $self->_session_dir($session);
-    return -d $d;
-}
-
-sub _session_dir
-{
-    my($self, $session) = @_;
-    return $self->{storage_dir} . "/$session";
-}
-
-sub _expand_filename
-{
-    my($self, $session, $file, $cwd) = @_;
-    if ($file eq '')
-    {
-	return $self->validate_path($session, $cwd);
-    }
-    elsif ($file =~ m,^(/?)(?:[a-zA-Z0-9_.-]*(?:/[a-zA-Z0-9_.-]*)*),)
-    {
-	if ($1)
-	{
-	    return $self->validate_path($session, $file);
-	}
-	else
-	{
-	    return $self->validate_path($session, $cwd."/".$file);
-	}
-    }
-    else
-    {
-	die "Invalid filename $file";
-    }
-    
-    #return $self->_session_dir($session) . "/$file";
-}
-sub validate_path
-{
-    my($self, $session_id, $cwd) = @_;
-
-    if ($cwd eq '/dev/null')
-    {
-	return $cwd;
-    }
-    
-    my $base = $self->_session_dir($session_id);
-    my $dir = $base.$cwd;
-    my $ap = abs_path($dir);
-    if ($ap =~ /^$base/) {
-        return $ap;
-    } else {
-        die "Invalid path '$ap'";
-    }
-
-
-}
-
-sub _validate_command
-{
-    my($self, $cmd) = @_;
-
-    my $path;
-    if ($self->{valid_commands}->{$cmd})
-    {
-	for my $cpath (@command_path)
-	{
-	    if (-x "$cpath/$cmd")
-	    {
-		$path = "$cpath/$cmd";
-		last;
-	    }
-	    else
-	    {
-		print STDERR "Not found: $cpath/$cmd\n";
-	    }
-	}
-    }
-    elsif ($valid_shell_commands{$cmd})
-    {
-	for my $dir ('/bin', '/usr/bin')
-	{
-	    if (-x "$dir/$cmd")
-	    {
-		$path = "$dir/$cmd";
-		last;
-	    }
-	}
-    }
-    else
-    {
-	return undef;
-    }
-
-    if (! -x $path)
-    {
-	return undef;
-    }
-    return $path;
-}
+__PACKAGE__->mk_accessors(qw(auth_storage_dir nonauth_storage_dir valid_commands_hash command_groups command_path));
 
 #END_HEADER
 
@@ -184,18 +39,29 @@ sub new
     bless $self, $class;
     #BEGIN_CONSTRUCTOR
 
-    my($storage_dir) = @args;
+    my($cfg) = @args;
 
-    if (! -d $storage_dir)
-    {
-	die "Storage directory $storage_dir does not exist";
-    }
+    my $auth_storage = $cfg->setting('authenticated-storage');
+    my $nonauth_storage = $cfg->setting('nonauthenticated-storage');
 
-    $self->{storage_dir} = $storage_dir;
-    $self->{count} = 0;
+    $self->{auth_storage_dir} = $auth_storage;
+    $self->{nonauth_storage_dir} = $nonauth_storage;
+    $self->{counter} = 0;
 
-    $self->{valid_commands} = Bio::KBase::InvocationService::ValidCommands::valid_commands();
+    $self->{valid_commands_hash} = Bio::KBase::InvocationService::ValidCommands::valid_commands();
     $self->{command_groups} = Bio::KBase::InvocationService::ValidCommands::command_groups();
+
+    my @command_path;
+
+    my $kb_top = $ENV{KB_TOP};
+    if ($kb_top)
+    {
+	$self->{command_path} = ["$kb_top/bin"];
+    }
+    else
+    {
+	die "Fatal error: no KB_TOP environment variable is set; this is required for the invocation service.";
+    }
     
     #END_CONSTRUCTOR
 
@@ -207,8 +73,6 @@ sub new
 }
 
 =head1 METHODS
-
-
 
 =head2 start_session
 
@@ -240,7 +104,13 @@ $actual_session_id is a string
 
 =item Description
 
-
+Begin a new session. A session_id is an uninterpreted string that
+identifies a workspace with in the Invocation Service, and serves to
+scope the data stored in that workspace.
+If start_session is invoked with valid authentication (via the standard
+KBase authentication mechanisms), the session_id is ignored, and an
+empty session_id returned. Throughout this service interface, if
+any call is made using authentication the given session_id will be ignored.
 
 =back
 
@@ -263,34 +133,8 @@ sub start_session
     my($actual_session_id);
     #BEGIN start_session
 
-    print STDERR "start_session '$session_id'\n";
-    if (!$session_id)
-    {
-	my $dig = Digest::MD5->new();
-	if (open(my $rand, "<", "/dev/urandom"))
-	{
-	    my $dat;
-	    my $n = read($rand, $dat, 1024);
-	    print STDERR "Read $n bytes of random data\n";
-	    $dig->add($dat);
-	    close($rand);
-	}
-	$dig->add($$);
-	$dig->add($self->{counter}++);
-	$dig->add($self->{storage_dir});
-	
-	$session_id = $dig->hexdigest;
-    }
-    elsif (!$self->_valid_session_name($session_id))
-    {
-	die "Invalid session id";
-    }
-    my $dir = $self->_session_dir($session_id);
-    if (!-d $dir)
-    {
-	mkdir($dir) or die "Cannot create session directory";
-    }
-    $actual_session_id = $session_id;
+    my $us = Bio::KBase::InvocationService::UserSession->new($self, undef, $ctx);
+    $actual_session_id = $us->start_session($session_id);
     
     #END start_session
     my @_bad_returns;
@@ -336,7 +180,8 @@ $return is an int
 
 =item Description
 
-
+Determine if the given session identifier is valid (has been used in the past).
+This routine is a candidate for deprecation.
 
 =back
 
@@ -427,7 +272,9 @@ file is a reference to a hash where the following keys are defined:
 
 =item Description
 
-
+Enumerate the files in the session, assuming the current working
+directory is cwd, and the filename to be listed is d. Think of this
+as the equivalent of "cd $cwd; ls $d".
 
 =back
 
@@ -452,40 +299,8 @@ sub list_files
     my($return_1, $return_2);
     #BEGIN list_files
 
-    
-    my $dir  = $self->_expand_filename($session_id, $d, $cwd);
-    my $fpath;
-    my $base = $self->_session_dir($session_id);
-   if ($dir =~ /^$base(.*)/)
-    {
-	$fpath = $1 ? $1 : "/";
-    }
-    else
-    {
-	die "Invalid path $dir";
-    }
-
-    my @dirs;
-    my @files;
-    my $dh;
-    opendir($dh, $dir) or die "Cannot open directory: $!";
-    while (my $file = readdir($dh)) {
-	next if ($file =~ m/^\./);
-	my($dev, $ino, $mode, $nlink, $uid, $gid, $rdev, $size, $atime, $mtime, $ctime, $blksize, $blocks) = stat("$dir/$file");
-
-	my $date= strftime("%b %d %G %H:%M:%S", localtime($mtime));
-
-        if (-f "$dir/$file") {
-	    push @files, { name => $file, full_path => "$fpath/$file", mod_date => $date, size => $size};
-        } elsif (-d "$dir/$file") {
-	    push @dirs, { name => $file, full_path => "$fpath/$file", mod_date => $date };
-        }
-    }
-
-    $return_1  = \@dirs;
-    $return_2 =  \@files;
-
-    closedir($dh);
+    my $us = Bio::KBase::InvocationService::UserSession->new($self, $session_id, $ctx);
+    ($return_1, $return_2) = $us->list_files($cwd, $d);
 
     #END list_files
     my @_bad_returns;
@@ -534,7 +349,7 @@ $filename is a string
 
 =item Description
 
-
+Remove the given file from the given directory.
 
 =back
 
@@ -557,11 +372,10 @@ sub remove_files
 
     my $ctx = $Bio::KBase::InvocationService::Service::CallContext;
     #BEGIN remove_files
-    my $ap;
 
-    my $ap = $self->_expand_filename($session_id, $filename, $cwd);
+    my $us = Bio::KBase::InvocationService::UserSession->new($self, $session_id, $ctx);
+    $us->remove_files($cwd, $filename);
 
-    unlink($ap);
     #END remove_files
     return();
 }
@@ -603,7 +417,7 @@ $to is a string
 
 =item Description
 
-
+Rename the given file.
 
 =back
 
@@ -628,18 +442,9 @@ sub rename_file
     my $ctx = $Bio::KBase::InvocationService::Service::CallContext;
     #BEGIN rename_file
 
-    my $apf;
-    my $apt;
+    my $us = Bio::KBase::InvocationService::UserSession->new($self, $session_id, $ctx);
+    $us->rename_file($cwd, $from, $to);
 
-    my $apf  = $self->_expand_filename($session_id, $from, $cwd);
-    my $apt  = $self->_expand_filename($session_id, $to, $cwd);
-
-   if (-d $apt) {
-       my $f = basename $from;
-       $apt = $self->_expand_filename($session_id, "$to/$f", $cwd);
-   }
-
-    rename($apf, $apt) || die ( "Error in renaming" );
     #END rename_file
     return();
 }
@@ -681,7 +486,7 @@ $to is a string
 
 =item Description
 
-
+Copy the given file to the given destination.
 
 =back
 
@@ -705,21 +510,9 @@ sub copy
 
     my $ctx = $Bio::KBase::InvocationService::Service::CallContext;
     #BEGIN copy
-    my $apf;
-    my $apt;
-    
-    
-    $apf = $self->_expand_filename($session_id, $from, $cwd);
-    if (-d $apf) {
-	die "Cannot copy a directory";
-    }
-    $apt = $self->_expand_filename($session_id, $to, $cwd);
-    if (-d $apt) {
-	my $f = basename $from;
-	$apt = $self->_expand_filename($session_id, "$to/$f", $cwd);
-    }
 
-    File::Copy::copy($apf, $apt) || die ( "Error in renaming" );
+    my $us = Bio::KBase::InvocationService::UserSession->new($self, $session_id, $ctx);
+    $us->copy($cwd, $from, $to);
     #END copy
     return();
 }
@@ -759,7 +552,7 @@ $directory is a string
 
 =item Description
 
-
+Create a new directory.
 
 =back
 
@@ -783,11 +576,9 @@ sub make_directory
     my $ctx = $Bio::KBase::InvocationService::Service::CallContext;
     #BEGIN make_directory
 
-    my $ap;
+    my $us = Bio::KBase::InvocationService::UserSession->new($self, $session_id, $ctx);
+    $us->make_directory($cwd, $directory);
 
-    $ap = $self->_expand_filename($session_id, $directory, $cwd);
-
-    mkdir($ap) || die ( "Error in mkdir" );
     #END make_directory
     return();
 }
@@ -827,7 +618,7 @@ $directory is a string
 
 =item Description
 
-
+Remove a directory.
 
 =back
 
@@ -851,11 +642,9 @@ sub remove_directory
     my $ctx = $Bio::KBase::InvocationService::Service::CallContext;
     #BEGIN remove_directory
 
-    my $ap;
-
-    $ap = $self->_expand_filename($session_id, $directory, $cwd);
-
-    rmtree($ap) || die ( "Error in rmdir" );
+    my $us = Bio::KBase::InvocationService::UserSession->new($self, $session_id, $ctx);
+    $us->remove_directory($cwd, $directory);
+    
     #END remove_directory
     return();
 }
@@ -865,7 +654,7 @@ sub remove_directory
 
 =head2 change_directory
 
-  $obj->change_directory($session_id, $cwd, $directory)
+  $return = $obj->change_directory($session_id, $cwd, $directory)
 
 =over 4
 
@@ -877,6 +666,7 @@ sub remove_directory
 $session_id is a string
 $cwd is a string
 $directory is a string
+$return is a string
 
 </pre>
 
@@ -887,6 +677,7 @@ $directory is a string
 $session_id is a string
 $cwd is a string
 $directory is a string
+$return is a string
 
 
 =end text
@@ -895,7 +686,7 @@ $directory is a string
 
 =item Description
 
-
+Change to the given directory. Returns the new cwd.
 
 =back
 
@@ -917,29 +708,21 @@ sub change_directory
     }
 
     my $ctx = $Bio::KBase::InvocationService::Service::CallContext;
+    my($return);
     #BEGIN change_directory
 
-    my $base = $self->_session_dir($session_id);
-
-    my $ap;
-
-    $ap = $self->_expand_filename($session_id, $directory, $cwd);
-
-    if (-d $ap) {
-	print "$ap is a dir";
-	if ($ap =~ /^$base(.*)/) {
-	    if (!$1) {
-		return "/";
-	    } else {
-		return $1;
-	    }
-	} else {
-	    die "invalid path";
-	}
-    } else { die "$directory not a directory";}
+    my $us = Bio::KBase::InvocationService::UserSession->new($self, $session_id, $ctx);
+    $return = $us->change_directory($cwd, $directory);
     
     #END change_directory
-    return();
+    my @_bad_returns;
+    (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to change_directory:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'change_directory');
+    }
+    return($return);
 }
 
 
@@ -979,7 +762,7 @@ $cwd is a string
 
 =item Description
 
-
+Write contents to the given file.
 
 =back
 
@@ -1004,21 +787,8 @@ sub put_file
     my $ctx = $Bio::KBase::InvocationService::Service::CallContext;
     #BEGIN put_file
 
-    #
-    # Filenames can't have any special characters or start with a /.
-    #
-    if ($filename !~ /^([a-zA-Z][a-zA-Z0-9-_]*(?:\/[a-zA-Z][a-zA-Z0-9-_]*)*)/)
-    {
-	die "Invalid filename";
-    }
-    my $ap;
-
-    $ap = $self->_expand_filename($session_id, $filename, $cwd);
-
-    open(my $fh, ">", $ap) or die "Cannot open $ap: $!";
-    print $fh $contents;
-    close($fh);
-
+    my $us = Bio::KBase::InvocationService::UserSession->new($self, $session_id, $ctx);
+    $us->put_file($filename, $contents, $cwd);
     #END put_file
     return();
 }
@@ -1060,7 +830,7 @@ $contents is a string
 
 =item Description
 
-
+Retrieve the contents of the given file.
 
 =back
 
@@ -1085,15 +855,8 @@ sub get_file
     my($contents);
     #BEGIN get_file
 
-    my $ap;
-
-    $ap = $self->_expand_filename($session_id, $filename, $cwd);
-
-    open(my $fh, "<", $ap) or die "Cannot open $ap: $!";
-    local $/;
-    undef $/;
-    $contents = <$fh>;
-    close($fh);
+    my $us = Bio::KBase::InvocationService::UserSession->new($self, $session_id, $ctx);
+    $contents = $us->get_file($filename, $cwd);
     #END get_file
     my @_bad_returns;
     (!ref($contents)) or push(@_bad_returns, "Invalid type for return variable \"contents\" (value was \"$contents\")");
@@ -1148,7 +911,9 @@ $errors is a reference to a list where each element is a string
 
 =item Description
 
-
+Run the given command pipeline. Returns the stdout and stderr for the pipeline.
+If max_output_size is greater than zero, limits the output of the command
+to max_output_size lines.
 
 =back
 
@@ -1175,164 +940,8 @@ sub run_pipeline
     my($output, $errors);
     #BEGIN run_pipeline
 
-    print STDERR "Parse: '$pipeline'\n";
-    $pipeline =~ s/\xA0/ /g;
-    print STDERR "Parse: '$pipeline'\n";
-    my $parser = Bio::KBase::InvocationService::PipelineGrammar->new;
-    $parser->input($pipeline);
-    my $tree = $parser->Run();
-
-    if (!$tree)
-    {
-	die "Error parsing command line";
-    }
-
-    #
-    # construct pipeline for IPC::Run
-    #
-
-    my @cmds;
-
-    print STDERR Dumper($tree);
-
-    $output = [];
-    $errors = [];
-
-    my $harness;
-
-    my $dir = $self->validate_path($session_id, $cwd);
-    my @cmd_list;
-    my @saved_stderr;
- PIPELINE:
-    for my $idx (0..$#$tree)
-    {
-	my $ent = $tree->[$idx];
-	
-	my $cmd = $ent->{cmd};
-	my $redirect = $ent->{redir};
-	my $args = $ent->{args};
-
-	my $cmd_path = $self->_validate_command($cmd);
-	if (!$cmd_path)
-	{
-	    push(@$errors, "$cmd: invalid command");
-	    next;
-	}
-
-	
-	if (@cmds)
-	{
-	    push(@cmds, '|');
-	}
-	$saved_stderr[$idx] = [];
-	push(@cmd_list, $cmd);
-	if ($cmd eq 'sort')
-	{
-	    if (!grep { $_ eq '-t' } @$args)
-	    {
-		unshift(@$args, "-t", "\t");
-	    }
-	}
-	push(@cmds, [$cmd_path, map { s/\\t/\t/g; $_ } @$args]);
-	push @cmds, init => sub {
-	    chdir $dir or die $!;
-	};
-	my $have_output_redirect;
-	my $have_stderr_redirect;
-	my $have_stdin_redirect;
-	for my $r (@$redirect)
-	{
-	    my($what, $file) = @$r;
-	    if ($what eq '<')
-	    {
-		my $path = $self->_expand_filename($session_id, $file, $cwd);
-		if (! -f $path)
-		{
-		    push(@$errors, "$file: input not found");
-		    next PIPELINE;
-		}
-		$have_stdin_redirect = 1;
-		push(@cmds, '<', $path);
-	    }
-	    elsif ($what eq '>' || $what eq '>>' || $what eq '2>' || $what eq '2>>')
-	    {
-		my $path = $self->_expand_filename($session_id, $file, $cwd);
-		push(@cmds, $what, $path);
-		if ($what =~ /^2/)
-		{
-		    $have_stderr_redirect = 1;
-		}
-		else
-		{
-		    $have_output_redirect = 1;
-		}
-	    }
-	    
-	}
-	if ($idx == 0)
-	{
-	    if (!$have_stdin_redirect)
-	    {
-		push(@cmds, '<', '/dev/null');
-	    }
-	}
-	if ($idx == $#$tree)
-	{
-	    if (!$have_output_redirect)
-	    {
-		push(@cmds, '>', IPC::Run::new_chunker, sub {
-		    my($l) = @_;
-		    push(@$output, $l);
-		    if ($max_output_size > 0 && @$output >= $max_output_size)
-		    {
-			push(@$errors, "Output truncated to $max_output_size lines");
-			$harness->kill_kill;
-		    }
-		});
-	    }
-	}
-	if (!$have_stderr_redirect)
-	{
-	    push(@cmds, '2>', IPC::Run::new_chunker, sub {
-		my($l) = @_;
-		push(@{$saved_stderr[$idx]}, $l);
-	    });
-	}
-    }
-
-    print STDERR Dumper(\@cmds);
-    $output = [];
-
-    if (@$errors == 0)
-    {
-	my $h = IPC::Run::start(@cmds);
-	$harness = $h;
-	eval {
-	    $h->finish();
-	};
-
-	my $err = $@;
-	if ($err)
-	{
-	    push(@$errors, "Error invoking pipeline");
-	    warn "error invooking pipeline: $err";
-	}
-	
-	my @res = $h->results();
-	for (my $i = 0; $i <= $#res; $i++)
-	{
-	    push(@$errors, "Return code from $cmd_list[$i]: $res[$i]");
-	    push(@$errors, @{$saved_stderr[$i]});
-	}
-    }
-
-    if ($max_output_size > 0 && @$output > $max_output_size)
-    {
-	my $removed = @$output - $max_output_size;
-	$#$output = $max_output_size - 1;
-	push(@$errors, "Elided $removed lines of output");
-    }
-	
+    my $us = Bio::KBase::InvocationService::UserSession->new($self, $session_id, $ctx);
+    ($output, $errors) = $us->run_pipeline($pipeline, $input, $max_output_size, $cwd);
     
     #END run_pipeline
     my @_bad_returns;
@@ -1391,7 +1000,7 @@ $stdweb is a string
 
 =item Description
 
-
+Experimental routine.
 
 =back
 
@@ -1418,166 +1027,8 @@ sub run_pipeline2
     my($output, $errors, $stdweb);
     #BEGIN run_pipeline2
 
-    print STDERR "Parse: '$pipeline'\n";
-    $pipeline =~ s/\xA0/ /g;
-    print STDERR "Parse: '$pipeline'\n";
-    my $parser = Bio::KBase::InvocationService::PipelineGrammar->new;
-    $parser->input($pipeline);
-    my $tree = $parser->Run();
-
-    if (!$tree)
-    {
-	die "Error parsing command line";
-    }
-
-    #
-    # construct pipeline for IPC::Run
-    #
-
-    my @cmds;
-
-    print STDERR Dumper($tree);
-
-    $output = [];
-    $errors = [];
-
-    my $harness;
-
-    my $dir = $self->validate_path($session_id, $cwd);
-    my @cmd_list;
-    my @saved_stderr;
- PIPELINE:
-    for my $idx (0..$#$tree)
-    {
-	my $ent = $tree->[$idx];
-	
-	my $cmd = $ent->{cmd};
-	my $redirect = $ent->{redir};
-	my $args = $ent->{args};
-
-	my $cmd_path = $self->_validate_command($cmd);
-	if (!$cmd_path)
-	{
-	    push(@$errors, "$cmd: invalid command");
-	    next;
-	}
-
-	
-	if (@cmds)
-	{
-	    push(@cmds, '|');
-	}
-	$saved_stderr[$idx] = [];
-	push(@cmd_list, $cmd);
-	if ($cmd eq 'sort')
-	{
-	    if (!grep { $_ eq '-t' } @$args)
-	    {
-		unshift(@$args, "-t", "\t");
-	    }
-	}
-	push(@cmds, [$cmd_path, map { s/\\t/\t/g; $_ } @$args]);
-	push @cmds, init => sub {
-	    chdir $dir or die $!;
-	    $ENV{KB_STDWEB} = 3;
-	};
-	my $have_output_redirect;
-	my $have_stderr_redirect;
-	my $have_stdin_redirect;
-	for my $r (@$redirect)
-	{
-	    my($what, $file) = @$r;
-	    if ($what eq '<')
-	    {
-		my $path = $self->_expand_filename($session_id, $file, $cwd);
-		if (! -f $path)
-		{
-		    push(@$errors, "$file: input not found");
-		    next PIPELINE;
-		}
-		$have_stdin_redirect = 1;
-		push(@cmds, '<', $path);
-	    }
-	    elsif ($what eq '>' || $what eq '>>' || $what eq '2>' || $what eq '2>>')
-	    {
-		my $path = $self->_expand_filename($session_id, $file, $cwd);
-		push(@cmds, $what, $path);
-		if ($what =~ /^2/)
-		{
-		    $have_stderr_redirect = 1;
-		}
-		else
-		{
-		    $have_output_redirect = 1;
-		}
-	    }
-	    
-	}
-	if ($idx == 0)
-	{
-	    if (!$have_stdin_redirect)
-	    {
-		push(@cmds, '<', '/dev/null');
-	    }
-	}
-	if ($idx == $#$tree)
-	{
-	    if (!$have_output_redirect)
-	    {
-		push(@cmds, '>', IPC::Run::new_chunker, sub {
-		    my($l) = @_;
-		    push(@$output, $l);
-		    if ($max_output_size > 0 && @$output >= $max_output_size)
-		    {
-			push(@$errors, "Output truncated to $max_output_size lines");
-			$harness->kill_kill;
-		    }
-		});
-	    }
-	    push(@cmds, "3>", \$stdweb);
-	}
-	if (!$have_stderr_redirect)
-	{
-	    push(@cmds, '2>', IPC::Run::new_chunker, sub {
-		my($l) = @_;
-		push(@{$saved_stderr[$idx]}, $l);
-	    });
-	}
-    }
-
-    print STDERR Dumper(\@cmds);
-    $output = [];
-
-    if (@$errors == 0)
-    {
-	my $h = IPC::Run::start(@cmds);
-	$harness = $h;
-	eval {
-	    $h->finish();
-	};
-
-	my $err = $@;
-	if ($err)
-	{
-	    push(@$errors, "Error invoking pipeline");
-	    warn "error invooking pipeline: $err";
-	}
-	
-	my @res = $h->results();
-	for (my $i = 0; $i <= $#res; $i++)
-	{
-	    push(@$errors, "Return code from $cmd_list[$i]: $res[$i]");
-	    push(@$errors, @{$saved_stderr[$i]});
-	}
-    }
-
-    if ($max_output_size > 0 && @$output > $max_output_size)
-    {
-	my $removed = @$output - $max_output_size;
-	$#$output = $max_output_size - 1;
-	push(@$errors, "Elided $removed lines of output");
-    }
-	
+    my $us = Bio::KBase::InvocationService::UserSession->new($self, $session_id, $ctx);
+    ($output, $errors, $stdweb) = $us->run_pipeline2($pipeline, $input, $max_output_size, $cwd);
     
     #END run_pipeline2
     my @_bad_returns;
@@ -1591,9 +1042,6 @@ sub run_pipeline2
     }
     return($output, $errors, $stdweb);
 }
-
-
-
 
 =head2 exit_session
 
@@ -1623,7 +1071,7 @@ $session_id is a string
 
 =item Description
 
-
+Exit the session.
 
 =back
 
@@ -1647,9 +1095,6 @@ sub exit_session
     #END exit_session
     return();
 }
-
-
-
 
 =head2 valid_commands
 
@@ -1693,7 +1138,7 @@ command_desc is a reference to a hash where the following keys are defined:
 
 =item Description
 
-
+Retrieve the set of valid commands.
 
 =back
 
@@ -1755,7 +1200,8 @@ $next is an int
 
 =item Description
 
-
+Retrieve the tutorial text for the given tutorial step, along with the
+the step numbers for the previous and next steps in the tutorial.
 
 =back
 
@@ -1821,6 +1267,40 @@ sub get_tutorial_text
 
 
 
+=head2 version 
+
+  $return = $obj->version()
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$return is a string
+</pre>
+
+=end html
+
+=begin text
+
+$return is a string
+
+=end text
+
+=item Description
+
+Return the module version. This is a Semantic Versioning number.
+
+=back
+
+=cut
+
+sub version {
+    return $VERSION;
+}
+
 =head1 TYPES
 
 
@@ -1829,6 +1309,11 @@ sub get_tutorial_text
 
 =over 4
 
+
+
+=item Description
+
+* A directory entry. Used as the return from list_files.
 
 
 =item Definition
@@ -1863,6 +1348,11 @@ mod_date has a value which is a string
 
 =over 4
 
+
+
+=item Description
+
+* A file entry. Used as the return from list_files.
 
 
 =item Definition
@@ -1901,6 +1391,11 @@ size has a value which is a string
 
 
 
+=item Description
+
+* Description of a command. Contains the command name and a link to documentation.
+
+
 =item Definition
 
 =begin html
@@ -1931,6 +1426,11 @@ link has a value which is a string
 
 =over 4
 
+
+
+=item Description
+
+* Description of a command group, a set of common commands.
 
 
 =item Definition

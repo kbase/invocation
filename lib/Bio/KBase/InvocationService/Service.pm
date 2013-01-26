@@ -2,6 +2,7 @@ package Bio::KBase::InvocationService::Service;
 
 use Data::Dumper;
 use Moose;
+use Bio::KBase::AuthToken;
 
 extends 'RPC::Any::Server::JSONRPC::PSGI';
 
@@ -21,7 +22,7 @@ our %return_counts = (
         'copy' => 0,
         'make_directory' => 0,
         'remove_directory' => 0,
-        'change_directory' => 0,
+        'change_directory' => 1,
         'put_file' => 0,
         'get_file' => 1,
         'run_pipeline' => 2,
@@ -29,7 +30,28 @@ our %return_counts = (
         'exit_session' => 0,
         'valid_commands' => 1,
         'get_tutorial_text' => 3,
+        'version' => 1,
 );
+
+our %method_authentication = (
+        'start_session' => 'optional',
+        'valid_session' => 'optional',
+        'list_files' => 'optional',
+        'remove_files' => 'optional',
+        'rename_file' => 'optional',
+        'copy' => 'optional',
+        'make_directory' => 'optional',
+        'remove_directory' => 'optional',
+        'change_directory' => 'optional',
+        'put_file' => 'optional',
+        'get_file' => 'optional',
+        'run_pipeline' => 'optional',
+        'run_pipeline2' => 'optional',
+        'exit_session' => 'optional',
+        'valid_commands' => 'optional',
+        'get_tutorial_text' => 'optional',
+);
+
 
 sub _build_valid_methods
 {
@@ -51,20 +73,52 @@ sub _build_valid_methods
         'exit_session' => 1,
         'valid_commands' => 1,
         'get_tutorial_text' => 1,
+        'version' => 1,
     };
     return $methods;
 }
 
 sub call_method {
     my ($self, $data, $method_info) = @_;
+
     my ($module, $method) = @$method_info{qw(module method)};
     
     my $ctx = Bio::KBase::InvocationService::ServiceContext->new(client_ip => $self->_plack_req->address);
     
     my $args = $data->{arguments};
 
-        # Service InvocationService does not require authentication.
-        
+{
+    # Service InvocationService requires authentication.
+
+    my $method_auth = $method_authentication{$method};
+    $ctx->authenticated(0);
+    if ($method_auth eq 'none')
+    {
+	# No authentication required here. Move along.
+    }
+    else
+    {
+	my $token = $self->_plack_req->header("Authorization");
+
+	if (!$token && $method_auth eq 'required')
+	{
+	    $self->exception('PerlError', "Authentication required for InvocationService but no authentication header was passed");
+	}
+
+	my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1);
+	my $valid = $auth_token->validate();
+	# Only throw an exception if authentication was required and it fails
+	if ($method_auth eq 'required' && !$valid)
+	{
+	    $self->exception('PerlError', "Token validation failed: " . $auth_token->error_message);
+	} elsif ($valid) {
+	    $ctx->authenticated(1);
+	    $ctx->user_id($auth_token->user_id);
+	    $ctx->token( $token);
+	}
+    }
+}
+    
     my $new_isa = $self->get_package_isa($module);
     no strict 'refs';
     local @{"${module}::ISA"} = @$new_isa;
@@ -168,7 +222,7 @@ is available via $context->client_ip.
 
 use base 'Class::Accessor';
 
-__PACKAGE__->mk_accessors(qw(user client_ip));
+__PACKAGE__->mk_accessors(qw(user_id client_ip authenticated token));
 
 sub new
 {
