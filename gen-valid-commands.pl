@@ -22,6 +22,7 @@ my %group_names;
 
 for my $cmd_file (@cmd_files)
 {
+    print STDERR "Process $cmd_file\n";
     process_cmd_file(\%groups, \%group_names, $cmd_file);
 }
 
@@ -75,7 +76,7 @@ sub process_cmd_file
 		die "Invalid #command-set line at line $.";
 	    }
 	    my $reg = $fields[1];
-	    my $re = qr/$reg/;
+	    my $re = qr/^$reg/;
 	    my $group = $fields[2];
 	    push(@list, ['regexp', $re, $group]);
 	    $have_re++;

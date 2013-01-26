@@ -15,7 +15,6 @@ our $CallContext;
 
 our %return_counts = (
         'start_session' => 1,
-        'valid_session' => 1,
         'list_files' => 2,
         'remove_files' => 0,
         'rename_file' => 0,
@@ -35,7 +34,6 @@ our %return_counts = (
 
 our %method_authentication = (
         'start_session' => 'optional',
-        'valid_session' => 'optional',
         'list_files' => 'optional',
         'remove_files' => 'optional',
         'rename_file' => 'optional',
@@ -58,7 +56,6 @@ sub _build_valid_methods
     my($self) = @_;
     my $methods = {
         'start_session' => 1,
-        'valid_session' => 1,
         'list_files' => 1,
         'remove_files' => 1,
         'rename_file' => 1,

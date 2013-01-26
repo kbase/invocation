@@ -92,7 +92,7 @@ var Terminal = new Class(
 
 	//this.baseUrl = 'http://bio-data-1.mcs.anl.gov:5000';
 	this.baseUrl = 'http://bio-data-1.mcs.anl.gov/services/invocation';
-	//this.baseUrl = 'http://ash.mcs.anl.gov:5000';
+	this.baseUrl = 'http://localhost:5000';
 	this.client = new InvocationService(this.baseUrl);
 
 	this.terminal = container;
@@ -223,10 +223,10 @@ var Terminal = new Class(
 	    }
 	    sid = args[0];
 
-	    window.$ld.login('session', 'user_id', sid);
-	    window.$ld.login('openDialog');
+//	    window.$ld.login('session', 'user_id', sid);
+//	    window.$ld.login('openDialog');
 
-	    return;
+//	    return;
 
 	    //old login code. copy and pasted into iris.html.
 	    this.client.start_session_async(sid,
@@ -551,20 +551,13 @@ var Terminal = new Class(
 	var obj = this;
 	command = command.replace(/\\\n/g, " ");
 	command = command.replace(/\n/g, " ");
-	this.client.run_pipeline2_async(this.sessionId, command, [], this.maxOutput, this.cwd,
+	this.client.run_pipeline_async(this.sessionId, command, [], this.maxOutput, this.cwd,
 				       function (runout)
 				       {
 					   if (runout)
 					   {
 					       var output = runout[0];
 					       var error = runout[1];
-					       var stdweb= runout[2];
-
-					       if (stdweb != "")
-					       {
-						   obj.out_to_div(commandDiv, stdweb);
-						   return;
-					       }
 
 					       if (output.length > 0 && output[0].indexOf("\t") >= 0)
 					       {

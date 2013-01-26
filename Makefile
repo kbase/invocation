@@ -35,7 +35,7 @@ $(SERVICE_MODULE): $(SERVICE_SPEC)
 
 bin: $(BIN_PERL)
 
-deploy: deploy-client
+deploy: build-libs deploy-client
 
 deploy-all: deploy-service deploy-client
 

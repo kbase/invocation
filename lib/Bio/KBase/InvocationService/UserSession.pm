@@ -87,7 +87,7 @@ sub _session_dir
     my($self) = @_;
 
     my $dir;
-    if ($self->ctx->authenticated)
+    if ($self->ctx && $self->ctx->authenticated)
     {
 	$dir = File::Spec->catfile($self->impl->auth_storage_dir, $self->ctx->user_id);
     }
@@ -563,7 +563,10 @@ sub run_pipeline
 	my @res = $h->results();
 	for (my $i = 0; $i <= $#res; $i++)
 	{
-	    push(@$errors, "Return code from $cmd_list[$i]: $res[$i]");
+	    if ($res[$i] != 0 || $self->impl->verbose_status)
+	    {
+		push(@$errors, "Return code from $cmd_list[$i]: $res[$i]");
+	    }
 	    push(@$errors, @{$saved_stderr[$i]});
 	}
     }

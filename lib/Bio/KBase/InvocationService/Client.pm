@@ -152,87 +152,6 @@ sub start_session
 
 
 
-=head2 valid_session
-
-  $return = $obj->valid_session($session_id)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$session_id is a string
-$return is an int
-
-</pre>
-
-=end html
-
-=begin text
-
-$session_id is a string
-$return is an int
-
-
-=end text
-
-=item Description
-
-Determine if the given session identifier is valid (has been used in the past).
-This routine is a candidate for deprecation.
-
-=back
-
-=cut
-
-sub valid_session
-{
-    my($self, @args) = @_;
-
-# Authentication: optional
-
-    if ((my $n = @args) != 1)
-    {
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
-							       "Invalid argument count for function valid_session (received $n, expecting 1)");
-    }
-    {
-	my($session_id) = @args;
-
-	my @_bad_arguments;
-        (!ref($session_id)) or push(@_bad_arguments, "Invalid type for argument 1 \"session_id\" (value was \"$session_id\")");
-        if (@_bad_arguments) {
-	    my $msg = "Invalid arguments passed to valid_session:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-								   method_name => 'valid_session');
-	}
-    }
-
-    my $result = $self->{client}->call($self->{url}, {
-	method => "InvocationService.valid_session",
-	params => \@args,
-    });
-    if ($result) {
-	if ($result->is_error) {
-	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
-					       method_name => 'valid_session',
-					      );
-	} else {
-	    return wantarray ? @{$result->result} : $result->result->[0];
-	}
-    } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method valid_session",
-					    status_line => $self->{client}->status_line,
-					    method_name => 'valid_session',
-				       );
-    }
-}
-
-
-
 =head2 list_files
 
   $return_1, $return_2 = $obj->list_files($session_id, $cwd, $d)
@@ -1337,6 +1256,8 @@ command_desc is a reference to a hash where the following keys are defined:
 =item Description
 
 Retrieve the set of valid commands.
+Note that this does not require authentication or a valid session, and thus
+may be used to set up a graphical interface before a login is done.
 
 =back
 

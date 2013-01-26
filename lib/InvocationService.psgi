@@ -50,12 +50,14 @@ $dispatch->add('/download/#*', 'handle_download');
 	my($req, $args) = @_;
 	my $session = $req->param("session_id");
 
-	if (!$obj->_validate_session($session))
+	my $us = Bio::KBase::InvocationService::UserSession->new($obj, $session, undef);
+
+	my $dir = $us->_session_dir();
+
+	if (! -d $dir)
 	{
 	    return [500, [], ["Invalid session id\n"]];
 	}
-
-	my $dir = $obj->_session_dir($session);
 
 	#
 	# Validate path given.
@@ -90,13 +92,13 @@ $dispatch->add('/download/#*', 'handle_download');
 	my @origin_hdr = ('Access-Control-Allow-Origin', $req->env->{HTTP_ORIGIN});
 
 	my $session = $req->param("session_id");
+	my $us = Bio::KBase::InvocationService::UserSession->new($obj, $session, undef);
 
-	if (!$obj->_validate_session($session))
+	my $dir = $obj->_session_dir();
+	if (!-d $dir)
 	{
 	    return [500, \@origin_hdr, ["Invalid session id\n"]];
 	}
-
-	my $dir = $obj->_session_dir($session);
 
 	#
 	# Validate path given.
@@ -187,6 +189,18 @@ $dispatch->add('/download/#*', 'handle_download');
 	}
 			print Dumper($resp);
 	return $resp;
+    }
+    sub options
+    {
+	my($req, $args) = @_;
+
+	my @origin_hdr = ('Access-Control-Allow-Origin', $req->env->{HTTP_ORIGIN},
+			  'Access-Control-Allow-Methods', $req->env->{HTTP_ACCESS_CONTROL_REQUEST_METHOD},
+			  'Access-Control-Allow-Headers', $req->env->{HTTP_ACCESS_CONTROL_REQUEST_HEADERS},
+			  'Access-Control-Expose-Headers', $req->env->{HTTP_ACCESS_CONTROL_REQUEST_HEADERS},
+			  'Access-Control-Allow-Credentials', 'true');
+
+	return [200, \@origin_hdr, []];
     }
 }
 

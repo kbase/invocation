@@ -5,18 +5,16 @@ use Data::Dumper;
 use Cwd 'abs_path';
 
 my $url;
-my $auth;
 my $nonauth;
 if (@ARGV)
 {
     $url = shift;
-    $auth = shift;
     $nonauth = shift;
 }
 
 if (!$url)
 {
-    die "Usage: $0 url auth-dir nonauth-dir\n";
+    die "Usage: $0 url nonauth-dir\n";
 }
 
 use_ok('Bio::KBase::InvocationService::Client');
@@ -72,6 +70,17 @@ is(join("", @$out), $f3);
 my $dir = "new_dir";
 $us->make_directory($session, $cwd, $dir);
 ok(-d "$nonauth/$session/$dir");
+
+#
+# List files.
+#
+
+my($dirs, $files) = $us->list_files($session, $cwd, '');
+print Dumper($dirs, $files);
+
+#
+# Change directory
+#
 
 my $newcwd = $us->change_directory($session, $cwd, $dir);
 is($newcwd, "/$dir");

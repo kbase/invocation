@@ -81,6 +81,15 @@ my $dir = "new_dir";
 $us->make_directory($cwd, $dir);
 ok(-d "$nonauth/$session/$dir");
 
+#
+# List files.
+#
+my($dirs, $files) = $us->list_files($cwd, '');
+print Dumper($dirs, $files);
+
+#
+# Change directory
+#
 my $newcwd = $us->change_directory($cwd, $dir);
 is($newcwd, "/$dir");
 
@@ -143,7 +152,7 @@ use strict;
 use base 'Class::Accessor';
 
 BEGIN {
-    __PACKAGE__->mk_accessors(qw(auth_storage_dir nonauth_storage_dir valid_commands command_path));
+    __PACKAGE__->mk_accessors(qw(auth_storage_dir nonauth_storage_dir valid_commands_hash command_path));
 }
 
 sub new
@@ -152,7 +161,7 @@ sub new
     my $self = {
 	auth_storage_dir => $d1,
 	nonauth_storage_dir => $d2,
-	valid_commands => {'cmd1', => 1, 'cmd2' => 1},
+	valid_commands_hash => {'cmd1', => 1, 'cmd2' => 1},
 	command_path => [$path],
     };
     return bless $self, $class;

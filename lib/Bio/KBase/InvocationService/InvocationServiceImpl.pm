@@ -27,7 +27,8 @@ use Bio::KBase::InvocationService::ValidCommands;
 
 use base 'Class::Accessor';
 
-__PACKAGE__->mk_accessors(qw(auth_storage_dir nonauth_storage_dir valid_commands_hash command_groups command_path));
+__PACKAGE__->mk_accessors(qw(auth_storage_dir nonauth_storage_dir valid_commands_hash command_groups command_path
+			     verbose_status));
 
 #END_HEADER
 
@@ -46,6 +47,8 @@ sub new
 
     $self->{auth_storage_dir} = $auth_storage;
     $self->{nonauth_storage_dir} = $nonauth_storage;
+
+    $self->{verbose_status} = $cfg->setting('verbose-status');
     $self->{counter} = 0;
 
     $self->{valid_commands_hash} = Bio::KBase::InvocationService::ValidCommands::valid_commands();
@@ -73,6 +76,8 @@ sub new
 }
 
 =head1 METHODS
+
+
 
 =head2 start_session
 
@@ -145,74 +150,6 @@ sub start_session
 							       method_name => 'start_session');
     }
     return($actual_session_id);
-}
-
-
-
-
-=head2 valid_session
-
-  $return = $obj->valid_session($session_id)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$session_id is a string
-$return is an int
-
-</pre>
-
-=end html
-
-=begin text
-
-$session_id is a string
-$return is an int
-
-
-=end text
-
-
-
-=item Description
-
-Determine if the given session identifier is valid (has been used in the past).
-This routine is a candidate for deprecation.
-
-=back
-
-=cut
-
-sub valid_session
-{
-    my $self = shift;
-    my($session_id) = @_;
-
-    my @_bad_arguments;
-    (!ref($session_id)) or push(@_bad_arguments, "Invalid type for argument \"session_id\" (value was \"$session_id\")");
-    if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to valid_session:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'valid_session');
-    }
-
-    my $ctx = $Bio::KBase::InvocationService::Service::CallContext;
-    my($return);
-    #BEGIN valid_session
-    return $self->_validate_session($session_id);
-    #END valid_session
-    my @_bad_returns;
-    (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
-    if (@_bad_returns) {
-	my $msg = "Invalid returns passed to valid_session:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'valid_session');
-    }
-    return($return);
 }
 
 
@@ -1043,6 +980,9 @@ sub run_pipeline2
     return($output, $errors, $stdweb);
 }
 
+
+
+
 =head2 exit_session
 
   $obj->exit_session($session_id)
@@ -1096,6 +1036,9 @@ sub exit_session
     return();
 }
 
+
+
+
 =head2 valid_commands
 
   $return = $obj->valid_commands()
@@ -1139,6 +1082,8 @@ command_desc is a reference to a hash where the following keys are defined:
 =item Description
 
 Retrieve the set of valid commands.
+Note that this does not require authentication or a valid session, and thus
+may be used to set up a graphical interface before a login is done.
 
 =back
 

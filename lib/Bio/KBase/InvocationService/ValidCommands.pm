@@ -628,7 +628,6 @@ our @command_groups = (
    { name => 'id_server', title => 'ID Server Scripts', items => [
 	{ cmd => 'external_ids_to_kbase_ids', link => '' },
 	{ cmd => 'kbase_ids_to_external_ids', link => '' },
-	{ cmd => 'register-genome-dir', link => '' },
    ]},
 );
 

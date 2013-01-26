@@ -72,6 +72,17 @@ my $dir = "new_dir";
 $us->make_directory($session, $cwd, $dir);
 ok(-d "$sdir/$dir");
 
+#
+# List files.
+#
+
+my($dirs, $files) = $us->list_files($session, $cwd, '');
+print Dumper($dirs, $files);
+
+#
+# Change directory
+#
+
 my $newcwd = $us->change_directory($session, $cwd, $dir);
 is($newcwd, "/$dir");
 
