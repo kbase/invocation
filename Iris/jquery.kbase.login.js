@@ -77,11 +77,13 @@
 
         for (var i = 0; i < pairs.length; i++) {
             var set = pairs[i].split('=');
+            set[1] = set[1].replace('PIPESIGN', '|');
+            set[1] = set[1].replace('EQUALSSIGN', '=');
             chips[set[0]] = set[1];
         }
 
         chips.success = 1;
-console.log(chips);
+
         return chips;
     },
 
@@ -747,8 +749,12 @@ console.log(chips);
                                     var fields = this.options.fields;
 
                                     for (var i = 0; i < fields.length; i++) {
-                                        args[fields[i]] = data[fields[i]];
-                                        cookieArray.push(fields[i] + '=' + data[fields[i]]);
+                                        //quick 'n dirty escaping 'til I put in something better
+                                        var value = data[fields[i]];
+                                        args[fields[i]] = value;
+                                        value = value.replace(/=/g, 'EQUALSSIGN');
+                                        value = value.replace(/\|/g, 'PIPESIGN');
+                                        cookieArray.push(fields[i] + '=' + value);
                                     }
 
                                     $.cookie('kbase_session', cookieArray.join('|'));
