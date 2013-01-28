@@ -110,6 +110,7 @@
                 this.data('_session', kbaseCookie);
 
             }
+            this.data('foobar', 'baz');
 
         },
 
@@ -271,6 +272,8 @@
                         this.data('password').val('');
                         this.data("loggedinuser_id").text(args.name);
                         this.data("userdisplay").show();
+                        this.data('loginDialog').trigger('clearMessages');
+                        this.data('loginDialog').dialog('close');
                     }
                     else {
                         $(function() {
@@ -341,6 +344,8 @@
                     this
                 )
             );
+
+            this._createLoginDialog();
 
             return $prompt;
 
@@ -649,7 +654,8 @@
                             $('form', $ld).get(0).reset();
                             //assign the user_id, if one is provided.
                             $ld.data("user_id").focus();
-                            $ld.data("user_id").val( this.session('user_id') || this.options.user_id );
+
+                            $ld.data("user_id").val( this.session('user_id') || this.data('user_id') || this.options.user_id );
                             delete this.options.user_id;
                             this.session('user_id',undefined);
                             if ($ld.data('user_id').val()) {
