@@ -60,7 +60,7 @@
             //loginURL : "http://kbase.us/services/authorization/Sessions/Login",
             login_button_options : {label : 'Login'},
             possibleFields : ['verified','name','opt_in','kbase_sessionid','token','groups','user_id','email','system_admin'],
-            fields : ['name', 'kbase_sessionid', 'user_id','token'],
+            fields : ['name', 'kbase_sessionid', 'user_id', 'token'],
         },
 
     get_kbase_cookie : function () {
@@ -81,7 +81,7 @@
         }
 
         chips.success = 1;
-
+console.log(chips);
         return chips;
     },
 
@@ -655,7 +655,7 @@
                             //assign the user_id, if one is provided.
                             $ld.data("user_id").focus();
 
-                            $ld.data("user_id").val( this.session('user_id') || this.data('user_id') || this.options.user_id );
+                            $ld.data("user_id").val( this.session('user_id') || this.data('passed_user_id') || this.options.user_id );
                             delete this.options.user_id;
                             this.session('user_id',undefined);
                             if ($ld.data('user_id').val()) {

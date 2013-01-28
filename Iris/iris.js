@@ -255,7 +255,7 @@ var Terminal = new Class(
 	    }
 	    sid = args[0];
 
-	    window.$ld.login('data', 'user_id', sid);
+	    window.$ld.login('data', 'passed_user_id', sid);
 	    window.$ld.login('openDialog');
 
 	    return;
