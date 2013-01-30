@@ -145,6 +145,16 @@
             return this.client;
         },
 
+        authToken : function() {
+            var cookieObj = this.$loginbox.login('get_kbase_cookie');
+            if (cookieObj != undefined) {
+                return cookieObj['token'];
+            }
+            else {
+                return undefined;
+            }
+        },
+
         appendInput : function(text) {
             if (this.input_box) {
                 this.input_box.val(this.input_box.val() + ' ' + text);
@@ -821,12 +831,12 @@
                                         )
                                     );
                                 }
-                                else {
-                                    this.out_to_div($commandDiv, "Error running command.");
-                                }
                             }
-                            this.scroll();
                         }
+                        else {
+                            this.out_to_div($commandDiv, "Error running command.");
+                        }
+                        this.scroll();
                     },
                     this
                 )
