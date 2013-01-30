@@ -77,8 +77,8 @@
 
         for (var i = 0; i < pairs.length; i++) {
             var set = pairs[i].split('=');
-            set[1] = set[1].replace('PIPESIGN', '|');
-            set[1] = set[1].replace('EQUALSSIGN', '=');
+            set[1] = set[1].replace(/PIPESIGN/g, '|');
+            set[1] = set[1].replace(/EQUALSSIGN/g, '=');
             chips[set[0]] = set[1];
         }
 
