@@ -199,10 +199,10 @@ function InvocationService(url) {
 
     function json_call_ajax_sync(method, params)
     {
-        var rpc = { 'params' : params,
-                    'method' : method,
-                    'version': "1.1",
-        };
+	var rpc = { 'params' : params,
+		    'method' : method,
+		    'version': "1.1",
+	};
         
         var body = JSON.stringify(rpc);
         var resp_txt;

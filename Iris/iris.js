@@ -44,7 +44,7 @@ var CommandHistory = new Class(
 	    {
 		dbg("error on history load: " + e);
 	    }
-	},
+	}
     }
 );
 
@@ -75,7 +75,7 @@ var CommandHistoryPosition = new Class(
 	},
 	value: function() {
 	    return this.history.item(this.pos);
-	},
+	}
     }
 );
 

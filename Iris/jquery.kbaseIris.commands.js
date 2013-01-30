@@ -13,7 +13,7 @@
             link : function (evt) {
                 alert("clicked on " + $(evt.target).text());
             },
-            englishCommands : 1,
+            englishCommands : 1
         },
 
         _create : function() {
@@ -124,7 +124,7 @@
 
             $elem.accordion({autoHeight : false, collapsible : true, fillSpace : true, active : false });
 
-        },
+        }
 
 
     });

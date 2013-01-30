@@ -60,7 +60,7 @@
             //loginURL : "http://kbase.us/services/authorization/Sessions/Login",
             login_button_options : {label : 'Login'},
             possibleFields : ['verified','name','opt_in','kbase_sessionid','token','groups','user_id','email','system_admin'],
-            fields : ['name', 'kbase_sessionid', 'user_id'],
+            fields : ['name', 'kbase_sessionid', 'user_id']
         },
 
     get_kbase_cookie : function () {
@@ -641,7 +641,7 @@
 
                             },
                             this
-                        ),
+                        )
                     },
                     open : $.proxy(
                         function() {
@@ -666,7 +666,7 @@
                             });
                         },
                         this
-                    ),
+                    )
                 }
 
             );
@@ -779,7 +779,7 @@
                          beforeSend : function(xhr){
                             // make cross-site requests
                             xhr.withCredentials = true;
-                         },
+                         }
                    }
                 );
             }

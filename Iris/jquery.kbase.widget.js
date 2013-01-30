@@ -51,9 +51,7 @@
             );
 
             return $elem;
-        },
-
-
+        }
     });
 
 }( jQuery ) );
