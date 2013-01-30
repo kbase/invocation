@@ -57,7 +57,7 @@ sub validate_path
     if ($ap =~ /^$base/ || $ap eq '/dev/null') {
         return $ap;
     } else {
-        die "Invalid path $ap";
+        die "Invalid path $ap (base=$base dir=$dir cwd=$cwd)";
     }
 }
 
@@ -90,9 +90,19 @@ sub _session_dir
     if ($self->ctx && $self->ctx->authenticated)
     {
 	$dir = File::Spec->catfile($self->impl->auth_storage_dir, $self->ctx->user_id);
+	print STDERR "Construct dir from storage=" . $self->impl->auth_storage_dir . " userid=" . $self->ctx->user_id . "\n";
+
+	#
+	# If we come in here and somehow the directory isn't yet created, go ahead and create it.
+	#
+	if (! -d $dir)
+	{
+	    mkdir($dir) or die "Error setting up session directory $dir: $!";
+	}
     }
     else
     {
+	print STDERR "Construct dir from nonauth storage=" . $self->impl->nonauth_storage_dir . " sessionid=" . $self->session_id . "\n";
 	$dir = File::Spec->catfile($self->impl->nonauth_storage_dir, $self->session_id);
     }
     return $dir;
@@ -139,7 +149,7 @@ sub validate_path
     if ($ap =~ /^$base/) {
         return $ap;
     } else {
-        die "Invalid path '$ap'";
+        die "Invalid path '$ap' (cwd='$cwd' base='$base' dir='$dir')";
     }
 
 
@@ -442,6 +452,27 @@ sub run_pipeline
 
     my $harness;
 
+    my %env;
+
+    #
+    # Compute environment for our subprocesses. We set these in the IPC::Run
+    # init hook so that we don't pollute the environment of the service itself.
+    #
+
+    $env{KB_RUNNING_IN_IRIS} = 1;
+    if ($self->ctx->authenticated)
+    {
+	$env{KB_IRIS_FOLDER} = '';
+	$env{KB_AUTH_TOKEN} = $self->ctx->token;
+	$env{KB_AUTH_USER_ID} = $self->ctx->user_id;
+    }
+    else
+    {
+	$env{KB_IRIS_FOLDER} = $self->session_id;
+	$env{KB_AUTH_TOKEN} = $self->ctx->token;
+	$env{KB_AUTH_USER_ID} = $self->ctx->user_id;
+    }
+
     my $dir = $self->validate_path($cwd);
     my @cmd_list;
     my @saved_stderr;
@@ -461,7 +492,6 @@ sub run_pipeline
 	    next;
 	}
 
-	
 	if (@cmds)
 	{
 	    push(@cmds, '|');
@@ -477,6 +507,7 @@ sub run_pipeline
 	}
 	push(@cmds, [$cmd_path, map { s/\\t/\t/g; $_ } @$args]);
 	push @cmds, init => sub {
+	    $ENV{$_} = $env{$_} foreach keys %env;
 	    chdir $dir or die $!;
 	};
 	my $have_output_redirect;

@@ -29,8 +29,8 @@ $(SERVICE_MODULE): $(SERVICE_SPEC)
 		--impl $(SERVICE_PACKAGE)::$(BASE_NAME)Impl \
 		--service $(SERVICE_PACKAGE)::Service \
 		--client $(SERVICE_PACKAGE)::Client \
-		--js javascript/$(SERVICE_NAME)/Client \
-		--py biokbase/$(SERVICE_NAME)/Client \
+		--js $(BASE_NAME) \
+		--py biokbase/$(BASE_NAME)/Client \
 		$(SERVICE_SPEC) lib
 
 bin: $(BIN_PERL)

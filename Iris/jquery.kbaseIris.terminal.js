@@ -9,7 +9,8 @@
     $.widget("kbaseIris.terminal", $.kbase.widget, {
         version: "1.0.0",
         options: {
-            invocationURL : 'http://bio-data-1.mcs.anl.gov/services/invocation',
+            invocationURL : 'http://localhost:5000',
+//            invocationURL : 'http://bio-data-1.mcs.anl.gov/services/invocation',
             maxOutput : 100,
             scrollSpeed : 750,
             terminalHeight : '500px'
@@ -51,7 +52,21 @@
                 this.client = this.options.client;
             }
             else {
-                this.client = new InvocationService(this.options.invocationURL);
+                this.client = new InvocationService(this.options.invocationURL, undefined,
+						    jQuery.proxy(function() {
+							    var cookie_obj = this.$loginbox.login('get_kbase_cookie');
+							    if (cookie_obj)
+							    {
+								var token = cookie_obj['token'];
+								this.dbg("returning token from auth_cb " + token);
+								return token;
+							    }
+							    else
+							    {
+								this.dbg("returning undef from auth_cb ");
+								return undefined;
+							    }
+							}, this));
             }
 
             this.$loginbox =
@@ -185,7 +200,7 @@
             );
             this.input_box.bind(
                 "onchange",
-                jQuery.proxy(function(event) { dbg("change"); }, this)
+                jQuery.proxy(function(event) { this.dbg("change"); }, this)
             );
 
 
@@ -248,9 +263,9 @@
                     },
                     this
                 ),
-                function (e) {
+                jQuery.proxy(function (e) {
                     this.dbg("error on history load : " + e);
-                }
+		    }, this)
             );
         },
 
@@ -797,9 +812,6 @@
                                             this
                                         )
                                     );
-                                }
-                                else {
-                                    this.out_to_div($commandDiv, "Error running command.");
                                 }
                             }
                             this.scroll();
