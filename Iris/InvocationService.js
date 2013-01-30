@@ -100,7 +100,7 @@ function InvocationService(url,auth) {
 
     this.change_directory_async = function(session_id, cwd, directory, _callback, _error_callback)
     {
-        json_call_ajax_async("InvocationService.change_directory", [session_id, cwd, directory], 1, _callback, _error_callback)
+        json_call_ajax_async("InvocationService.change_directory", [session_id, cwd, directory], 0, _callback, _error_callback)
     }
 
     this.put_file = function(session_id, filename, contents, cwd)
