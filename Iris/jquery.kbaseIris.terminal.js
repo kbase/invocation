@@ -413,6 +413,13 @@
                 return;
             }
 
+            if (m = command.match(/^logout/)) {
+
+                this.$loginbox.login('logout');
+
+                return;
+            }
+
 
             if (! this.sessionId) {
                 this.out_to_div($commandDiv, "You are not logged in.");
