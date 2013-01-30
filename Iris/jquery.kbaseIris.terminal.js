@@ -227,23 +227,31 @@
         dbg : function (txt) { if (window.console) console.log(txt); },
 
         saveCommandHistory : function() {
-            this.client.put_file(
+            this.client.put_file_async(
                 this.sessionId,
                 "history",
                 JSON.stringify(this.commandHistory),
-                "/"
+                "/",
+                function() {},
+                function() {}
             );
         },
 
         loadCommandHistory : function() {
-            try {
-                var txt = this.client.get_file(this.sessionId, "history", "/");
-                this.commandHistory = JSON.parse(txt);
-                this.commandHistoryPosition = this.commandHistory.length;
-            }
-            catch (e) {
-                dbg("error on history load : " + e);
-            }
+            this.client.get_file_async(
+                this.sessionId,
+                "history", "/",
+                jQuery.proxy(
+                    function (txt) {
+                        this.commandHistory = JSON.parse(txt);
+                        this.commandHistoryPosition = this.commandHistory.length;
+                    },
+                    this
+                ),
+                function (e) {
+                    this.dbg("error on history load : " + e);
+                }
+            );
         },
 
         set_session: function(session) {
@@ -501,7 +509,7 @@
                     return;
                 }
                 dir = args[0];
-                this.client.make_directory(this.sessionId, this.cwd, dir);
+                this.client.make_directory_async(this.sessionId, this.cwd, dir, function () {}, function () {});
                 return;
             }
 
@@ -512,7 +520,7 @@
                     return;
                 }
                 dir = args[0];
-                this.client.remove_directory(this.sessionId, this.cwd, dir);
+                this.client.remove_directory_async(this.sessionId, this.cwd, dir, function () {}, function () {});
                 return;
             }
 
