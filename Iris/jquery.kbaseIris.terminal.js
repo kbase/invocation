@@ -13,7 +13,8 @@
 //            invocationURL : 'http://bio-data-1.mcs.anl.gov/services/invocation',
             maxOutput : 100,
             scrollSpeed : 750,
-            terminalHeight : '500px'
+            terminalHeight : '500px',
+            promptIfUnauthenticated : 1,
         },
 
         _create : function() {
@@ -74,35 +75,43 @@
                     {
                         style : 'hidden',
                         login_callback :
-                        jQuery.proxy(
-                            function(args) {
-                                if (args.success) {
-                                    this.out_line();
-                                    this.client.start_session_async(
-                                        args.user_id,
-                                        jQuery.proxy(
-                                            function (newsid) {
-                                                this.set_session(args.user_id);
-                                                this.loadCommandHistory();
-                                                this.out("Set session to " + args.user_id);
-                                            },
-                                            this
-                                        ),
-                                        jQuery.proxy(
-                                            function (err) {
-                                                this.out("<i>Error on session_start:<br>" +
-                                                err.message.replace("\n", "<br>\n") + "</i>");
-                                            },
-                                            this
-                                        )
-                                    );
+                            jQuery.proxy(
+                                function(args) {
+                                    if (args.success) {
+                                        this.out_line();
+                                        this.client.start_session_async(
+                                            args.user_id,
+                                            jQuery.proxy(
+                                                function (newsid) {
+                                                    this.set_session(args.user_id);
+                                                    this.loadCommandHistory();
+                                                    this.out("Set session to " + args.user_id);
+                                                    this.scroll();
+                                                },
+                                                this
+                                            ),
+                                            jQuery.proxy(
+                                                function (err) {
+                                                    this.out("<i>Error on session_start:<br>" +
+                                                    err.message.replace("\n", "<br>\n") + "</i>");
+                                                },
+                                                this
+                                            )
+                                        );
 
-                                    this.kbase_sessionid = args.kbase_sessionid;
-                                    this.input_box.focus();
-                                }
-                            },
-                            this
-                        )
+                                        this.kbase_sessionid = args.kbase_sessionid;
+                                        this.input_box.focus();
+                                    }
+                                },
+                                this
+                            ),
+                        logout_callback :
+                            jQuery.proxy(
+                                function() {
+                                    this.sessionId = undefined;
+                                },
+                                this
+                            )
                     }
                 );
 
@@ -131,11 +140,11 @@
                     this.loadCommandHistory();
                     this.out_to_div(commandDiv, "Set session to " + cookie.user_id);
                 }
-                else {
+                else if (this.options.promptIfUnauthenticated) {
                     this.$loginbox.login('openDialog');
                 }
             }
-            else {
+            else if (this.options.promptIfUnauthenticated) {
                 this.$loginbox.login('openDialog');
             }
 
@@ -149,6 +158,16 @@
 
         getClient : function() {
             return this.client;
+        },
+
+        authToken : function() {
+            var cookieObj = this.$loginbox.login('get_kbase_cookie');
+            if (cookieObj != undefined) {
+                return cookieObj['token'];
+            }
+            else {
+                return undefined;
+            }
         },
 
         appendInput : function(text) {
@@ -413,10 +432,17 @@
                 return;
             }
 
-            if (m = command.match(/^logout/)) {
+            if (m = command.match(/^unauthenticate/)) {
 
                 this.$loginbox.login('logout');
+                this.scroll();
+                return;
+            }
 
+            if (m = command.match(/^logout/)) {
+
+                this.sessionId = undefined;
+                this.scroll();
                 return;
             }
 
@@ -821,8 +847,11 @@
                                     );
                                 }
                             }
-                            this.scroll();
                         }
+                        else {
+                            this.out_to_div($commandDiv, "Error running command.");
+                        }
+                        this.scroll();
                     },
                     this
                 )
