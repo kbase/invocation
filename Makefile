@@ -14,14 +14,23 @@ VALID_COMMANDS = "$(SERVICE_PACKAGE_DIR)/ValidCommands.pm"
 SERVICE = invocation
 SERVICE_PORT = 7049
 
+IRIS_WEBROOT = $(SERVICE_DIR)/webroot/Iris
+
+#
+# For debugging / development
+#
+# For deployment, this will be overridden by the value from the deployment config file.
+#
+SERVICE_URL = http://localhost:$(SERVICE_PORT)
+
 TPAGE_ARGS = --define kb_top=$(TARGET) --define kb_runtime=$(DEPLOY_RUNTIME) --define kb_service_name=$(SERVICE) \
-	--define kb_service_port=$(SERVICE_PORT)
+	--define kb_service_port=$(SERVICE_PORT) --define kb_service_url=$(SERVICE_URL)
 
 all: build-libs bin
 
 build-libs: $(SERVICE_MODULE) $(VALID_COMMANDS)
 
-$(VALID_COMMANDS): ../*/COMMANDS
+$(VALID_COMMANDS): ../*/COMMANDS module_commands module_commands/*
 	perl gen-valid-commands.pl > $(VALID_COMMANDS)
 
 $(SERVICE_MODULE): $(SERVICE_SPEC)
@@ -39,13 +48,22 @@ deploy: build-libs deploy-client
 
 deploy-all: deploy-service deploy-client
 
-deploy-client: deploy-docs
+deploy-client: deploy-docs deploy-scripts
 
-deploy-service: deploy-monit deploy-libs
+deploy-service: deploy-monit deploy-libs deploy-iris
 	$(TPAGE) $(TPAGE_ARGS) service/start_service.tt > $(TARGET)/services/$(SERVICE)/start_service
 	chmod +x $(TARGET)/services/$(SERVICE)/start_service
 	$(TPAGE) $(TPAGE_ARGS) service/stop_service.tt > $(TARGET)/services/$(SERVICE)/stop_service
 	chmod +x $(TARGET)/services/$(SERVICE)/stop_service
+
+#
+# Deploy the Iris interface.
+# 
+deploy-iris: 
+	mkdir -p $(IRIS_WEBROOT)/Iris
+	rsync -arv Iris/. $(IRIS_WEBROOT)
+	cp lib/$(BASE_NAME).js $(IRIS_WEBROOT)/$(BASE_NAME).js
+	$(TPAGE) $(TPAGE_ARGS) iris-index.html.tt > $(IRIS_WEBROOT)/index.html
 
 deploy-monit:
 	$(TPAGE) $(TPAGE_ARGS) service/process.$(SERVICE).tt > $(TARGET)/services/$(SERVICE)/process.$(SERVICE)
