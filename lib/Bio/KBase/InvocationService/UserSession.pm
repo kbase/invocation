@@ -104,6 +104,13 @@ sub _session_dir
     {
 	print STDERR "Construct dir from nonauth storage=" . $self->impl->nonauth_storage_dir . " sessionid=" . $self->session_id . "\n";
 	$dir = File::Spec->catfile($self->impl->nonauth_storage_dir, $self->session_id);
+	#
+	# If we come in here and somehow the directory isn't yet created, go ahead and create it.
+	#
+	if (! -d $dir)
+	{
+	    mkdir($dir) or die "Error setting up session directory $dir: $!";
+	}
     }
     return $dir;
 }
