@@ -13,12 +13,18 @@ our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(valid_commands command_groups);
 
 our @command_groups = (
+   { name => 'genopheno', title => 'Genotype/Phenotype Scripts', items => [
+	{ cmd => 'chromosome_position_from_variation_details', link => '' },
+	{ cmd => 'find_common_snps', link => '' },
+	{ cmd => 'get_experiments', link => '' },
+	{ cmd => 'get_traits', link => '' },
+	{ cmd => 'selected_locations_to_genes', link => '' },
+	{ cmd => 'traits_to_genes', link => '' },
+	{ cmd => 'traits_to_variations', link => '' },
+	{ cmd => 'variations_to_genes', link => '' },
+   ]},
    { name => 'invocation', title => 'Invocation Service Commands', items => [
 	{ cmd => 'invocation_info', link => '' },
-   ]},
-   { name => 'id_server', title => 'ID Server Scripts', items => [
-	{ cmd => 'external_ids_to_kbase_ids', link => '' },
-	{ cmd => 'kbase_ids_to_external_ids', link => '' },
    ]},
    { name => 'genome_annotation', title => 'Genome Annotation Scripts', items => [
 	{ cmd => 'a_and_b', link => '' },
@@ -49,6 +55,10 @@ our @command_groups = (
 	{ cmd => 'sort_by_id', link => '' },
 	{ cmd => 'sort_by_loc', link => '' },
 	{ cmd => 'tabs2rel', link => '' },
+   ]},
+   { name => 'id_server', title => 'ID Server Scripts', items => [
+	{ cmd => 'external_ids_to_kbase_ids', link => '' },
+	{ cmd => 'kbase_ids_to_external_ids', link => '' },
    ]},
    { name => 'cs', title => 'Central Store Scripts', items => [
 	{ cmd => 'a_and_b', link => '' },

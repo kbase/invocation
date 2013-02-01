@@ -66,6 +66,12 @@ for my $module (@modules)
 my @group_ents;
 for my $gkey (@groups)
 {
+    my $list = $groups{$gkey};
+    if (!ref($list) || @$list == 0)
+    {
+	warn "No items found for $gkey\n";
+	next;
+    }
     my @items = map { { cmd => $_, link => '' } } sort { $a cmp $b } @{$groups{$gkey}};
     my $group = {
 	title => ($group_names{$gkey} or $gkey),

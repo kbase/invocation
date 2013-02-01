@@ -1,0 +1,2 @@
+#group-name	genopheno	Genotype/Phenotype Scripts
+#command-set	scripts/(.*).pl	genopheno
