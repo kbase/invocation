@@ -122,7 +122,7 @@
 
         loadedCallback : function($elem) {
 
-            $elem.accordion({autoHeight : false, collapsible : true, fillSpace : true, active : false });
+            $elem.accordion({heightStyle : 'fill', collapsible : true, active : false });
 
         },
 

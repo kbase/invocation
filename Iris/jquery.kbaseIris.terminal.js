@@ -351,6 +351,7 @@
         out_to_div: function($div, text, scroll) {
             $div.append(
                 $('<div></div>')
+                    .css('white-space', 'pre')
                     .html(text)
                 );
             if (scroll) {
@@ -415,6 +416,7 @@
                         this
                     )
                 );
+                this.scroll();
                 return;
             }
 
@@ -449,6 +451,7 @@
 
             if (! this.sessionId) {
                 this.out_to_div($commandDiv, "You are not logged in.");
+                this.scroll();
                 return;
             }
 
@@ -626,6 +629,7 @@
                                 text += "<br>Type <i>next</i> to move to the next step in the tutorial.";
                             }
                             this.out_to_div($commandDiv, text);
+                            this.scroll();
                         },
                         this
                     ),
@@ -633,6 +637,7 @@
                         function (err) {
                             var m = err.message.replace("\n", "<br>\n");
                             this.out_to_div($commandDiv, "<i>Error received:<br>" + err.code + "<br>" + m + "</i>");
+                            this.scroll();
                         },
                         this
                     )
@@ -712,7 +717,7 @@
                             var files = filelist[1];
 
                             var $tbl = $('<table></table>')
-                                .attr('border', 1);
+                                //.attr('border', 1);
 
                             jQuery.each(
                                 dirs,
@@ -797,7 +802,7 @@
                             if (output.length > 0 && output[0].indexOf("\t") >= 0) {
 
                                 var $tbl = $('<table></table>')
-                                    .attr('border', 1);
+                                    //.attr('border', 1);
 
                                 jQuery.each(
                                     output,
