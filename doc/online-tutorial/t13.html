@@ -1,0 +1,16 @@
+
+We can run a gapfilling command on our model to automatically add reactions as needed to
+enable the production of all biomass components:
+
+<pre>
+  gapfill_fbamodel < initial.model > gapfilled.model
+</pre>
+
+<p>&nbsp;</p>
+<p>Depending on the size and state of the genome, this could take minutes to hours, but 
+when the analysis is complete, your model will have additional reactions in it, reflecting
+the ideal solution identified by the gapfilling algorithm to enable growth. Now we can 
+rerun our flux balance analysis to determine the biomass production pathways of our organism.
+</p>
+
+<p>

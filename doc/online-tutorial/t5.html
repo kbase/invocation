@@ -1,0 +1,18 @@
+
+The next step is to use the FASTA file of contigs to create a <i>genome object</i>, which is done using
+<br>
+<pre>
+
+  fasta_to_genome 'Geobacter sulfurreducens KN400' Bacteria 11 < g.2860.contigs > genome
+
+</pre>
+This creates a "genome object" in the file <i>genome</i>.  The object contains the contigs, 
+the scientific name of the organism, the domain (we specified 'B' for <i>Bacteria</i>), and
+the genetic code for the organism (i.e., 11, which is the code most commonly used with prokaryotic genomes).
+Use an <b>ls</b> to see the file, and then you could click on it to see the encoded fields).
+Note that, while we have named our project subdirectory <i>g.2860</i> that reflects the name of the
+genome whose contigs we copied.  We are going to re-annotate the contigs, generating a whole new
+genome, which is what <b>fasta_to_genome</b> does; it registers a new genome ID that will not be used
+by anyone else.
+
+<p>

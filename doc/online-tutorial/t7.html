@@ -1,0 +1,22 @@
+
+This is not the place to characterize what is meant by "metabolic reconstruction", but as we use the term 
+here we mean roughly <i>a set of <a href="http://www.theseed.org/wiki/Glossary#Subsystem" target=blank_>
+subsystems</a> that are believed to be present in the genome, along with
+the relevant variant codes</i>.
+You can get a metabolic reconstruction for the annotated genome using a command like
+<br>
+<pre>
+  genomeTO_to_reconstructionTO < annotated.genome > reconstruction
+<br></pre>
+Now, to see the roles that were found, use 
+<br>
+<pre>
+  reconstructionTO_to_roles < reconstruction > roles
+<br></pre>
+To see the subsystems (along with the variant codes that seemed appropriate), use
+<br>
+<pre>
+  reconstructionTO_to_subsystems < reconstruction > subsystems
+<br></pre>
+
+<p>

@@ -73,6 +73,6 @@ deploy-docs:
 	mkdir -p $(SERVICE_DIR)/webroot
 	rm -f doc/*html
 	$(DEPLOY_RUNTIME)/bin/perl $(DEPLOY_RUNTIME)/bin/pod2html -t "Invocation Service API" lib/Bio/KBase/$(BASE_NAME)/$(BASE_NAME)Impl.pm > doc/invocation_api.html
-	cp doc/*html $(SERVICE_DIR)/webroot
+	rsync -arv doc/. $(SERVICE_DIR)/webroot/.
 
 include $(TOP_DIR)/tools/Makefile.common.rules

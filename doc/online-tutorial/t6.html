@@ -1,0 +1,26 @@
+
+Now we can create an initial annotation for the genome using
+<br>
+<pre>
+
+  annotate_genome < genome > annotated.genome
+
+</pre>
+
+This causes an initial annotation to be generated.  Note that it may well take a few minutes, and for large genomes
+some several minutes.  You can do other commands while you wait, and the completion message will show up
+(below the command) when the annotation is complete.  You should try it.  When it completes use the <b>ls</b>
+to see the generated file, and click on it to see the encoded annotations.  Alternatively, to the the features
+generated and placed in the annotated genome object (stored in <i>annotated.genome</i>, try
+<br>
+<pre>
+  genomeTO_to_feature_data < annotated.genome > features.txt
+</br></pre>
+which produces a tab-separated table containing 
+<br>
+<pre>
+  [feature-id,location,type,assigned-function]
+ <br></pre>
+Use <b>ls</b> to see it and explore the contents.
+
+<p>

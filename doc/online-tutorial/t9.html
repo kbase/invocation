@@ -1,0 +1,22 @@
+
+Now, suppose that you wished to compare this set of Roles against the set found in
+<i>Geobacter metallireducens GS-15</i> (<i>kb|g.9032</i> in the CS).  You can get the roles for
+that genome using
+<br>
+<pre>
+  echo 'kb|g.9032' | genomes_to_fids CDS | fids_to_roles 2> /dev/null | <br />  cut -f 3 > roles.in.g.9032
+<br></pre>
+Before you run it, note that the command <b>fids_to_roles</b> writes error messages when it cannot match
+a fid to any Roles.
+<p>
+Now you can use
+<br>
+<pre>
+  a_and_b roles.in.g.9032 all.roles > roles.for.models.g.9032
+  a_not_b roles.for.models roles.for.models.g.9032 > roles.to.search.for
+<br></pre>
+
+to create a file of Roles in <i>kb|g.9032</i>, but not yet found in the annotations we
+got back for our new version of <i>g.2860</i>.
+
+<p>

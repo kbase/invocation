@@ -1,0 +1,25 @@
+
+Flux balance analysis is a mathematical approach whereby our model is used to simulate
+various cellular activities, typical the production of biomass or metabolites from
+transportable nutrients. Now that we have a model, let's apply flux balance analysis to
+determine if our model can grow, as well as which pathways are utilized during growth:
+
+<pre>
+  runfba < initial.model > solution.html
+</pre>
+
+<p>&nbsp;</p>
+<p>The results from the FBA are printed in HTML in the output solution file. Simply run the
+<i>ls</i> command and click on the html file to view the solution. At the top of this file
+is a table of the parameters used to run the FBA. Directly below this table, is another 
+table showing the objective function and value. In all likely hood, your model did not grow
+at all. this is because the model is missing pathways needed for biomass production. When 
+a model fails to grow, the FBA command does attempt to diagnose the problem by identifying
+biomass components that cannot be produced. This is done by maximizing the production of 
+each individual biomass component one at a time. You can see these analysis results in your
+solution HTML file (see the metabolite production table). Note, some of your biomass components
+have no numbers in this table. These are the components that cannot be produced. Let's try
+and fix our model by adding reactions to enable production of these components. 
+</p>
+
+<p>
