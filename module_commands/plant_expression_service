@@ -1,0 +1,2 @@
+#group-name	plant_ex	Plant Expression Service Scripts
+#command-set	scripts/(.*).pl	plant_ex

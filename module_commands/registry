@@ -1,0 +1,2 @@
+#group-name	registry	Registry Service Scripts
+#command-set	scripts/(.*).pl	registry

@@ -1,0 +1,2 @@
+#group-name	prom	PROM Service Scripts
+#command-set	scripts/(.*).pl	prom
