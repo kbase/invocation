@@ -31,6 +31,7 @@ files, and exposes a limited set of shell command functionality.
 sub new
 {
     my($class, $url, @args) = @_;
+    
 
     my $self = {
 	client => Bio::KBase::InvocationService::Client::RpcClient->new,

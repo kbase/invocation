@@ -13,10 +13,6 @@ our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(valid_commands command_groups);
 
 our @command_groups = (
-   { name => 'translation', title => 'Translation Service Scripts', items => [
-	{ cmd => 'fids_to_moLocusIds', link => '' },
-	{ cmd => 'table_loader', link => '' },
-   ]},
    { name => 'prom', title => 'PROM Service Scripts', items => [
 	{ cmd => 'prom-change-expression-data-namespace', link => '' },
 	{ cmd => 'prom-change-regulatory-network-namespace', link => '' },

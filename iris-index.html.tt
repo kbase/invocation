@@ -85,7 +85,7 @@
                     <div id = 'floating'>
                         <img src = './img/kbase_logo.png'/ width = '220'>
 
-                        <div class = 'ui-widget' style = 'height : 350px'>
+                        <div class = 'ui-widget' style = 'height : 550'>
 
                             <div id="file-uploader"></div>
                             <br clear = 'both' />
@@ -94,7 +94,7 @@
                                 Command list
                             </h3>
 
-                            <div style = 'width : 250px' id = 'command-list'>
+                            <div style = 'width : 250px;' 'id = command-list'>
 
                             </div>
 
