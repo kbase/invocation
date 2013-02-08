@@ -170,9 +170,11 @@
             }
         },
 
-        appendInput : function(text) {
+        appendInput : function(text, spacer) {
             if (this.input_box) {
-                this.input_box.val(this.input_box.val() + ' ' + text);
+                var space = spacer == undefined ? ' ' : '';
+
+                this.input_box.val(this.input_box.val() + space + text);
                 this.input_box.focusEnd();
             }
         },
@@ -329,6 +331,72 @@
                     this.commandHistoryPosition++;
                 }
                 this.input_box.val(this.commandHistory[this.commandHistoryPosition]);
+            }
+            else if (event.which == $.ui.keyCode.RIGHT) {
+                event.preventDefault();
+                if (this.options.commandsElement) {
+
+                    var toComplete = this.input_box.val().match(/([^\s]+)\s*$/);
+                    if (toComplete.length) {
+                        toComplete = toComplete[1];
+
+                        var completions = this.options.commandsElement.commands('completeCommand', toComplete);
+                        if (completions.length == 1) {
+                            var completion = completions[0].replace(new RegExp('^' + toComplete), '');
+                            this.appendInput(completion + ' ', 0);
+                        }
+                        else if (completions.length) {
+
+                            var $commandDiv = $('<div></div>');
+                            this.terminal.append($commandDiv);
+
+                            var $tbl = $('<table></table>')
+                                .attr('border', 1)
+                                .css('margin-top', '10px')
+                                .append(
+                                    $('<tr></tr>')
+                                        .append(
+                                            $('<th></th>')
+                                                .text('Suggested commands')
+                                        )
+                                    );
+                            jQuery.each(
+                                completions,
+                                jQuery.proxy(
+                                    function (idx, val) {
+                                        $tbl.append(
+                                            $('<tr></tr>')
+                                                .append(
+                                                    $('<td></td>')
+                                                        .append(
+                                                            $('<a></a>')
+                                                                .attr('href', '#')
+                                                                .text(val)
+                                                                .bind('click',
+                                                                    jQuery.proxy(
+                                                                        function (evt) {
+                                                                            this.input_box.val(
+                                                                                this.input_box.val().replace(new RegExp(toComplete + '\s*$'), '')
+                                                                            );
+                                                                            this.appendInput(val + ' ', 0);
+                                                                        },
+                                                                        this
+                                                                    )
+                                                                )
+                                                        )
+                                                    )
+                                            );
+                                    },
+                                    this
+                                )
+                            );
+                            $commandDiv.append($tbl);
+                            this.scroll();
+
+                        }
+                    }
+
+                }
             }
 
         },
@@ -672,7 +740,7 @@
                 this.client.valid_commands_async(
                     jQuery.proxy(
                         function (cmds) {
-                            var $tbl = $('<table></table');
+                            var $tbl = $('<table></table>');
                             jQuery.each(
                                 cmds,
                                 function (idx, group) {

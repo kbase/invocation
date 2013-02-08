@@ -29,7 +29,11 @@
             <!--
 
                 $(function() {
-                    $('#terminal').terminal();
+                    $('#terminal').terminal({
+                        'promptIfUnauthenticated': 0,
+                        'invocationURL': 'http://140.221.84.183:7049',
+                        'commandsElement' : $('#command-list'),
+                    });
 
                     $('#command-list').commands(
                         {

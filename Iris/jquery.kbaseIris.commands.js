@@ -23,6 +23,9 @@
             else {
                 this.client = new InvocationService('http://bio-data-1.mcs.anl.gov/services/invocation');
             }
+
+            this.commands = [];
+
             return this;
         },
 
@@ -32,6 +35,21 @@
 
             return this;
 
+        },
+
+        completeCommand : function(command) {
+
+            var completions = [];
+
+            var commandRegex = new RegExp('^' + command + '.*');
+
+            for (var idx = 0; idx < this.commands.length; idx++) {
+                if (this.commands[idx].match(commandRegex)) {
+                    completions.push(this.commands[idx]);
+                }
+            }
+
+            return completions;
         },
 
         appendUI : function($elem) {
@@ -72,6 +90,8 @@
                                                         label = meta.label;
                                                     }
                                                 }
+
+                                                this.commands.push(val.cmd);
 
                                                 $ul.append(
                                                     $('<li></li>')

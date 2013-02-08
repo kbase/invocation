@@ -30,9 +30,10 @@
 
                 $(function() {
                     $('#terminal').terminal({
-			'promptIfUnauthenticated': 0,
-			'invocationURL': '[% kb_service_url %]'
-			});
+			            'promptIfUnauthenticated': 0,
+			            'invocationURL': '[% kb_service_url %]',
+                        'commandsElement' : $('#command-list'),
+                    });
 
                     $('#command-list').commands(
                         {
