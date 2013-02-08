@@ -308,6 +308,8 @@
             if (event.which == $.ui.keyCode.ENTER) {
                 event.preventDefault();
                 var cmd = this.input_box.val();
+                cmd = cmd.replace(/ (kb\|[^ ]+) ?/, ' "$1" ');
+
                 this.dbg("Run " + cmd);
                 this.out_cmd(cmd);
                 this.run(cmd);
