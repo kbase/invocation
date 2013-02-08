@@ -471,20 +471,35 @@
                 var $tbl = $('<table></table>');
                 jQuery.each(
                     this.commandHistory,
-                    function (idx, val) {
-                        $tbl.append(
-                            $('<tr></tr>')
-                                .append(
-                                    $('<td></td>')
-                                        .text(idx)
-                                )
-                                .append(
-                                    $('<td></td>')
-                                        .css('padding-left', '10px')
-                                        .text(val)
-                                )
-                            );
-                    }
+                    jQuery.proxy(
+                        function (idx, val) {
+                            $tbl.append(
+                                $('<tr></tr>')
+                                    .append(
+                                        $('<td></td>')
+                                            .text(idx)
+                                    )
+                                    .append(
+                                        $('<td></td>')
+                                            .css('padding-left', '10px')
+                                            .append(
+                                                $('<a></a>')
+                                                    .attr('href', '#')
+                                                    .text(val)
+                                                    .bind('click',
+                                                        jQuery.proxy(
+                                                            function (evt) {
+                                                                this.appendInput(val + ' ');
+                                                            },
+                                                            this
+                                                        )
+                                                    )
+                                            )
+                                    )
+                                );
+                        },
+                        this
+                    )
                 );
 
                 this.out_to_div($commandDiv, $tbl);
