@@ -315,6 +315,7 @@
         },
 
         keydown: function(event) {
+
             if (event.which == $.ui.keyCode.UP) {
                 event.preventDefault();
                 if (this.commandHistoryPosition > 0) {
@@ -325,10 +326,11 @@
             else if (event.which == $.ui.keyCode.DOWN) {
                 event.preventDefault();
                 if (this.commandHistoryPosition < this.commandHistory.length) {
-                    this.commandHistoryPosition--;
+                    this.commandHistoryPosition++;
                 }
                 this.input_box.val(this.commandHistory[this.commandHistoryPosition]);
             }
+
         },
 
         out_cmd: function(text) {
@@ -349,6 +351,11 @@
 
         // Outputs a line of text
         out_to_div: function($div, text, scroll) {
+            if (typeof text == 'string') {
+                text = text.replace('<', '&lt;');
+                text = text.replace('>', '&gt;');
+            }
+
             $div.append(
                 $('<div></div>')
                     .css('white-space', 'pre')
@@ -390,7 +397,8 @@
             var m;
 
             if (m = command.match(/^log[io]n\s*(.*)/)) {
-                var args = m[1].split(/\s+/)
+                var args = m[1].split(/\s+/);
+                console.log(args.length);
                 if (args.length != 1) {
                     this.out_to_div($commandDiv, "Invalid login syntax.");
                     return;
@@ -457,7 +465,7 @@
 
             this.commandHistory.push(command);
             this.saveCommandHistory();
-            this.commandHistoryPosition++;
+            this.commandHistoryPosition = this.commandHistory.length;
 
             if (command == 'history') {
                 var $tbl = $('<table></table>');
