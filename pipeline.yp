@@ -1,0 +1,58 @@
+
+%start start
+
+%{
+
+%}
+
+%whites /([ \t]+)/
+
+%token TERM = /([^"']\S*)/
+%token DQSTRING = /"((?:[^\\"]|\\.)*)"/
+%token SQSTRING = /'((?:[^\\']|\\.)*)'/
+
+%left '|'
+
+%%
+
+start:		pipeline
+	;
+
+pipeline:	pipe_item.item { [ $item ] }
+	|	pipeline.pipeline '|' pipe_item.item { [ @$pipeline, $item ] }
+	;
+
+pipe_item:	command.cmd args.args redirections.redir { { cmd => $cmd, args => $args, redir => $redir } }
+	;
+
+command:	TERM
+	;
+
+args:		{ [] }
+	|	arg.arg { [ $arg ] } 
+	|	args.args arg.arg { [ @$args, $arg ] }
+	;
+
+arg:		TERM
+	|	SQSTRING
+	|	DQSTRING
+	;
+
+redirections:	{ [] }
+	|	redirection.item { [ $item ] }
+	|	redirections.list redirection.item { [ @$list, $item ] }
+	;
+
+redirection:	'<' path.path { [ '<', $path ] }
+	|	'>' path.path { [ '>', $path ] }
+	|	'2>' path.path { [ '2>', $path ] }
+	|	'>>' path.path { [ '>>', $path ] }
+	|	'2>>' path.path { [ '2>>', $path ] }
+	;
+
+path:		TERM
+	|	SQSTRING
+	|	DQSTRING
+	;
+
+%%
