@@ -308,6 +308,9 @@
             if (event.which == $.ui.keyCode.ENTER) {
                 event.preventDefault();
                 var cmd = this.input_box.val();
+
+                // commented out regexes to auto-quote kb| ids
+                /*
                 cmd = cmd.replace(/ (kb\|[^ ]+)( |$)/g, ' "$1" ');
 
                 cmd = cmd.replace(/([^"])(kb\|[^ "]+)"/g, '$1"$2"');
@@ -319,6 +322,7 @@
                 cmd = cmd.replace(/'+(kb\|[^ ']+)'+/g, "'$1'");
 
                 cmd = cmd.replace(/"'(kb\|[^ ']+)'"/g, "'$1'");
+                */
 
                 this.dbg("Run " + cmd);
                 this.out_cmd(cmd);
