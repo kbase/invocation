@@ -129,6 +129,8 @@
 
             this.appendUI( $( this.element ) );
 
+            //this.terminal.fancybox();
+
             var cookie;
             if (cookie = this.$loginbox.login('get_kbase_cookie')) {
                 var commandDiv = $("<div></div>");
@@ -199,7 +201,13 @@
                 .append(
                     $('<div></div>')
                         .attr('id', 'file-uploader')
+                    )
+                .append(
+                    $('<div></div>')
+                        .attr('id', 'panel')
+                        .css('display', 'none')
                     );
+            ;
 
             this._rewireIds($block, this);
 
@@ -866,9 +874,52 @@
                                                     $('<td></td>')
                                                         .append(
                                                             $('<a></a>')
-                                                                .attr('href', url)
-                                                                .attr('target', '_blank')
                                                                 .text(val['name'])
+                                                                //uncomment these two lines to click and open in new window
+                                                                //.attr('href', url)
+                                                                //.attr('target', '_blank')
+                                                                //comment out this block if you don't want the clicks to pop up in a fancy box
+                                                                //*
+                                                                .attr('href', '#')
+                                                                .bind(
+                                                                    'click',
+                                                                    jQuery.proxy(
+                                                                        function (event) {
+                                                                            this.client.get_file_async(
+                                                                                this.sessionid,
+                                                                                val['full_path'],
+                                                                                '/',
+                                                                                $.proxy(
+                                                                                    function (res) {
+
+                                                                                        try {
+                                                                                            var obj = JSON.parse(res);
+                                                                                            res = JSON.stringify(obj, undefined, 2);
+                                                                                        }
+                                                                                        catch(e) {}
+
+                                                                                        var boxContent = $('<div></div>')
+                                                                                            .css('white-space', 'pre')
+                                                                                            .css('padding', '3px')
+                                                                                            .css('min-width', '400px')
+                                                                                            .html(res);
+
+                                                                                        this.data('panel').fancybox({
+                                                                                            openEffect  : 'elastic',
+                                                                                            closeEffect : 'elastic',
+                                                                                            content : boxContent,
+                                                                                        });
+                                                                                        this.data('panel').trigger('click');
+                                                                                    },
+                                                                                    this
+                                                                                ),
+                                                                                function (err) { console.log("FILE FAILURE"); console.log(err) }
+                                                                            );
+                                                                        },
+                                                                        this
+                                                                    )
+                                                                )
+                                                                //*/
                                                             )
                                                     )
                                             );
