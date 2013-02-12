@@ -28,7 +28,6 @@
             $.fn.setSelection = function(selectionStart, selectionEnd) {
                 if(this.length == 0) return this;
                 input = this[0];
-
                 if (input.createTextRange) {
                     var range = input.createTextRange();
                     range.collapse(true);
@@ -47,6 +46,14 @@
                 this.setCursorPosition(this.val().length);
                         return this;
             }
+
+            $.fn.getCursorPosition = function() {
+                if(this.length == 0) return this;
+                input = this[0];
+
+                return input.selectionEnd;
+            }
+
             //end embedded plugin
 
             if (this.options.client) {
@@ -355,8 +362,16 @@
                 this.input_box.val(this.commandHistory[this.commandHistoryPosition]);
             }
             else if (event.which == $.ui.keyCode.RIGHT) {
-                event.preventDefault();
                 if (this.options.commandsElement) {
+
+                    var input_box_length = this.input_box.val().length;
+                    var cursorPosition = this.input_box.getCursorPosition();
+
+                    if (cursorPosition != undefined && cursorPosition < input_box_length) {
+                        return;
+                    }
+
+                    event.preventDefault();
 
                     var toComplete = this.input_box.val().match(/([^\s]+)\s*$/);
                     if (toComplete.length) {
