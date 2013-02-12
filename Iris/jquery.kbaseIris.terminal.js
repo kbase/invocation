@@ -473,7 +473,7 @@
 
         open_file : function(file) {
 
-            // can't open the window in the callback!
+            // can't open the window in trhe callback!
             var win = window.open();
             console.log(win);
             win.document.open();
@@ -488,13 +488,14 @@
                         try {
                             var obj = JSON.parse(res);
                             res = JSON.stringify(obj, undefined, 2);
-                            win.document.write( res);
-                            win.document.close();
                         }
                         catch(e) {
                             console.log("FAILURE");
                             console.log(e);
                         }
+
+                        win.document.write( res);
+                        win.document.close();
 
                     },
                     this
@@ -908,42 +909,18 @@
                                                                 //uncomment these two lines to click and open in new window
                                                                 //.attr('href', url)
                                                                 //.attr('target', '_blank')
-                                                                //comment out this block if you don't want the clicks to pop up in a fancy box
+                                                                //comment out this block if you don't want the clicks to pop up via the api
                                                                 //*
-                                                                .attr('href', "javascript:$('#terminal').terminal('open_file','" + val['full_path'] + "')")
-                                                                /*.attr('href', '#')
+                                                                .attr('href', '#')
                                                                 .bind(
                                                                     'click',
                                                                     jQuery.proxy(
                                                                         function (event) {
-                                                                            this.client.get_file_async(
-                                                                                this.sessionid,
-                                                                                val['full_path'],
-                                                                                '/',
-                                                                                $.proxy(
-                                                                                    function (res) {
-
-                                                                                        try {
-                                                                                            var obj = JSON.parse(res);
-                                                                                            res = JSON.stringify(obj, undefined, 2);
-                                                                                        }
-                                                                                        catch(e) {}
-
-                                                                                        var win = window.open('foo', 'dl_window');
-                                                                                        console.log(win);
-                                                                                        win.document.open();
-                                                                                        win.document.write( res);
-                                                                                        win.document.close;
-
-                                                                                    },
-                                                                                    this
-                                                                                ),
-                                                                                function (err) { console.log("FILE FAILURE"); console.log(err) }
-                                                                            );
+                                                                            this.open_file(val['full_path']);
                                                                         },
                                                                         this
                                                                     )
-                                                                )*/
+                                                                )
                                                                 //*/
                                                             )
                                                     )
