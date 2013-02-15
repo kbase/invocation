@@ -457,8 +457,8 @@
         // Outputs a line of text
         out_to_div: function($div, text, scroll) {
             if (typeof text == 'string') {
-                text = text.replace('<', '&lt;');
-                text = text.replace('>', '&gt;');
+                text = text.replace(/</g, '&lt;');
+                text = text.replace(/>/g, '&gt;');
             }
 
             $div.append(
