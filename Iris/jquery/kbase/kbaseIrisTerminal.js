@@ -1190,6 +1190,10 @@
                                         )
                                     );
                                 }
+				else
+				{
+				    this.out_to_div($commandDiv, $('<i></i>').html("Command completed."));
+				}
                             }
                         }
                         else {
