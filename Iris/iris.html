@@ -1,194 +1,119 @@
+<!DOCTYPE html>
+
 <html>
-<head>
 
-<link rel="stylesheet" href="iris.css" type="text/css" media="screen" title="main" charset="utf-8">
-<link rel="stylesheet" href="valums-file-uploader-b3b20b1/client/fileuploader.css" type="text/css" media="screen" title="main" charset="utf-8">
+    <head>
 
-<script src="valums-file-uploader-b3b20b1/client/fileuploader.js" type="text/javascript" charset="utf-8"></script>
-<script src="json2.js" type="text/javascript" charset="utf-8"></script>
-<!--<script src="jquery-1.7.2.js" type="text/javascript" charset="utf-8"></script>-->
-<script src="mootools.js" type="text/javascript" charset="utf-8"></script>
-<script src="../lib/InvocationService.js" type="text/javascript" charset="utf-8"></script>
-<script src="iris.js" type="text/javascript" charset="utf-8"></script>
+        <link rel="stylesheet" href="iris.css" type="text/css" media="screen" title="main" charset="utf-8">
 
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-        <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/jquery-ui.min.js"></script>
 
+        <script src = 'http://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.3.1/jquery.cookie.min.js'></script>
 
-        <link type = 'text/css' href = 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/themes/smoothness/jquery-ui.css' rel = 'stylesheet' />
+        <script src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/js/bootstrap.min.js"></script>
+        <!--<link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/css/bootstrap-combined.min.css" rel="stylesheet">-->
+        <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+        <link href="http://netdna.bootstrapcdn.com/font-awesome/3.0.2/css/font-awesome.css" rel="stylesheet">
 
-        <script src = 'http://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.2/jquery.cookie.js'></script>
-        <script src="./jquery.kbase.widget.js"></script>
-        <script src="./jquery.kbase.login.js"></script>
-        <script src = './jquery.kbaseIris.commands.js'></script>
-		<link type="text/css" href="./liquid.css" rel="stylesheet" />
+        <script src = './jquery/kbase/kbaseWidget.js'></script>
+        <script src = './jquery/kbase/kbaseLogin.js'></script>
+        <script src = './jquery/kbase/kbaseIrisTerminal.js'></script>
+        <script src = './jquery/kbase/kbaseAccordion.js'></script>
+        <script src = './jquery/kbase/kbaseIrisCommands.js'></script>
+        <script src = './jquery/kbase/kbaseIrisFileBrowser.js'></script>
+        <script src = './jquery/kbase/kbaseIrisProcessList.js'></script>
 
+        <script src="../lib/InvocationService.js" type="text/javascript" charset="utf-8"></script>
 
         <script type = 'text/javascript'>
             <!--
 
-
-                $.fn.setCursorPosition = function(position){
-                    if(this.length == 0) return this;
-                    return $(this).setSelection(position, position);
-                }
-
-                $.fn.setSelection = function(selectionStart, selectionEnd) {
-                    if(this.length == 0) return this;
-                    input = this[0];
-
-                    if (input.createTextRange) {
-                        var range = input.createTextRange();
-                        range.collapse(true);
-                        range.moveEnd('character', selectionEnd);
-                        range.moveStart('character', selectionStart);
-                        range.select();
-                    } else if (input.setSelectionRange) {
-                        input.focus();
-                        input.setSelectionRange(selectionStart, selectionEnd);
-                    }
-
-                    return this;
-                }
-
-                $.fn.focusEnd = function(){
-                    this.setCursorPosition(this.val().length);
-                            return this;
-                }
-
-
                 $(function() {
 
-					window.$ld = $("#login-box").login(
-						{
-							style : 'slim',
-							login_callback : function(args) {
-								if (args.success) {
-									var commandDiv = new Element('div');
-									window.terminal.terminal.grab(commandDiv);
-									window.terminal.out_line();
-									window.terminal.scroll();
-									window.terminal.client.start_session_async(args.user_id,
-										function (newsid) {
-											window.terminal.set_session(args.user_id);
-											window.terminal.commandHistory.load(window.terminal.client, args.user_id);
-											window.terminal.out_to_div(commandDiv, "Set session to " + args.user_id);
-										}.bind(window.terminal),
-										function (err) {
-											window.terminal.out_to_div(commandDiv, "<i>Error on session_start:<br>" +
-												err.message.replace("\n", "<br>\n") + "</i>");
-										}.bind(window.terminal)
-									);
+                    var $plist = $('#process-list').kbaseIrisProcessList();
 
-									window.terminal.client.kbase_sessionid = args.kbase_sessionid;
-									$('#input_box').focus();
-								}
-							}
-						}
-					);
+                    var $term = $('#terminal').kbaseIrisTerminal({
+                        'promptIfUnauthenticated': 0,
+                        'invocationURL': 'http://140.221.84.183:7049',
+                        'commandsElement' : $('#command-list'),
+                    });
 
-                    var cookie;
-                    if (cookie = window.$ld.login('get_kbase_cookie')) {
-                        var commandDiv = new Element('div');
-                        window.terminal.terminal.grab(commandDiv);
-                        window.terminal.out_line();
-                        if (cookie.user_id) {
-                            window.terminal.scroll();
-                            window.terminal.out_to_div(commandDiv, 'Already logged in as ' + cookie.name);
-                            window.terminal.set_session(cookie.user_id);
-                            window.terminal.commandHistory.load(window.terminal.client, cookie.user_id);
-                            window.terminal.out_to_div(commandDiv, "Set session to " + cookie.user_id);
-                        }
-                    }
-
-                    $('#command-list').commands(
+                    $('#command-list').kbaseIrisCommands(
                         {
-                            client : window.terminal.client,
+                            client : $term.getClient(),
                             englishCommands : 0,
                             link : function (evt) {
-                                document.getElementById('input_box').value += $(this).attr('title') + ' ';
-                                $("#input_box").focusEnd();
+                                evt.preventDefault();
+                                $('#terminal').kbaseIrisTerminal('appendInput', $(this).attr('title') + ' ');
                             }
                         }
                     );
 
-				});
+                    var $fb = $('#file-browser').kbaseIrisFileBrowser (
+                        {
+                            terminal : $term,
+                            externalControls : true,
+                            processList : $plist,
+                        }
+                    );
+
+                    $term.data('fileBrowser', $fb);
+                    $term.data('processList', $plist);
+
+                    $('#login').append($term.$loginbox.$elem);
+                    console.log($term.$loginbox);
+
+                    // to see the auth token
+                    // console.log( $('#terminal').terminal('authToken') );
+
+                });
 
             //-->
         </script>
 
-		<style type="text/css">
-			/*demo page css*/
+        <title>KBase IRIS Terminal</title>
+        <link rel="icon" href="img/KBase_favicon.ico" type="image/x-icon">
+        <link href="css/identity.css" rel="stylesheet">
+        <link href="css/kbase-common.css" rel="stylesheet">
+        <style type="text/css">
+          body {
+            /* padding to make room for the fixed nav bar,
+               modify in css as needed. */
+            padding-top: 60px;
+          }
+        </style>
 
-			body { font-size: 80%;}
-			#leftcolumn { font-size : 80%}
-			//body, .ui-widget, .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: "Oxygen", sans-serif !important}
-			ul { padding : 2px }
-			li { list-style-type : none; }
-		</style>
+    </head>
 
+    <body>
 
-</head>
-<body>
+        <div class="navbar navbar-fixed-top">
+          <div class="navbar-inner">
+            <a href="http://www.kbase.us/labs/"><img class="logo" src="img/labs_icon.png" width="46"></a>
+            <a class="brand">IRIS</a>
+            <ul class="nav" style="float:right;">
+              <li id = 'login' style = 'padding : 10px 15px 15px 10px'></li>
+            </ul>
+          </div>
+        </div>
 
-    <div id="maincontainer">
-
-        <div id="contentwrapper">
-            <div id="contentcolumn">
-                <div class="innertube">
-
-                    <div class = 'ui-widget'>
-                        <div style = 'float : right; clear : both' id = 'login-box'>
-
-                        </div>
-                        <br clear = 'all'/>
-
-                        <div id="terminal"></div>
-
-                        <textarea id="input_box" style = 'width : 99%;' height="3"></textarea>
-
-                    </div>
-
-                </div>
+        <div class = 'row-fluid'>
+            <div class = 'span3'>
+                <!--<img src = './img/kbase_logo.png'/ width = '220'><br/><br/>-->
+                <div id = 'command-list'></div>
+                <div id = 'process-list'></div>
+                <div id = 'file-browser'></div>
+            </div>
+            <div class = 'span9'>
+                <div id = 'terminal'></div>
             </div>
         </div>
 
-        <div id="leftcolumn">
-            <div class="innertube">
+        <br clear = 'all'/>
+        <div style = 'width : 100%; height : 2.4em;'>&nbsp;</div>
 
-                <div id = 'floating'>
-                    <img src = './img/kbase_logo.png'/ width = '220'>
+        <div id="pgfooter">Copyright &copy; 2012 DOE <a href = 'http://www.kbase.us/'>KBase</a></div>
 
-                    <div class = 'ui-widget' style = 'height : 350px'>
-
-                        <div id="file-uploader"></div>
-                        <br clear = 'both' />
-
-                        <h3 class="ui-widget-header ui-corner-all" style = 'padding : 5px; margin-top : 10px; text-align : center;'>
-                            Command list
-                        </h3>
-
-                        <div style = 'width : 250px' id = 'command-list'>
-
-                        </div>
-
-
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-    </div>
-
-    <br clear = 'all'/>
-    <div style = 'width : 100%; height : 2.4em;'>&nbsp;</div>
-
-    <div id="pgfooter">Copyright &copy; 2012 DOE <a href = 'http://www.kbase.us/'>KBase</a></div>
-
-
-
-
-</body>
+    </body>
 
 </html>

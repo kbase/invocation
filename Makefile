@@ -63,7 +63,8 @@ deploy-iris:
 	mkdir -p $(IRIS_WEBROOT)/Iris
 	rsync -arv Iris/. $(IRIS_WEBROOT)
 	cp lib/$(BASE_NAME).js $(IRIS_WEBROOT)/$(BASE_NAME).js
-	$(TPAGE) $(TPAGE_ARGS) iris-index.html.tt > $(IRIS_WEBROOT)/index.html
+	$(TPAGE) $(TPAGE_ARGS) iris-index.html.tt > $(IRIS_WEBROOT)/iris.html
+    cp Iris/splash.html > $(IRIS_WEBROOT)/index.html
 
 deploy-monit:
 	$(TPAGE) $(TPAGE_ARGS) service/process.$(SERVICE).tt > $(TARGET)/services/$(SERVICE)/process.$(SERVICE)
