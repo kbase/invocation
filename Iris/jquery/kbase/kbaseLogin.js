@@ -88,7 +88,7 @@
         init: function(options) {
 
             this._super(options);
-console.log("I AM");console.log(this);
+
             var kbaseCookie = this.get_kbase_cookie();
 
             this.$elem.empty();
@@ -98,7 +98,6 @@ console.log("I AM");console.log(this);
             this.ui = this[style]();
             if (this.ui) {
                 this.$elem.append(this.ui);
-                console.log(this.ui);
             }
 
             if (kbaseCookie.user_id) {
@@ -937,6 +936,7 @@ console.log("I AM");console.log(this);
                 args.cookie = 1;
                 args.fields = this.options.fields.join(',');
 
+                $.support.cors = true;
                 $.ajax(
                     {
                         type            : "POST",

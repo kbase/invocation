@@ -62,7 +62,6 @@
                     $term.data('processList', $plist);
 
                     $('#login').append($term.$loginbox.$elem);
-                    console.log($term.$loginbox);
 
                     // to see the auth token
                     // console.log( $('#terminal').terminal('authToken') );

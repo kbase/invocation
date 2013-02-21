@@ -116,10 +116,7 @@
 
     $.kbWidget('kbaseWidget',
         {
-            options : {
-                foo : 'bar',
-                this : 'those',
-            },
+            options : {},
 
             element : function() {
                 return this;
