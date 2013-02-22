@@ -518,6 +518,7 @@
         },
 
         handleFileSelect : function(evt) {
+
             evt.stopPropagation();
             evt.preventDefault();
 
@@ -575,6 +576,8 @@
                     this
                 )
             );
+
+            this.data('fileInput').val('');
 
         }
 
