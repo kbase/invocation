@@ -13,7 +13,7 @@
             'controls' : true,
             'externalControls' : true,
             'height' : '110px',
-            'tallHeight' : '500px',
+            'tallHeight' : '450px',
             'shouldToggleNavHeight' : true,
         },
 
