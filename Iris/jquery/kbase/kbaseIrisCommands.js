@@ -88,7 +88,6 @@
         },
 
         commandsMatchingRegex : function (regex) {
-            console.log(regex);
             var matches =[];
             for (var idx = 0; idx < this.commands.length; idx++) {
                 if (this.commands[idx].match(regex)) {
@@ -161,10 +160,14 @@
 
         },
 
-        createLI : function(cmd, label) {
+        createLI : function(cmd, label, func) {
 
             if (label == undefined) {
                 label = cmd;
+            }
+
+            if (func == undefined) {
+                func = this.options.link;
             }
 
             return $('<li></li>')
@@ -177,7 +180,7 @@
                     .text(label)
                     .bind(
                         'click',
-                        this.options.link
+                        func
                     )
                 )
                 /*.draggable(
@@ -201,6 +204,14 @@
 
             var that = this;
 
+            $('input,textarea').live('focus.kbaseIrisCommands', $.proxy( function (e) {
+                if ($(':focus').get(0) != undefined && $(':focus').get(0) != this.data('searchField').get(0)) {
+                    this.data('focused', $(':focus'));
+                }
+            }, this));
+
+            this.data('focused', $(':focus'));
+
             var $div = $('<div></div>')
                 .css('border', '1px solid lightgray')
                 .css('padding', '2px')
@@ -211,13 +222,112 @@
                         .css('background-color', 'lightgray')
                         .css('padding', '2px')
                         .css('margin', '0px')
+                        .css('position', 'relative')
                         .bind('click',
                             function(e) {
-                                $(this).next().collapse('toggle');
+                                $(this).parent().children().last().collapse('toggle');
                                 if (that.options.fileBrowser) {
                                     that.options.fileBrowser.toggleNavHeight();
                                 }
                             }
+                        )
+                        .append(
+                            $('<div></div>')
+                            .css('right', '0px')
+                            .css('top', '0px')
+                            .css('position', 'absolute')
+                            .append(
+                                $('<button></button>')
+                                    .attr('id', 'deleteSearchResults')
+                                    .addClass('btn btn-mini')
+                                    .append($('<i></i>').addClass('icon-remove'))
+                                    .css('padding-top', '1px')
+                                    .css('padding-bottom', '1px')
+                                    .css('display', 'none')
+                                    .bind('click', $.proxy(function (e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        this.data('searchResults').empty();
+                                        this.data('deleteSearchResults').hide();
+                                        this.data('searchFieldBox').hide();
+                                    },this))
+                            )
+                            .append(
+                                $('<button></button>')
+                                    .addClass('btn btn-mini')
+                                    .append($('<i></i>').addClass('icon-search'))
+                                    .css('padding-top', '1px')
+                                    .css('padding-bottom', '1px')
+                                    .bind('click', $.proxy(function (e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        this.data('searchResults').empty();
+                                        this.data('searchFieldBox').toggle();
+//                                        this.data('deleteSearchResults').hide();
+                                        if (this.data('searchFieldBox').is(':hidden')) {
+                                            this.data('searchField').blur();
+                                            this.data('focused').focus();
+                                        }
+                                        else {
+                                            this.data('searchField').val('');
+                                            this.data('searchField').focus();
+                                        }
+                                    },this))
+                            )
+                        )
+                        .append(
+                            $('<div></div>')
+                                .css('right', '0px')
+                                .css('top', '24px')
+                                .css('position', 'absolute')
+                                .css('display', 'none')
+                                .attr('id', 'searchFieldBox')
+                                .attr('z-index', '999')
+                                .append(
+                                    $('<input></input')
+                                        .attr('type', 'text')
+                                        .addClass('input-medium search-query')
+                                        .attr('name', 'search')
+                                        .css('padding-top', '1px')
+                                        .css('padding-bottom', '1px')
+                                        .attr('id', 'searchField')
+                                        .keypress($.proxy(function (e) {
+                                            if (event.which == 13) {
+                                                var regex = new RegExp(this.data('searchField').val(), 'i');
+                                                var commands = this.commandsMatchingRegex(regex);
+
+                                                $.each(
+                                                    commands,
+                                                    $.proxy( function (idx, cmd) {
+                                                        this.data('searchResults').append(
+                                                            this.createLI(
+                                                                cmd,
+                                                                cmd,
+                                                                function (e) {
+                                                                    that.options.link.call(this, e);
+                                                                    that.data('deleteSearchResults').trigger('click');
+                                                                }
+                                                            )
+                                                        );
+                                                    }, this)
+                                                );
+
+                                                if (! commands.length) {
+                                                    this.data('searchResults').append(
+                                                        $('<li></li>')
+                                                            .css('font-style', 'italic')
+                                                            .text('No matching commands found')
+                                                    );
+                                                };
+
+                                                this.data('deleteSearchResults').show();
+                                                this.data('searchFieldBox').hide();
+                                                if (! commands.length) {
+                                                    this.data('focused').focus();
+                                                }
+                                            };
+                                        }, this))
+                                )
                         )
                 )
                 .append(
@@ -226,6 +336,8 @@
                         .css('padding-left', '15px')
                         .attr('id', 'searchResults')
                         .addClass('unstyled')
+                        .css('max-height', this.options.overflow ? this.options.sectionHeight : '5000px')
+                        .css('overflow', this.options.overflow ? 'auto' : 'visible')
                 )
             ;
             $elem.append($div);
