@@ -365,6 +365,14 @@
                         }
                         else if (completions.length) {
 
+                            var prefix = this.options.commandsElement.kbaseIrisCommands('comonCommandPrefix', completions);
+
+                            if (prefix != undefined && prefix.length) {
+                                this.input_box.val(
+                                    this.input_box.val().replace(new RegExp(toComplete + '\s*$'), prefix)
+                                );
+                            }
+
                             var $commandDiv = $('<div></div>');
                             this.terminal.append($commandDiv);
 
@@ -397,7 +405,7 @@
                                                                             this.input_box.val(
                                                                                 this.input_box.val().replace(new RegExp(toComplete + '\s*$'), '')
                                                                             );
-                                                                            this.appendInput(val + ' ', 0);
+                                                                            this.appendInput(val);
                                                                         },
                                                                         this
                                                                     )
@@ -463,7 +471,7 @@
                                                 $(val).replaceWith($(val).html());
                                             }
                                         );
-                                        console.log(output);
+
                                         win.document.write(output.html());
                                         win.document.close();
                                     }
