@@ -185,6 +185,10 @@
             if (this.input_box) {
                 var space = spacer == undefined ? ' ' : '';
 
+                if (this.input_box.val().length == 0) {
+                    space = '';
+                };
+
                 this.input_box.val(this.input_box.val() + space + text);
                 this.input_box.focusEnd();
             }
@@ -405,7 +409,7 @@
                                                                             this.input_box.val(
                                                                                 this.input_box.val().replace(new RegExp(toComplete + '\s*$'), '')
                                                                             );
-                                                                            this.appendInput(val);
+                                                                            this.appendInput(val + ' ');
                                                                         },
                                                                         this
                                                                     )
