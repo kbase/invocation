@@ -12,6 +12,9 @@
             'root' : '/',
             'controls' : true,
             'externalControls' : true,
+            'height' : '110px',
+            'tallHeight' : '500px',
+            'shouldToggleNavHeight' : true,
         },
 
         init: function (options) {
@@ -175,6 +178,19 @@
 
         },
 
+        toggleNavHeight : function () {
+            if (this.options.shouldToggleNavHeight) {
+                var $ul = this.data('ul-nav');
+                var height = $ul.css('height');
+                $ul.css(
+                    'height',
+                    height == this.options.height
+                        ? this.options.tallHeight
+                        : this.options.height
+                );
+            }
+        },
+
         appendUI : function($elem) {
 
             var $div = $('<div></div>')
@@ -196,7 +212,14 @@
                     )
             ;
 
-            var $ul = $('<ul></ul>').addClass('nav nav-list');
+            var navHeight = this.options.height;
+
+            var $ul = $('<ul></ul>')
+                .addClass('nav nav-list')
+                .css('height', navHeight)
+                .css('overflow', 'auto')
+                .attr('id', 'ul-nav')
+            ;
             var $controls =
                 $('<div></div>')
                     .addClass('btn-toolbar')
