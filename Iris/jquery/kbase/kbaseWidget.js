@@ -95,7 +95,7 @@
 
             // Method calling logic
             if ( Widget.prototype[method] ) {
-                return this.data(name)[method](Array.prototype.slice.call( arguments, 1 ));
+                return Widget.prototype[method].apply(this.data(name), Array.prototype.slice.call( arguments, 1 ));
             } else if ( typeof method === 'object' || ! method ) {
                 //return this.data(name).init( arguments );
                 var args = arguments;
