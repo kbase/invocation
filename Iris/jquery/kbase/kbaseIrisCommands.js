@@ -280,9 +280,9 @@
                                 .css('right', '0px')
                                 .css('top', '24px')
                                 .css('position', 'absolute')
+                                .css('z-index', '999')
                                 .css('display', 'none')
                                 .attr('id', 'searchFieldBox')
-                                .attr('z-index', '999')
                                 .append(
                                     $('<input></input')
                                         .attr('type', 'text')
@@ -305,7 +305,7 @@
                                                                 cmd,
                                                                 function (e) {
                                                                     that.options.link.call(this, e);
-                                                                    that.data('deleteSearchResults').trigger('click');
+                                                                    //that.data('deleteSearchResults').trigger('click');
                                                                 }
                                                             )
                                                         );
