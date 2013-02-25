@@ -245,6 +245,7 @@
                                     .css('padding-bottom', '1px')
                                     .css('display', 'none')
                                     .attr('title', 'Remove search results')
+                                    .tooltip()
                                     .bind('click', $.proxy(function (e) {
                                         e.preventDefault();
                                         e.stopPropagation();
