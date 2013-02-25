@@ -214,6 +214,8 @@
                                 .css('margin-bottom', '5px')
                                 .css('padding-left', '3px')
                                 .css('padding-right', '3px')
+                                .attr('title', 'Logout')
+                                .tooltip({'placement' : 'bottom'})
                                 .bind('click',
                                     $.proxy( function(e) {
                                         this.logout();

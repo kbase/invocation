@@ -244,6 +244,7 @@
                                     .css('padding-top', '1px')
                                     .css('padding-bottom', '1px')
                                     .css('display', 'none')
+                                    .attr('title', 'Remove search results')
                                     .bind('click', $.proxy(function (e) {
                                         e.preventDefault();
                                         e.stopPropagation();
@@ -258,6 +259,8 @@
                                     .append($('<i></i>').addClass('icon-search'))
                                     .css('padding-top', '1px')
                                     .css('padding-bottom', '1px')
+                                    .attr('title', 'Search for command')
+                                    .tooltip()
                                     .bind('click', $.proxy(function (e) {
                                         e.preventDefault();
                                         e.stopPropagation();
