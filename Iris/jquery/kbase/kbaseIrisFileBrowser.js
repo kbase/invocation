@@ -30,10 +30,6 @@
                 this.$loginbox = options.$loginbox;
             }
 
-            if (options.controlButtons != undefined) {
-                this.options.controlButtons = options.controlButtons;
-            };
-
             this.appendUI(this.$elem);
 
             return this;

@@ -19,9 +19,9 @@
             throw "Cannot re-register widget: " + name;
             return;
         }
-        var Widget = function($elem, options) {
+        var Widget = function($elem) {
             this.$elem = $elem;
-            this.options = $.extend({}, def.options, options);
+            this.options = $.extend(true, {}, def.options);
             return this;
         }
 
@@ -126,7 +126,8 @@
 
             init : function(args) {
 
-                this.options = $.extend(true, {}, this.options, args);
+                var opts = $.extend(true, {}, this.options);
+                this.options = $.extend(false, {}, opts, args);
 
                 return this;
             },
