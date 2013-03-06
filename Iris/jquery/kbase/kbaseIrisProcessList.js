@@ -36,11 +36,7 @@
                             .css('padding', '2px')
                             .css('background-color', 'lightgray')
                             .css('border-collapse', 'collapse')
-                            .bind('click',
-                                function(e) {
-                                    $(this).next().collapse('toggle');
-                                }
-                            )
+
                         )
                     .append(
                         $('<ul></ul>')

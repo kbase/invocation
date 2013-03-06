@@ -159,6 +159,22 @@
                 this.$loginbox.kbaseLogin('openDialog');
             }
 
+            if (this.options.fileBrowser) {
+                this.data('fileBrowser', this.options.fileBrowser);
+            }
+            else {
+                this.data(
+                    'fileBrowser',
+                    $('<div></div>').kbaseIrisFileBrowser (
+                        {
+                            client : this.client,
+                            $loginbox : this.$loginbox,
+                            externalControls : false,
+                        }
+                    )
+                )
+            };
+
             return this;
 
         },
@@ -552,42 +568,12 @@
         },
 
         open_file : function(file) {
-
-            // can't open the window in trhe callback!
-            var win = window.open();
-            win.document.open();
-
-            this.client.get_file_async(
-                this.sessionid,
-                file,
-                '/',
-                $.proxy(
-                    function (res) {
-
-                        try {
-                            var obj = JSON.parse(res);
-                            res = JSON.stringify(obj, undefined, 2);
-                        }
-                        catch(e) {
-                            this.dbg("FAILURE");
-                            this.dbg(e);
-                        }
-
-                        win.document.write(
-                            $('<div></div>').append(
-                                $('<div></div>')
-                                    .css('white-space', 'pre')
-                                    .append(res)
-                            )
-                            .html()
-                        );
-                        win.document.close();
-
-                    },
-                    this
-                ),
-                function (err) { this.dbg("FILE FAILURE"); this.dbg(err) }
-            );
+            if (this.data('fileBrowser')) {
+                this.data('fileBrowser').openFile(file);
+            }
+            else {
+                this.dbg("Cannot open file - No file browser!");
+            }
         },
 
         // Executes a command

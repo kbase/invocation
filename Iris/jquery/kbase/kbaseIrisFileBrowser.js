@@ -15,6 +15,7 @@
             'height' : '110px',
             'tallHeight' : '450px',
             'shouldToggleNavHeight' : true,
+            'controlButtons' : ['deleteButton', 'viewButton', 'addDirectoryButton', 'uploadButton'],
         },
 
         init: function (options) {
@@ -25,6 +26,14 @@
                 this.client = options.client;
             }
 
+            if (options.$loginbox) {
+                this.$loginbox = options.$loginbox;
+            }
+
+            if (options.controlButtons != undefined) {
+                this.options.controlButtons = options.controlButtons;
+            };
+
             this.appendUI(this.$elem);
 
             return this;
@@ -33,7 +42,7 @@
 
         refreshDirectory : function(path) {
 
-            if (this.options.terminal.sessionId == undefined) {
+            if (this.sessionId() == undefined) {
                 this.$elem.find('ul').first().empty();
             }
 
@@ -48,12 +57,16 @@
             else                            { return 0  }
         },
 
+        sessionId : function() {
+            return this.$loginbox.sessionId();
+        },
+
         listDirectory : function (path, $ul) {
 
             this.data(path, $ul);
 
-            this.options.terminal.client.list_files_async(
-                this.options.terminal.sessionId,
+            this.client.list_files_async(
+                this.sessionId(),
                 '/',
                 path,
                 jQuery.proxy( function (filelist) {
@@ -163,7 +176,6 @@
                                                         $fb.deleteButton().removeClass('disabled');
 
                                                     }
-                                                    //$fb.options.terminal.open_file(val['full_path']);
                                                 }
                                             )
                                     )
@@ -227,67 +239,7 @@
                     .append(
                         $('<div></div>')
                             .addClass('btn-group')
-                            .append(
-                                $('<a></a>')
-                                    .attr('id', 'deleteButton')
-                                    .addClass('btn btn-mini disabled')
-                                    .append($('<i></i>').addClass('icon-remove'))
-                                    .attr('title', 'Delete selected item')
-                                    .tooltip()
-                                    .bind('click',
-                                        $.proxy( function(e) {
-                                            e.preventDefault();
-                                            if (! this.deleteButton().hasClass('disabled')) {
-                                                this.deleteFile();
-                                            }
-                                        }, this)
-                                    )
-                            )
-                            .append(
-                                $('<a></a>')
-                                    .attr('id', 'viewButton')
-                                    .addClass('btn btn-mini disabled')
-                                    .append($('<i></i>').addClass('icon-search'))
-                                    .attr('title', 'View selected file')
-                                    .tooltip()
-                                    .bind('click',
-                                        $.proxy( function(e) {
-                                            e.preventDefault();
-                                            if (! this.viewButton().hasClass('disabled')) {
-                                                this.options.terminal.open_file(this.data('activeFile'));
-                                            }
-                                        }, this)
-                                    )
-                            )
-                            .append(
-                                $('<a></a>')
-                                    .attr('id', 'addDirectoryButton')
-                                    .addClass('btn btn-mini')
-                                    .append($('<i></i>').addClass('icon-plus'))
-                                    .attr('title', 'Add new directory')
-                                    .tooltip()
-                                    .bind('click',
-                                        $.proxy( function(e) {
-                                            e.preventDefault();
-                                            if (! this.addDirectoryButton().hasClass('disabled')) {
-                                                this.addDirectory();
-                                            }
-                                        }, this)
-                                    )
-                            )
-                            .append(
-                                $('<a></a>')
-                                    .attr('id', 'uploadButton')
-                                    .addClass('btn btn-mini')
-                                    .append($('<i></i>').addClass('icon-arrow-up'))
-                                    .attr('title', 'Upload file')
-                                    .tooltip()
-                                    .bind('click',
-                                        $.proxy( function (e) {
-                                            this.data('fileInput').trigger('click');
-                                        }, this)
-                                    )
-                            )
+                            .attr('id', 'control-buttons')
                             .append(
                                 $('<input></input>')
                                     .attr('type', 'file')
@@ -316,6 +268,17 @@
 
             this._rewireIds($div, this);
 
+            $.each(
+                this.options.controlButtons,
+                $.proxy( function (idx, val) {
+                    this.data('control-buttons').append(
+                        this[val]()
+                    );
+                }, this)
+            );
+
+            this._rewireIds($div, this);
+
             this.listDirectory(this.options.root, $ul);
 
             return this;
@@ -323,15 +286,76 @@
         },
 
         addDirectoryButton : function() {
-            return this.data('addDirectoryButton');
+            return this.data('addDirectoryButton') != undefined
+                ? this.data('addDirectoryButton')
+                : $('<a></a>')
+                    .attr('id', 'addDirectoryButton')
+                    .addClass('btn btn-mini')
+                    .append($('<i></i>').addClass('icon-plus'))
+                    .attr('title', 'Add new directory')
+                    .tooltip()
+                    .bind('click',
+                        $.proxy( function(e) {
+                            e.preventDefault();
+                            if (! this.addDirectoryButton().hasClass('disabled')) {
+                                this.addDirectory();
+                            }
+                        }, this)
+                    )
         },
 
         viewButton : function() {
-            return this.data('viewButton');
+            return this.data('viewButton') != undefined
+                ? this.data('viewButton')
+                : $('<a></a>')
+                    .attr('id', 'viewButton')
+                    .addClass('btn btn-mini disabled')
+                    .append($('<i></i>').addClass('icon-search'))
+                    .attr('title', 'View selected file')
+                    .tooltip()
+                    .bind('click',
+                        $.proxy( function(e) {
+                            e.preventDefault();
+                            if (! this.viewButton().hasClass('disabled')) {
+                                this.openFile(this.data('activeFile'));
+                            }
+                        }, this)
+                    )
         },
 
         deleteButton : function() {
-            return this.data('deleteButton');
+            return this.data('deleteButton') != undefined
+                ? this.data('deleteButton')
+                : $('<a></a>')
+                    .attr('id', 'deleteButton')
+                    .addClass('btn btn-mini disabled')
+                    .append($('<i></i>').addClass('icon-remove'))
+                    .attr('title', 'Delete selected item')
+                    .tooltip()
+                    .bind('click',
+                        $.proxy( function(e) {
+                            e.preventDefault();
+                            if (! this.deleteButton().hasClass('disabled')) {
+                                this.deleteFile();
+                            }
+                        }, this)
+                    )
+        },
+
+        uploadButton : function() {
+            return this.data('uploadButton') != undefined
+                ? this.data('uploadButton')
+                : $('<a></a>')
+                    .attr('id', 'uploadButton')
+                    .addClass('btn btn-mini')
+                    .append($('<i></i>').addClass('icon-arrow-up'))
+                    .attr('title', 'Upload file')
+                    .tooltip()
+                    .bind('click',
+                        $.proxy( function (e) {
+                            this.data('fileInput').trigger('click');
+                        }, this)
+                    )
         },
 
         addDirectory : function() {
@@ -408,8 +432,8 @@
                                     .bind('click',
                                         function(e) {
                                             $(this).closest('.modal').modal('hide');
-                                            that.options.terminal.client.make_directory_async(
-                                                that.options.terminal.sessionId,
+                                            that.client.make_directory_async(
+                                                that.sessionId,
                                                 parentDir,
                                                 $addDirectoryModal.find('input').val(),
                                                 function (res) { that.refreshDirectory(parentDir) },
@@ -432,6 +456,45 @@
             $addDirectoryModal.modal({'keyboard' : true});
 
 
+        },
+
+        openFile : function(file) {
+
+            // can't open the window in trhe callback!
+            var win = window.open();
+            win.document.open();
+
+            this.client.get_file_async(
+                this.sessionId(),
+                file,
+                '/',
+                $.proxy(
+                    function (res) {
+
+                        try {
+                            var obj = JSON.parse(res);
+                            res = JSON.stringify(obj, undefined, 2);
+                        }
+                        catch(e) {
+                            this.dbg("FAILURE");
+                            this.dbg(e);
+                        }
+
+                        win.document.write(
+                            $('<div></div>').append(
+                                $('<div></div>')
+                                    .css('white-space', 'pre')
+                                    .append(res)
+                            )
+                            .html()
+                        );
+                        win.document.close();
+
+                    },
+                    this
+                ),
+                function (err) { this.dbg("FILE FAILURE"); this.dbg(err) }
+            );
         },
 
         deleteFile : function() {
@@ -513,8 +576,8 @@
                                     .bind('click',
                                         function(e) {
                                             $(this).closest('.modal').modal('hide');
-                                            that.options.terminal.client[deleteMethod](
-                                                that.options.terminal.sessionId,
+                                            that.client[deleteMethod](
+                                                that.sessionId,
                                                 '/',
                                                 file,
                                                 function (res) { that.refreshDirectory(active_dir) },
@@ -571,8 +634,8 @@
                         reader.onload = jQuery.proxy(
                             function(e) {
 
-                                this.options.terminal.client.put_file_async(
-                                    this.options.terminal.sessionId,
+                                this.client.put_file_async(
+                                    this.sessionId(),
                                     file.name,
                                     e.target.result,
                                     upload_dir,

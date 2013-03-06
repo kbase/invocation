@@ -52,7 +52,8 @@
 
                     var $fb = $('#file-browser').kbaseIrisFileBrowser (
                         {
-                            terminal : $term,
+                            client : $term.client,
+                            $loginbox : $term.$loginbox,
                             externalControls : true,
                             processList : $plist,
                         }

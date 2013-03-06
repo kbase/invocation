@@ -61,7 +61,7 @@
             fields : ['name', 'kbase_sessionid', 'user_id', 'token'],
         },
 
-        get_kbase_cookie : function () {
+        get_kbase_cookie : function (field) {
 
             var chips = {};
 
@@ -82,7 +82,13 @@
 
             chips.success = 1;
 
-            return chips;
+            return field == undefined
+                ? chips
+                : chips[field];
+        },
+
+        sessionId : function () {
+            return this.get_kbase_cookie('kbase_session_id');
         },
 
         init: function(options) {
@@ -928,10 +934,12 @@
                 args.message = 'Cannot login w/o user_id';
                 args.status = 0;
                 callback.call(this, args);
-            } else if (password.length == 0) {
+            } else if (password == undefined || password.length == 0) {
                 args.message = 'Cannot login w/o password';
                 args.status = 0;
-                callback.call(this, args);
+                if (callback != undefined) {
+                    callback.call(this, args);
+                }
             }
             else {
                 args.password = password;

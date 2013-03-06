@@ -296,7 +296,7 @@
                                         .css('padding-bottom', '1px')
                                         .attr('id', 'searchField')
                                         .keypress($.proxy(function (e) {
-                                            if (event.which == 13) {
+                                            if (e.which == 13) {
                                                 var regex = new RegExp(this.data('searchField').val(), 'i');
                                                 var commands = this.commandsMatchingRegex(regex);
 
