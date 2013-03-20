@@ -1,5 +1,27 @@
 /*
 
+Widget to create an accordion control. Easy to use!
+
+    var $accordion = $('#accordion').kbaseAccordion(
+        [
+            {
+                title : 'Accordion element 1',
+                body : 'body 1'
+            },
+            {
+                title : 'Accordion element 2',
+                body : 'body 2'
+            },
+            {
+                title : 'Accordion element 3',
+                body : 'body 3'
+            },
+            {
+                title : 'Accordion element 4',
+                body : 'body 4'
+            },
+        ]
+    );
 
 */
 

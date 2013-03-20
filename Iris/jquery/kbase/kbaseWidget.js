@@ -53,11 +53,11 @@
 
                     if (parent) {
                         var _super = function() {
-                            widgetRegistry[parent].prototype[methodName].apply(this, arguments);
+                            return widgetRegistry[parent].prototype[methodName].apply(this, arguments);
                         }
 
                         var _superMethod = function(superMethodName) {
-                            widgetRegistry[parent].prototype[superMethodName].apply(this, Array.prototype.slice.apply(arguments, [1]));
+                            return widgetRegistry[parent].prototype[superMethodName].apply(this, Array.prototype.slice.apply(arguments, [1]));
                         }
                     }
 
@@ -99,11 +99,17 @@
             } else if ( typeof method === 'object' || ! method ) {
                 //return this.data(name).init( arguments );
                 var args = arguments;
-                var $w = Widget.prototype.init.apply(this.data(name), arguments);
+                $w = this.data(name);
+                if (! $w._init) {
+                    $w = Widget.prototype.init.apply($w, arguments);
+                }
+                $w._init = true;
                 return $w;
             } else {
                 $.error( 'Method ' +  method + ' does not exist on ' + name);
             }
+
+            return this;
 
         };
 
@@ -183,6 +189,20 @@
                 );
 
                 return $elem;
+            },
+
+            sortCaseInsensitively : function (a,b) {
+                     if (a.toLowerCase() < b.toLowerCase()) { return -1 }
+                else if (a.toLowerCase() > b.toLowerCase()) { return 1  }
+                else                            { return 0  }
+            },
+
+            trigger : function () {
+                this.$elem.trigger.apply(this.$elem, arguments);
+            },
+
+            on : function () {
+                this.$elem.on.apply(this.$elem, arguments);
             },
 
         }

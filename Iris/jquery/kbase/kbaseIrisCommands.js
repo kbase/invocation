@@ -1,10 +1,28 @@
 /*
 
+    Widget to list all commands available in iris.
+
+    $('#command-list').kbaseIrisCommands(
+        {
+            client          : client,   //invocation client object
+            englishCommands : true,     //use english commands or raw command names
+            link : function (evt) {     //what should happen when you click on a command
+                evt.preventDefault();
+                var f = $("#workspaces").data('addNarrativeCommand');
+                f(
+                    $(this).attr('title'),
+                    $(this).data('type'),
+                    $(this).data('blockOptions')
+                );
+            }
+        }
+    );
+
+    That's it. You're done. This is a useful module to study to see how to subclass kbaseAccordion.
 
 */
 
 (function( $, undefined ) {
-
 
     $.kbWidget("kbaseIrisCommands", 'kbaseAccordion', {
         version: "1.0.0",
@@ -174,7 +192,7 @@
                 .append($('<a></a>')
                     .attr('href', '#')
                     .attr('title', cmd)
-                    .data('blockType', 'narrativeBlock')
+                    .data('type', 'invocation')
                     .css('display', 'list-item')
                     //.tooltip()
                     .text(label)

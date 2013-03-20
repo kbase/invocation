@@ -169,19 +169,19 @@
 
         	if (this.data('loginDialog')) {
 
-                $ld = this.data('loginDialog');
+                var $ld = this.data('loginDialog');
 
-                $('form', $ld).get(0).reset();
+                $('form', $ld.dialogModal()).get(0).reset();
 
 
-                $ld.data("user_id").val( this.session('user_id') || this.data('passed_user_id') || this.options.user_id );
+                $ld.dialogModal().data("user_id").val( this.session('user_id') || this.data('passed_user_id') || this.options.user_id );
 
                 delete this.options.user_id;
                 this.session('user_id',undefined);
 
-                $ld.trigger('clearMessages');
+                $ld.dialogModal().trigger('clearMessages');
 
-        		this.data('loginDialog').modal('show');
+        		this.data('loginDialog').openPrompt();
         	}
         },
 
@@ -241,10 +241,10 @@
                         this.data("loginlink").hide();
                         this.data('loggedinuser_id').text(args.name);
                         this.data("userdisplay").show();
-                        this.data('loginDialog').modal('hide');
+                        this.data('loginDialog').closePrompt();
                     }
                     else {
-                        this.data('loginDialog').trigger('error', args.message);
+                        this.data('loginDialog').dialogModal().trigger('error', args.message);
                     }
                 };
 
@@ -264,10 +264,10 @@
 			this.registerLogin =
 				function(args) {
 					if (args.success) {
-						this.data('loginDialog').modal('hide');
+						this.data('loginDialog').closePrompt();
 					}
 					else {
-                        this.data('loginDialog').trigger('error', args.message);
+                        this.data('loginDialog').dialogModal().trigger('error', args.message);
                     }
 				};
 
@@ -389,80 +389,38 @@
                         this.data('password').val('');
                         this.data("loggedinuser_id").text(args.name);
                         this.data("userdisplay").show();
-                        //this.data('loginDialog').trigger('clearMessages');
-                        //this.data('loginDialog').modal('hide');
                     }
                     else {
 
-                        var $errorModal = $('<div></div>')
-                            .attr('class', 'modal hide fade')
-                            .attr('tabindex', '-1')
-                            .append(
-                                $('<div></div>')
-                                    .attr('class', 'modal-body')
+                        var $errorModal = $('<div></div>').kbasePrompt(
+                            {
+                                title : 'Login failed',
+                                body : $('<div></div>')
+                                    .attr('class', 'alert alert-error')
                                     .append(
                                         $('<div></div>')
-                                            .attr('class', 'alert alert-error')
-                                            .attr('id', 'error')
+                                            .append(
+                                                $('<div></div>')
+                                                    .addClass('pull-left')
+                                                    .append(
+                                                        $('<i></i>')
+                                                            .addClass('icon-warning-sign')
+                                                            .attr('style', 'float: left; margin-right: .3em;')
+                                                    )
+                                            )
                                             .append(
                                                 $('<div></div>')
                                                     .append(
-                                                        $('<div></div>')
-                                                            .addClass('pull-left')
-                                                            .append(
-                                                                $('<i></i>')
-                                                                    .addClass('icon-warning-sign')
-                                                                    .attr('style', 'float: left; margin-right: .3em;')
-                                                            )
-                                                    )
-                                                    .append(
-                                                        $('<div></div>')
-                                                            .append(
-                                                                $('<strong></strong>').append(args.message)
-                                                            )
+                                                        $('<strong></strong>').append(args.message)
                                                     )
                                             )
                                     )
-                                    .append(
-                                        $('<div></div>')
-                                            .attr('class', 'modal-footer')
-                                            .append(
-                                                $('<a></a>')
-                                                    .attr('href', '#')
-                                                    .attr('class', 'btn btn-primary')
-                                                    .append('OK\n')
-                                                    .bind('click',
-                                                        function(e) {
-                                                            $(this).closest('.modal').modal('hide');
-                                                        }
-                                                    )
-                                                    .focus()
-                                            )
-                                        )
-                                )
-                            ;
-                        $errorModal.bind('shown',
-                            function (e) {
-                                $errorModal.unbind('keypress');
-                                $errorModal.keypress(
-                                    function(e) {
-                                        if (e.keyCode == 13) {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            $(this).find('a').trigger("click");
-                                        }
-                                    }
-                                )
+                                ,
+                                controls : ['okayButton'],
                             }
                         );
-                        $errorModal.bind('hidden',
-                            $.proxy(function (e) {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                this.data('password').focus();
-                            }, this)
-                        );
-                        $errorModal.modal('show');
+                        $errorModal.openPrompt();
+
                     }
                 };
 
@@ -543,8 +501,8 @@
 
                     if ( args.success ) {
 
-                        this.data('loginDialog').trigger('clearMessages');
-                        this.data('loginDialog').modal('hide');
+                        this.data('loginDialog').dialogModal().trigger('clearMessages');
+                        this.data('loginDialog').closePrompt();
 
                         this.data('loginbutton').tooltip(
                             {
@@ -565,7 +523,7 @@
                         );
                     }
                     else {
-                        this.data('loginDialog').trigger('error', args.message);
+                        this.data('loginDialog').dialogModal().trigger('error', args.message);
                     }
                 };
 
@@ -644,14 +602,14 @@
                 function(args) {
 
                     if ( args.success ) {
-                        this.data('loginDialog').trigger('clearMessages');
+                        this.data('loginDialog').dialogModal().trigger('clearMessages');
                         this.data("entrance").hide();
                         this.data("loggedinuser_id").text(args.name);
                         this.data("userdisplay").show();
-                        this.data('loginDialog').modal('hide');
+                        this.data('loginDialog').closePrompt();
                     }
                     else {
-                        this.data('loginDialog').trigger('error', args.message);
+                        this.data('loginDialog').dialogModal().trigger('error', args.message);
                     }
                 };
 
@@ -667,224 +625,164 @@
 
             var $elem = this.$elem;
 
-            var $ld = $('<div></div>')
-                .attr('class', 'modal hide fade')
-                .attr('tabindex', '-1')
-                .append(
-                    $('<div></div>')
-                        .attr('class', 'modal-header')
-                        .append(
-                            $('<button></button>')
-                                .attr('type', 'button')
-                                .attr('class', 'close')
-                                .attr('data-dismiss', 'modal')
-                                .attr('aria-hidden', 'true')
-                                .append(' \n')
-                        )
-                        .append(
-                            $('<h3></h3>')
-                                .append('Login to KBase\n')
-                        )
-                )
-                .append(
-                    $('<div></div>')
-                        .attr('class', 'modal-body')
-                        .append(
-                            $('<p></p>')
-                                .append(
-                                    $('<form></form>')
-                                        .attr('name', 'form')
-                                        .attr('id', 'form')
-                                        .addClass('form-horizontal')
-                                        .append(
-                                            $('<fieldset></fieldset>')
-                                                .append(
-                                                    $('<div></div>')
-                                                        .attr('class', 'alert alert-error')
-                                                        .attr('id', 'error')
-                                                        .attr('style', 'display : none')
-                                                        .append(
-                                                            $('<div></div>')
-                                                                .append(
-                                                                    $('<div></div>')
-                                                                        .addClass('pull-left')
-                                                                        .append(
-                                                                            $('<i></i>')
-                                                                                .addClass('icon-warning-sign')
-                                                                                .attr('style', 'float: left; margin-right: .3em;')
-                                                                        )
-                                                                )
-                                                                .append(
-                                                                    $('<div></div>')
-                                                                        .append(
-                                                                            $('<strong></strong>')
-                                                                                .append('Error:\n')
-                                                                        )
-                                                                        .append(
-                                                                            $('<span></span>')
-                                                                                .attr('id', 'errormsg')
-                                                                        )
-                                                                )
-                                                        )
-                                                )
-                                                .append(
-                                                    $('<div></div>')
-                                                        .attr('class', 'alert alert-success')
-                                                        .attr('id', 'pending')
-                                                        .attr('style', 'display : none')
-                                                        .append(
-                                                            $('<div></div>')
-                                                                .append(
-                                                                    $('<div></div>')
-                                                                        .addClass('pull-left')
-                                                                        .append(
-                                                                            $('<i></i>')
-                                                                                .addClass('icon-info-sign')
-                                                                                .attr('style', 'float: left; margin-right: .3em;')
-                                                                        )
-                                                                )
-                                                                .append(
-                                                                    $('<div></div>')
-                                                                        .append(
-                                                                            $('<strong></strong>')
-                                                                                .append('Logging in as:\n')
-                                                                        )
-                                                                        .append(
-                                                                            $('<span></span>')
-                                                                                .attr('id', 'pendinguser')
-                                                                        )
-                                                                )
-                                                        )
-                                                )
-                                                .append(
-                                                    $('<div></div>')
-                                                        .attr('class', 'control-group')
-                                                        .append(
-                                                            $('<label></label>')
-                                                                .addClass('control-label')
-                                                                .attr('for', 'user_id')
-                                                                .css('margin-right', '10px')
-                                                                .append('Username:\n')
-                                                        )
-                                                        .append(
-                                                            $('<input/>')
-                                                                .attr('type', 'text')
-                                                                .attr('name', 'user_id')
-                                                                .attr('id', 'user_id')
-                                                                .attr('size', '20')
-                                                        )
-                                                )
-                                                .append(
-                                                    $('<div></div>')
-                                                        .attr('class', 'inputbox control-group')
-                                                        .append(
-                                                            $('<label></label>')
-                                                                .addClass('control-label')
-                                                                .attr('for', 'password')
-                                                                .css('margin-right', '10px')
-                                                                .append('Password:\n')
-                                                        )
-                                                        .append(
-                                                            $('<input/>')
-                                                                .attr('type', 'password')
-                                                                .attr('name', 'password')
-                                                                .attr('id', 'password')
-                                                                .attr('size', '20')
-                                                                .keypress(
-                                                                    $.proxy(
-                                                                        function(e) {
-                                                                            if (e.keyCode == 13) {
-                                                                                this.data('loginDialog').data('loginbutton').trigger("click");
-                                                                                e.stopPropagation();
-                                                                                e.preventDefault();
-                                                                            }
-                                                                        },
-                                                                        this
+            var $ld = $('<div></div').kbasePrompt(
+                {
+                    title : 'Login to KBase',
+                    controls : [
+                        'cancelButton',
+                        {
+                            name     : 'Login',
+                            type     : 'primary',
+                            id       : 'loginbutton',
+                            callback : $.proxy( function(e) {
+                                var user_id  = this.data('loginDialog').dialogModal().data('user_id').val();
+                                var password = this.data('loginDialog').dialogModal().data('password').val();
+
+                                this.data('loginDialog').dialogModal().trigger('message', user_id);
+
+                                this.login(user_id, password, function(args) {
+
+                                    if (this.registerLogin) {
+                                        this.registerLogin(args);
+                                    }
+
+                                    if (this.options.login_callback) {
+                                        this.options.login_callback.call(this, args);
+                                    }
+                                });
+
+                            },this)
+                        }
+                    ],
+                    body  :
+                        $('<p></p>')
+                            .append(
+                                $('<form></form>')
+                                    .attr('name', 'form')
+                                    .attr('id', 'form')
+                                    .addClass('form-horizontal')
+                                    .append(
+                                        $('<fieldset></fieldset>')
+                                            .append(
+                                                $('<div></div>')
+                                                    .attr('class', 'alert alert-error')
+                                                    .attr('id', 'error')
+                                                    .attr('style', 'display : none')
+                                                    .append(
+                                                        $('<div></div>')
+                                                            .append(
+                                                                $('<div></div>')
+                                                                    .addClass('pull-left')
+                                                                    .append(
+                                                                        $('<i></i>')
+                                                                            .addClass('icon-warning-sign')
+                                                                            .attr('style', 'float: left; margin-right: .3em;')
                                                                     )
-                                                                )
-                                                        )
-                                                )
-                                        )
-                                )
-                        )
-                )
-                .append(
-                    $('<div></div>')
-                        .attr('class', 'modal-footer')
+                                                            )
+                                                            .append(
+                                                                $('<div></div>')
+                                                                    .append(
+                                                                        $('<strong></strong>')
+                                                                            .append('Error:\n')
+                                                                    )
+                                                                    .append(
+                                                                        $('<span></span>')
+                                                                            .attr('id', 'errormsg')
+                                                                    )
+                                                            )
+                                                    )
+                                            )
+                                            .append(
+                                                $('<div></div>')
+                                                    .attr('class', 'alert alert-success')
+                                                    .attr('id', 'pending')
+                                                    .attr('style', 'display : none')
+                                                    .append(
+                                                        $('<div></div>')
+                                                            .append(
+                                                                $('<div></div>')
+                                                                    .addClass('pull-left')
+                                                                    .append(
+                                                                        $('<i></i>')
+                                                                            .addClass('icon-info-sign')
+                                                                            .attr('style', 'float: left; margin-right: .3em;')
+                                                                    )
+                                                            )
+                                                            .append(
+                                                                $('<div></div>')
+                                                                    .append(
+                                                                        $('<strong></strong>')
+                                                                            .append('Logging in as:\n')
+                                                                    )
+                                                                    .append(
+                                                                        $('<span></span>')
+                                                                            .attr('id', 'pendinguser')
+                                                                    )
+                                                            )
+                                                    )
+                                            )
+                                            .append(
+                                                $('<div></div>')
+                                                    .attr('class', 'control-group')
+                                                    .append(
+                                                        $('<label></label>')
+                                                            .addClass('control-label')
+                                                            .attr('for', 'user_id')
+                                                            .css('margin-right', '10px')
+                                                            .append('Username:\n')
+                                                    )
+                                                    .append(
+                                                        $('<input/>')
+                                                            .attr('type', 'text')
+                                                            .attr('name', 'user_id')
+                                                            .attr('id', 'user_id')
+                                                            .attr('size', '20')
+                                                    )
+                                            )
+                                            .append(
+                                                $('<div></div>')
+                                                    .attr('class', 'control-group')
+                                                    .append(
+                                                        $('<label></label>')
+                                                            .addClass('control-label')
+                                                            .attr('for', 'password')
+                                                            .css('margin-right', '10px')
+                                                            .append('Password:\n')
+                                                    )
+                                                    .append(
+                                                        $('<input/>')
+                                                            .attr('type', 'password')
+                                                            .attr('name', 'password')
+                                                            .attr('id', 'password')
+                                                            .attr('size', '20')
+                                                    )
+                                            )
+                                    )
+                            )
+                    ,   //body
+                    footer : $('<span></span')
                         .append(
-                            $('<div></div>')
-                                .addClass('row-fluid')
-                                .addClass('form-horizontal')
-                                .append(
-                                    $('<div></div>')
-                                    .addClass('span6')
-                                    .addClass('text-left')
-                                    .append(
-                                        $('<a></a>')
-                                            .attr('href', 'https://gologin.kbase.us/ResetPassword')
-                                            .attr('target', '_blank')
-                                            .text('Forgot password?')
-                                    )
-                                    .append('&nbsp;|&nbsp;')
-                                    .append(
-                                        $('<a></a>')
-                                            .attr('href', ' https://gologin.kbase.us/OAuth?response_type=code&step=SignUp&redirect_uri=' + encodeURIComponent(location.href))
-                                            .attr('target', '_blank')
-                                            .text('Sign up')
-                                    )
-                                )
-                                .append(
-                                    $('<div></div>')
-                                        .addClass('span4 offset2')
-                                    .append(
-                                        $('<a></a>')
-                                            .attr('href', '#')
-                                            .attr('class', 'btn')
-                                            .append('Cancel\n')
-                                            .bind('click',
-                                                function(e) {
-                                                    $(this).closest('.modal').modal('hide');
-                                                }
-                                            )
-                                    )
-                                    .append(
-                                        $('<a></a>')
-                                            .attr('href', '#')
-                                            .attr('id', 'loginbutton')
-                                            .attr('class', 'btn btn-primary')
-                                            .append('Login\n')
-                                            .bind('click',
-                                                $.proxy( function(e) {
-                                                    var user_id  = this.data('loginDialog').data('user_id').val();
-                                                    var password = this.data('loginDialog').data('password').val();
-
-                                                    this.data('loginDialog').trigger('message', user_id);
-
-                                                    this.login(user_id, password, function(args) {
-
-                                                        if (this.registerLogin) {
-                                                            this.registerLogin(args);
-                                                        }
-
-                                                        if (this.options.login_callback) {
-                                                            this.options.login_callback.call(this, args);
-                                                        }
-                                                    });
-
-                                                },this)
-                                            )
-                                    )
-                                )
+                            $('<a></a>')
+                                .attr('href', 'https://gologin.kbase.us/ResetPassword')
+                                .attr('target', '_blank')
+                                .text('Forgot password?')
                         )
-                )
-            ;
+                        .append('&nbsp;|&nbsp;')
+                        .append(
+                            $('<a></a>')
+                                .attr('href', ' https://gologin.kbase.us/OAuth?response_type=code&step=SignUp&redirect_uri=' + encodeURIComponent(location.href))
+                                .attr('target', '_blank')
+                                .text('Sign up')
+                        )
+                    ,
+                }
+            );
 
-            this._rewireIds($ld, $ld);
+            this._rewireIds($ld.dialogModal(), $ld.dialogModal());
+
             this.data('loginDialog', $ld);
 
-            $ld.modal({'keyboard' : true, 'show' : false});
-
-            $ld.bind('error',
+            $ld.dialogModal().bind('error',
                 function(event, msg) {
                     $(this).trigger('clearMessages');
                     $(this).data("error").show();
@@ -892,7 +790,7 @@
                 }
             );
 
-            $ld.bind('message',
+            $ld.dialogModal().bind('message',
                 function(event, msg) {
                     $(this).trigger('clearMessages');
                     $(this).data("pending").show();
@@ -900,24 +798,11 @@
                 }
             );
 
-            $ld.bind('clearMessages',
+            $ld.dialogModal().bind('clearMessages',
                 function(event) {
                     $(this).data("error").hide();
                     $(this).data("pending").hide();
                 }
-            );
-
-            $ld.on('shown',
-                $.proxy(
-                    function () {
-                        var $ld = this.data('loginDialog');
-                        $ld.data("user_id").focus();
-                        if ($ld.data('user_id').val()) {
-                            $ld.data('password').focus();
-                        }
-                    },
-                    this
-                )
             );
 
             return $ld;

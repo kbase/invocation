@@ -130,7 +130,8 @@
                     }
                 );
 
-            this.tutorial_position = 1;
+            this.tutorial = $('<div></div>').kbaseIrisTutorial({tutorial : 'annotate_genome'});
+
             this.commandHistory = [];
             this.commandHistoryPosition = 0;
 
@@ -540,7 +541,7 @@
         },
 
         // Outputs a line of text
-        out_to_div: function($div, text, scroll, html) {
+        out_to_div : function($div, text, scroll, html) {
             if (!html && typeof text == 'string') {
                 text = text.replace(/</g, '&lt;');
                 text = text.replace(/>/g, '&gt;');
@@ -894,26 +895,37 @@
             }
 
             if (command == "next") {
-                if (this.tutorial_next >= 0) {
-                    this.tutorial_position = this.tutorial_next;
-                }
+                this.tutorial.goToNextPage();
                 command = "show_tutorial";
             }
 
             if (command == "back") {
-                if (this.tutorial_prev >= 0) {
-                    this.tutorial_position = this.tutorial_prev;
-                }
+                this.tutorial.goToPrevPage();
                 command = "show_tutorial";
             }
 
             if (command == "tutorial") {
-                this.tutorial_position = 1;
+                this.tutorial.currentPage = 0;
                 command = "show_tutorial";
             }
 
             if (command == 'show_tutorial') {
-                this.client.get_tutorial_text_async(
+                var $page = this.tutorial.contentForCurrentPage().clone();
+                var headerCSS = { 'text-align' : 'left', 'font-size' : '100%' };
+                $page.find('h1').css( headerCSS );
+                $page.find('h2').css( headerCSS );
+                if (this.tutorial.currentPage > 0) {
+                    $page.append("<br>Type <i>back</i> to move to the previous step in the tutorial.");
+                }
+                if (this.tutorial.currentPage < this.tutorial.pages.length - 1) {
+                    $page.append("<br>Type <i>next</i> to move to the next step in the tutorial.");
+                }
+
+                $commandDiv.css('white-space', '');
+                //console.log($commandDiv);
+                this.out_to_div($commandDiv, $page, 0, 1);
+                this.scroll();
+                /*this.client.get_tutorial_text_async(
                     this.tutorial_position,
                     jQuery.proxy(
                         function (what) {
@@ -942,7 +954,7 @@
                         },
                         this
                     )
-                );
+                );*/
                 return;
             }
 
@@ -1188,10 +1200,9 @@
                                         )
                                     );
                                 }
-				else
-				{
-				    this.out_to_div($commandDiv, $('<i></i>').html("Command completed."));
-				}
+                                else {
+                                    this.out_to_div($commandDiv, $('<i></i>').html("Command completed."));
+                                }
                             }
                         }
                         else {
