@@ -49,7 +49,12 @@
                             overflow        : false,
                             link            : function (evt) {
                                 evt.preventDefault();
-                                $('#terminal').kbaseIrisTerminal('appendInput', $(this).attr('title') + ' ');
+                                var $terminal = $('#terminal').kbaseIrisTerminal();
+                                var append = $(this).attr('title') + ' ';
+                                if ($terminal.input_box.val().length && ! $terminal.input_box.val().match(/[\|;]\s*$/)) {
+                                    append = '| ' + append;
+                                }
+                                $terminal.appendInput(append);
                             }
                         }
                     );
@@ -60,6 +65,9 @@
                             $loginbox : $term.$loginbox,
                             externalControls : true,
                             processList : $plist,
+                            addFileCallback : function (file) {
+                                $('#terminal').kbaseIrisTerminal('appendInput', file + ' ');
+                            }
                         }
                     );
 

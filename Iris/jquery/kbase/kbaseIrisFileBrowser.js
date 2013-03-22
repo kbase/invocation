@@ -15,7 +15,7 @@
             'height' : '110px',
             'tallHeight' : '450px',
             'shouldToggleNavHeight' : true,
-            'controlButtons' : ['deleteButton', 'viewButton', 'addDirectoryButton', 'uploadButton'],
+            'controlButtons' : ['deleteButton', 'viewButton', 'addDirectoryButton', 'uploadButton', 'addButton'],
         },
 
         init: function (options) {
@@ -98,6 +98,7 @@
                                                     $fb.data('activeFile', undefined);
                                                     $fb.viewButton().addClass('disabled');
                                                     $fb.deleteButton().addClass('disabled');
+                                                    $fb.addButton().addClass('disabled');
 
                                                     var $opened = $fb.$elem.find('.active');
                                                     $opened.removeClass('active');
@@ -163,6 +164,7 @@
                                                     $fb.data('activeFile', undefined);
                                                     $fb.viewButton().addClass('disabled');
                                                     $fb.deleteButton().addClass('disabled');
+                                                    $fb.addButton().addClass('disabled');
                                                     var $opened = $fb.$elem.find('.active');
                                                     $opened.removeClass('active');
                                                     if ($(this).parent().get(0) != $opened.get(0)) {
@@ -170,6 +172,7 @@
                                                         $fb.data('activeFile', val['full_path']);
                                                         $fb.viewButton().removeClass('disabled');
                                                         $fb.deleteButton().removeClass('disabled');
+                                                        $fb.addButton().removeClass('disabled');
 
                                                     }
                                                 }
@@ -350,6 +353,29 @@
                     .bind('click',
                         $.proxy( function (e) {
                             this.data('fileInput').trigger('click');
+                        }, this)
+                    )
+        },
+        addButton : function() {
+            if (this.options.addFileCallback == undefined) {
+                return '';
+            }
+
+            return this.data('addButton') != undefined
+                ? this.data('addButton')
+                : $('<a></a>')
+                    .attr('id', 'addButton')
+                    .addClass('btn btn-mini disabled')
+                    .append($('<i></i>').addClass('icon-arrow-right'))
+                    .attr('title', 'Add file')
+                    .tooltip()
+                    .bind('click',
+                        $.proxy( function (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (! this.deleteButton().hasClass('disabled')) {
+                                this.options.addFileCallback(this.data('activeFile'));
+                            }
                         }, this)
                     )
         },
