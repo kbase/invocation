@@ -130,7 +130,7 @@
                     }
                 );
 
-            this.tutorial = $('<div></div>').kbaseIrisTutorial({tutorial : 'annotate_genome'});
+            this.tutorial = $('<div></div>').kbaseIrisTutorial();
 
             this.commandHistory = [];
             this.commandHistoryPosition = 0;
@@ -909,6 +909,33 @@
                 command = "show_tutorial";
             }
 
+            if (command == 'tutorial list') {
+                var list = this.tutorial.list();
+                $.each(
+                    list,
+                    $.proxy( function (idx, val) {
+                        $commandDiv.append(
+                            $('<a></a>')
+                                .attr('href', '#')
+                                .append(val)
+                                .bind('click', $.proxy( function (e) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    this.out_to_div($commandDiv, 'Set tutorial to <i>' + val + '</i><br>', 0, 1);
+                                    this.tutorial = $('<div></div>').kbaseIrisTutorial({tutorial : val});
+                                    this.input_box.focus();
+                                }, this))
+                            .append('<br>')
+                        );
+
+                    }, this)
+                );
+                console.log($commandDiv);
+                //this.out_to_div($commandDiv, output, 0, 1);
+                this.scroll();
+                return;
+            }
+
             if (command == 'show_tutorial') {
                 var $page = this.tutorial.contentForCurrentPage().clone();
                 var headerCSS = { 'text-align' : 'left', 'font-size' : '100%' };
@@ -920,6 +947,7 @@
                 if (this.tutorial.currentPage < this.tutorial.pages.length - 1) {
                     $page.append("<br>Type <i>next</i> to move to the next step in the tutorial.");
                 }
+                $page.append("<br>Type <i>tutorial list</i> to see available tutorials.");
 
                 $commandDiv.css('white-space', '');
                 //console.log($commandDiv);

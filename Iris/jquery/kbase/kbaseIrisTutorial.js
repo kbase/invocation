@@ -8,22 +8,35 @@
     $.kbWidget("kbaseIrisTutorial", 'kbaseWidget', {
         version: "1.0.0",
         options: {
-
+            default : 'How to annotate a genome',
         },
 
         dispatch : {
-            annotate_genome : 'http://www.prototypesite.net/iris/annotate_genome.html'
+            'How to annotate a genome' : 'http://www.prototypesite.net/iris/annotate_genome.html',
+            'How to create an IRIS tutorial' : 'http://www.prototypesite.net/iris/tutorial_tutorial.html',
+            'Constructing RAST2 in the IRIS Environment': 'http://www.prototypesite.net/iris/rast2.html',
+        },
+
+        list : function() {
+            var output = [];
+            for (key in this.dispatch) {
+                output.push(key);
+            }
+
+            return output.sort();
         },
 
         init : function (options) {
             this._super(options);
 
-            if (this.options.tutorial != undefined) {
-                this.retrieveTutorial(this.options.tutorial);
+            if (this.options.tutorial == undefined) {
+                this.options.tutorial = this.options.default;
             }
 
+            this.retrieveTutorial(this.options.tutorial);
+
             this.pages = [];
-            this.currentPage = 0;
+            this.currentPage = -1;
 
             return this;
         },
@@ -73,14 +86,14 @@
             		            var $head = $(page).find('h2');
             		            var $content = $(page).find('div');
             		            $(page).find('.example').remove();
-            		            $.each(
+            		            /*$.each(
             		                $(page).find('pre'),
             		                function (idx, pre) {
             		                    var html = $(pre).html();
             		                    html = html.replace(/^\s+/mg, '');
             		                    $(pre).html(html);
             		                }
-            		            );
+            		            );*/
             		            $head.remove();
             		            this.pages.push(
             		                {
@@ -119,7 +132,11 @@
         },
 
         currentPage : function() {
-            return this.pages[this.currentPage];
+            page = this.currentPage;
+            if (this.currentPage < 0) {
+                page = 0;
+            }
+            return this.pages[page];
         },
 
         goToPrevPage : function () {
