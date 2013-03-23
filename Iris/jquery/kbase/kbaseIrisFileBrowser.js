@@ -96,9 +96,7 @@
                                                     e.preventDefault();
                                                     $fb.data('activeDirectory', undefined);
                                                     $fb.data('activeFile', undefined);
-                                                    $fb.viewButton().addClass('disabled');
-                                                    $fb.deleteButton().addClass('disabled');
-                                                    $fb.addButton().addClass('disabled');
+                                                    $fb.disableButtons();
 
                                                     var $opened = $fb.$elem.find('.active');
                                                     $opened.removeClass('active');
@@ -115,7 +113,7 @@
                                                         else {
                                                             $fb.data('activeDirectory', val['full_path']);
                                                             $(this).parent().addClass('active');
-                                                            $fb.deleteButton().removeClass('disabled');
+                                                            $fb.enableButtons('d');
                                                         }
 
                                                     }
@@ -126,7 +124,7 @@
                                                         $fb.listDirectory(val['full_path'], $(this).next());
                                                         $(this).parent().addClass('active');
                                                         $fb.data('activeDirectory', val['full_path']);
-                                                        $fb.deleteButton().removeClass('disabled');
+                                                        $fb.enableButtons('d');
                                                     }
                                                 }
                                             )
@@ -162,18 +160,13 @@
                                                     e.preventDefault();
                                                     $fb.data('activeDirectory', undefined);
                                                     $fb.data('activeFile', undefined);
-                                                    $fb.viewButton().addClass('disabled');
-                                                    $fb.deleteButton().addClass('disabled');
-                                                    $fb.addButton().addClass('disabled');
+                                                    $fb.disableButtons();
                                                     var $opened = $fb.$elem.find('.active');
                                                     $opened.removeClass('active');
                                                     if ($(this).parent().get(0) != $opened.get(0)) {
                                                         $(this).parent().addClass('active');
                                                         $fb.data('activeFile', val['full_path']);
-                                                        $fb.viewButton().removeClass('disabled');
-                                                        $fb.deleteButton().removeClass('disabled');
-                                                        $fb.addButton().removeClass('disabled');
-
+                                                        $fb.enableButtons('f');
                                                     }
                                                 }
                                             )
@@ -279,9 +272,40 @@
             this._rewireIds($div, this);
 
             this.listDirectory(this.options.root, $ul);
+            this.disableButtons();
 
             return this;
 
+        },
+
+        disableButtons : function() {
+            this.toggleButtons('N');
+        },
+
+        enableButtons : function(flag) {
+            this.toggleButtons(flag);
+        },
+
+        toggleButtons : function(flag) {
+
+            $.each(
+                this.options.controlButtons,
+                $.proxy(function (idx, val) {
+                    var $button = this[val]();
+                    if ($button == undefined) {
+                        return;
+                    }
+                    var require = $button.data('require');
+                    if (require != undefined) {
+                        if ((require == 'a' && flag != 'N') || require == flag) {
+                            $button.removeClass('disabled');
+                        }
+                        else {
+                            $button.addClass('disabled');
+                        }
+                    }
+                }, this)
+            );
         },
 
         addDirectoryButton : function() {
@@ -308,7 +332,7 @@
                 ? this.data('viewButton')
                 : $('<a></a>')
                     .attr('id', 'viewButton')
-                    .addClass('btn btn-mini disabled')
+                    .addClass('btn btn-mini')
                     .append($('<i></i>').addClass('icon-search'))
                     .attr('title', 'View selected file')
                     .tooltip()
@@ -320,6 +344,7 @@
                             }
                         }, this)
                     )
+                    .data('require', 'f')
         },
 
         deleteButton : function() {
@@ -327,7 +352,7 @@
                 ? this.data('deleteButton')
                 : $('<a></a>')
                     .attr('id', 'deleteButton')
-                    .addClass('btn btn-mini disabled')
+                    .addClass('btn btn-mini')
                     .append($('<i></i>').addClass('icon-remove'))
                     .attr('title', 'Delete selected item')
                     .tooltip()
@@ -339,6 +364,7 @@
                             }
                         }, this)
                     )
+                    .data('require', 'a')
         },
 
         uploadButton : function() {
@@ -358,14 +384,14 @@
         },
         addButton : function() {
             if (this.options.addFileCallback == undefined) {
-                return '';
+                return;
             }
 
             return this.data('addButton') != undefined
                 ? this.data('addButton')
                 : $('<a></a>')
                     .attr('id', 'addButton')
-                    .addClass('btn btn-mini disabled')
+                    .addClass('btn btn-mini')
                     .append($('<i></i>').addClass('icon-arrow-right'))
                     .attr('title', 'Add file')
                     .tooltip()
@@ -378,6 +404,7 @@
                             }
                         }, this)
                     )
+                    .data('require', 'f')
         },
 
         addDirectory : function() {
