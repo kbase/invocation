@@ -57,6 +57,98 @@
             return this.$loginbox.sessionId();
         },
 
+        displayPath : function(path, $ul, filelist) {
+
+            var $fb = this;
+
+            $ul.empty();
+
+             $.each(
+                filelist,
+                $.proxy(function (idx, val) {
+
+                    var icon = 'icon-file';
+                    var callback = function(e) {
+                        e.preventDefault();
+                        $fb.data('activeDirectory', undefined);
+                        $fb.data('activeFile', undefined);
+                        $fb.disableButtons();
+                        var $opened = $fb.$elem.find('.active');
+                        $opened.removeClass('active');
+                        if ($(this).parent().get(0) != $opened.get(0)) {
+                            $(this).parent().addClass('active');
+                            $fb.data('activeFile', val.path);
+                            $fb.enableButtons('f');
+                        }
+                    };
+
+                    if (val.type == 'directory') {
+                        icon = this.data(val.path) ? 'icon-folder-open-alt' : 'icon-folder-close-alt'
+                        callback = function(e) {
+                            e.preventDefault();
+                            $fb.data('activeDirectory', undefined);
+                            $fb.data('activeFile', undefined);
+                            $fb.disableButtons();
+
+                            var $opened = $fb.$elem.find('.active');
+                            $opened.removeClass('active');
+
+                            //has children? It's opened. Close it.
+                            if ($(this).next().children().length) {
+                                //shut it if it's active. Otherwise, make it active
+                                if ($(this).parent().get(0) == $opened.get(0)) {
+                                    $(this).children().first().removeClass('icon-folder-open-alt');
+                                    $(this).children().first().addClass('icon-folder-close-alt');
+                                    $(this).next().empty();
+                                    $fb.data(val.path, undefined);
+                                }
+                                else {
+                                    $fb.data('activeDirectory', val.path);
+                                    $(this).parent().addClass('active');
+                                    $fb.enableButtons('d');
+                                }
+
+                            }
+                            //no children? it's closed. open it.
+                            else {
+                                $(this).children().first().removeClass('icon-folder-close-alt');
+                                $(this).children().first().addClass('icon-folder-open-alt');
+                                $fb.listDirectory(val.path, $(this).next());
+                                $(this).parent().addClass('active');
+                                $fb.data('activeDirectory', val.path);
+                                $fb.enableButtons('d');
+                            }
+                        }
+
+                    }
+
+                    $ul.append(
+                        $('<li></li>')
+                            .append(
+                                $('<a></a>')
+                                    .append(
+                                        $('<i></i>')
+                                            .addClass(icon)
+                                            .css('color', 'gray')
+                                    )
+                                    .append(' ')
+                                    .append(val.name)
+                                    .attr('href', '#')
+                                    .bind('click',
+                                        callback
+                                    )
+                            )
+                            .append($('<ul></ul>').addClass('nav nav-list'))
+                    );
+
+                    if (val.type == 'directory' && this.data(val.path)) {
+                        this.listDirectory(val.path, $ul.children().last().children().last());
+                    }
+                }, this)
+            );
+
+        },
+
         listDirectory : function (path, $ul) {
 
             this.data(path, $ul);
@@ -65,121 +157,39 @@
                 this.sessionId(),
                 '/',
                 path,
-                jQuery.proxy( function (filelist) {
-                    var dirs = filelist[0];
-                    var files = filelist[1];
+                $.proxy( function(filelist) {
+                    var dirs = filelist[0].sort(this.sortByName);
+                    var files = filelist[1].sort(this.sortByName);
 
-                    var $fb = this;
+                    var allFiles = [];
 
-                    $ul.empty();
-
-                    jQuery.each(
-                        dirs.sort(this.sortByName),
-                        $.proxy(function (idx, val) {
-
-                            val['full_path'] = val['full_path'].replace(/\/+/g, '/');
-
-                            $ul.append(
-                                $('<li></li>')
-                                    .append(
-                                        $('<a></a>')
-                                            .append(
-                                                $('<i></i>')
-                                                    .addClass(this.data(val['full_path']) ? 'icon-folder-open-alt' : 'icon-folder-close-alt')
-                                                    .css('color', 'gray')
-                                            )
-                                            .append(' ')
-                                            .append(val['name'])
-                                            .attr('href', '#')
-                                            .bind('click',
-                                                function(e) {
-                                                    e.preventDefault();
-                                                    $fb.data('activeDirectory', undefined);
-                                                    $fb.data('activeFile', undefined);
-                                                    $fb.disableButtons();
-
-                                                    var $opened = $fb.$elem.find('.active');
-                                                    $opened.removeClass('active');
-
-                                                    //has children? It's opened. Close it.
-                                                    if ($(this).next().children().length) {
-                                                        //shut it if it's active. Otherwise, make it active
-                                                        if ($(this).parent().get(0) == $opened.get(0)) {
-                                                            $(this).children().first().removeClass('icon-folder-open-alt');
-                                                            $(this).children().first().addClass('icon-folder-close-alt');
-                                                            $(this).next().empty();
-                                                            $fb.data(val['full_path'], undefined);
-                                                        }
-                                                        else {
-                                                            $fb.data('activeDirectory', val['full_path']);
-                                                            $(this).parent().addClass('active');
-                                                            $fb.enableButtons('d');
-                                                        }
-
-                                                    }
-                                                    //no children? it's closed. open it.
-                                                    else {
-                                                        $(this).children().first().removeClass('icon-folder-close-alt');
-                                                        $(this).children().first().addClass('icon-folder-open-alt');
-                                                        $fb.listDirectory(val['full_path'], $(this).next());
-                                                        $(this).parent().addClass('active');
-                                                        $fb.data('activeDirectory', val['full_path']);
-                                                        $fb.enableButtons('d');
-                                                    }
-                                                }
-                                            )
-                                    )
-                                    .append($('<ul></ul>').addClass('nav nav-list'))
-                            );
-
-                            if (this.data(val['full_path'])) {
-                                this.listDirectory(val['full_path'], $ul.children().last().children().last());
-                            }
+                    $.each(
+                        dirs,
+                        $.proxy(function(idx, val) {
+                            allFiles.push({
+                                name : val['name'],
+                                path : val['full_path'].replace(/\/+/g, '/'),
+                                type : 'directory'
+                            })
                         }, this)
                     );
-                    jQuery.each(
-                        files.sort(this.sortByName),
-                        function (idx, val) {
 
-                            val['full_path'] = val['full_path'].replace(/\/+/g, '/');
-
-                            $ul.append(
-                                $('<li></li>')
-                                    .append(
-                                        $('<a></a>')
-                                            .append(
-                                                $('<i></i>')
-                                                    .addClass('icon-file')
-                                                    .css('color', 'gray')
-                                            )
-                                            .append(' ')
-                                            .append(val['name'])
-                                            .attr('href', '#')
-                                            .bind('click',
-                                                function(e) {
-                                                    e.preventDefault();
-                                                    $fb.data('activeDirectory', undefined);
-                                                    $fb.data('activeFile', undefined);
-                                                    $fb.disableButtons();
-                                                    var $opened = $fb.$elem.find('.active');
-                                                    $opened.removeClass('active');
-                                                    if ($(this).parent().get(0) != $opened.get(0)) {
-                                                        $(this).parent().addClass('active');
-                                                        $fb.data('activeFile', val['full_path']);
-                                                        $fb.enableButtons('f');
-                                                    }
-                                                }
-                                            )
-                                    )
-                            );
-                        }
+                    $.each(
+                        files,
+                        $.proxy(function(idx, val) {
+                            allFiles.push({
+                                name : val['name'],
+                                path : val['full_path'].replace(/\/+/g, '/'),
+                                type : 'file'
+                            });
+                        }, this)
                     );
 
-                    }, this
-                ),
+                    this.displayPath(path, $ul, allFiles);
+
+                }, this),
                 $.proxy(function (err) {this.dbg(err)},this)
             );
-
         },
 
         toggleNavHeight : function () {
@@ -353,7 +363,7 @@
                 : $('<a></a>')
                     .attr('id', 'deleteButton')
                     .addClass('btn btn-mini')
-                    .append($('<i></i>').addClass('icon-remove'))
+                    .append($('<i></i>').addClass('icon-minus'))
                     .attr('title', 'Delete selected item')
                     .tooltip()
                     .bind('click',
@@ -438,13 +448,7 @@
                             type : 'primary',
                             callback : function(e, $prompt) {
                                 $prompt.closePrompt();
-                                that.client.make_directory_async(
-                                    that.sessionId,
-                                    parentDir,
-                                    $addDirectoryModal.dialogModal().find('input').val(),
-                                    function (res) { that.refreshDirectory(parentDir) },
-                                    function() {}
-                                    );
+                                that.makeDirectoryCallback($addDirectoryModal.dialogModal().find('input').val(), parentDir);
                             }
                         }
                     ]
@@ -456,19 +460,46 @@
 
         },
 
-        openFile : function(file) {
+        makeDirectoryCallback : function (dir, parentDir) {
+            this.client.make_directory_async(
+                this.sessionId,
+                parentDir,
+                dir,
+                $.proxy(function (res) { this.refreshDirectory(parentDir) }, this),
+                function() {}
+                );
+        },
 
-            // can't open the window in trhe callback!
-            var win = window.open();
-            win.document.open();
+        openFile : function(file, content, win) {
 
+            if (win == undefined) {
+                win = window.open();
+                win.document.open();
+            }
+
+            if (content == undefined) {
+                this.fetchContent(file, win);
+            }
+
+            win.document.write(
+                $('<div></div>').append(
+                    $('<div></div>')
+                        .css('white-space', 'pre')
+                        .append(content)
+                )
+                .html()
+            );
+            win.document.close();
+
+        },
+
+        fetchContent : function(file, win) {
             this.client.get_file_async(
                 this.sessionId(),
                 file,
                 '/',
                 $.proxy(
-                    function (res) {
-
+                    function(res) {
                         try {
                             var obj = JSON.parse(res);
                             res = JSON.stringify(obj, undefined, 2);
@@ -477,28 +508,16 @@
                             this.dbg("FAILURE");
                             this.dbg(e);
                         }
-
-                        win.document.write(
-                            $('<div></div>').append(
-                                $('<div></div>')
-                                    .css('white-space', 'pre')
-                                    .append(res)
-                            )
-                            .html()
-                        );
-                        win.document.close();
-
-                    },
-                    this
-                ),
-                function (err) { this.dbg("FILE FAILURE"); this.dbg(err) }
+                        this.openFile(file, res, win);
+                    }, this),
+                $.proxy(function (err) { this.dbg("FILE FAILURE"); this.dbg(err) }, this)
             );
         },
 
         deleteFile : function() {
 
             var file = this.data('activeFile');
-            var deleteMethod = 'remove_files_async';
+            var deleteMethod = 'deleteFileCallback';
 
             if (file == undefined) {
                 file = this.data('activeDirectory');
@@ -508,7 +527,7 @@
                 }
 
                 file = file.replace(/\/+$/, '');
-                deleteMethod = 'remove_directory_async';
+                deleteMethod = 'deleteDirectoryCallback';
 
             }
             var matches = file.match(/(.+)\/[^/]+$/);
@@ -527,19 +546,33 @@
                     name : promptFile,
                     callback : function(e, $prompt) {
                         $prompt.closePrompt();
-                        that.client[deleteMethod](
-                            that.sessionId,
-                            '/',
-                            file,
-                            function (res) { that.refreshDirectory(active_dir) },
-                            function() {}
-                            );
+                        that[deleteMethod](file, active_dir);
                     }
                 }
             );
 
             $deleteModal.openPrompt();
 
+        },
+
+        deleteFileCallback : function(file, active_dir) {
+            this.client.remove_files_async(
+                this.sessionId,
+                '/',
+                file,
+                $.proxy(function (res) { this.refreshDirectory(active_dir) }, this),
+                function() {}
+                );
+        },
+
+        deleteDirectoryCallback : function(file, active_dir) {
+            this.client.remove_directory_async(
+                this.sessionId,
+                '/',
+                file,
+                $.proxy(function (res) { this.refreshDirectory(active_dir) }, this),
+                function() {}
+                );
         },
 
         handleFileSelect : function(evt) {
@@ -572,25 +605,7 @@
 
                         reader.onload = jQuery.proxy(
                             function(e) {
-
-                                this.client.put_file_async(
-                                    this.sessionId(),
-                                    file.name,
-                                    e.target.result,
-                                    upload_dir,
-                                    jQuery.proxy( function (res) {
-                                        if (this.options.processList) {
-                                            this.options.processList.removeProcess($processElem);
-                                        }
-                                        this.refreshDirectory(upload_dir)
-                                    }, this),
-                                    jQuery.proxy( function (res) {
-                                        if (this.options.processList) {
-                                            this.options.processList.removeProcess($processElem);
-                                        }
-                                        this.dbg(res);
-                                    }, this)
-                                );
+                                this.uploadFile(file.name, e.target.result, upload_dir, $processElem);
                             },
                             this
                         );
@@ -604,7 +619,28 @@
 
             this.data('fileInput').val('');
 
-        }
+        },
+
+        uploadFile : function(name, content, upload_dir, $processElem) {
+             this.client.put_file_async(
+                    this.sessionId(),
+                    name,
+                    content,
+                    upload_dir,
+                    jQuery.proxy( function (res) {
+                        if (this.options.processList) {
+                            this.options.processList.removeProcess($processElem);
+                        }
+                        this.refreshDirectory(upload_dir)
+                    }, this),
+                    jQuery.proxy( function (res) {
+                        if (this.options.processList) {
+                            this.options.processList.removeProcess($processElem);
+                        }
+                        this.dbg(res);
+                    }, this)
+                );
+        },
 
     });
 
