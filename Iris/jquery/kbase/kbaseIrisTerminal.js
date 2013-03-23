@@ -930,7 +930,6 @@
 
                     }, this)
                 );
-                console.log($commandDiv);
                 //this.out_to_div($commandDiv, output, 0, 1);
                 this.scroll();
                 return;
@@ -950,39 +949,9 @@
                 $page.append("<br>Type <i>tutorial list</i> to see available tutorials.");
 
                 $commandDiv.css('white-space', '');
-                //console.log($commandDiv);
                 this.out_to_div($commandDiv, $page, 0, 1);
                 this.scroll();
-                /*this.client.get_tutorial_text_async(
-                    this.tutorial_position,
-                    jQuery.proxy(
-                        function (what) {
-                            var text = what[0];
-                            var prev = what[1];
-                            var next = what[2];
 
-                            this.tutorial_next = next;
-                            this.tutorial_prev = prev;
-                            if (prev >= 0) {
-                                text += "<br>Type <i>back</i> to move to the previous step in the tutorial.";
-                            }
-                            if (next >= 0) {
-                                text += "<br>Type <i>next</i> to move to the next step in the tutorial.";
-                            }
-                            this.out_to_div($commandDiv, text,0,1);
-                            this.scroll();
-                        },
-                        this
-                    ),
-                    jQuery.proxy(
-                        function (err) {
-                            var m = err.message.replace("\n", "<br>\n");
-                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.code + "<br>" + m + "</i>");
-                            this.scroll();
-                        },
-                        this
-                    )
-                );*/
                 return;
             }
 
