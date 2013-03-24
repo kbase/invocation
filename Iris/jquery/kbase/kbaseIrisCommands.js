@@ -244,7 +244,7 @@
                         .bind('click',
                             function(e) {
                                 $(this).parent().children().last().collapse('toggle');
-                                if (that.options.fileBrowser) {
+                                if (that.options.fileBrowser && that.options.fileBrowser.toggleNavHeight) {
                                     that.options.fileBrowser.toggleNavHeight();
                                 }
                             }

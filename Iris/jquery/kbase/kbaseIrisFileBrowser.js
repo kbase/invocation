@@ -127,6 +127,19 @@
                 );
         },
 
+        toggleNavHeight : function () {
+            if (this.options.shouldToggleNavHeight) {
+                var $ul = this.data('ul-nav');
+                var height = $ul.css('height');
+                $ul.css(
+                    'height',
+                    height == this.options.height
+                        ? this.options.tallHeight
+                        : this.options.height
+                );
+            }
+        },
+
     });
 
 }( jQuery ) );

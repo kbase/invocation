@@ -150,40 +150,7 @@
 
         },
 
-        toggleNavHeight : function () {
-            if (this.options.shouldToggleNavHeight) {
-                var $ul = this.data('ul-nav');
-                var height = $ul.css('height');
-                $ul.css(
-                    'height',
-                    height == this.options.height
-                        ? this.options.tallHeight
-                        : this.options.height
-                );
-            }
-        },
-
-        appendUI : function($elem) {
-
-            var $div = $('<div></div>')
-                .css('border', '1px solid lightgray')
-                .css('padding', '2px')
-                .append(
-                    $('<h5></h5>')
-                        .addClass('text-left')
-                        .text("File Browser")
-                        .css('margin', '0px')
-                        .css('padding', '2px')
-                        .css('background-color', 'lightgray')
-                        .css('border-collapse', 'collapse')
-                        .bind('click',
-                            function(e) {
-                                $(this).next().collapse('toggle');
-                            }
-                        )
-                    )
-            ;
-
+        fileBrowserContainer : function() {
             var navHeight = this.options.height;
 
             var $ul = $('<ul></ul>')
@@ -193,7 +160,17 @@
                 .attr('id', 'ul-nav')
             ;
 
-            var $controls =
+            var $container =
+                $('<div></div>')
+                    .append($ul);
+
+            this.data('file-ul', $ul);
+
+            return $container;
+        },
+
+        fileBrowserControls : function() {
+            var $div =
                 $('<div></div>')
                     .addClass('btn-toolbar')
                     .addClass('text-right')
@@ -210,24 +187,37 @@
                             )
                     )
             ;
+            return $div;
+        },
 
-            var $container =
-                $('<div></div>')
-                    .append($ul);
+        appendUI : function($elem) {
 
-            $div.append($container);
-            $elem.append($div);
+            var $container = this.fileBrowserContainer();
+
+            var $box = $('<div></div>').kbaseBox(
+                {
+                    title : 'File Browser',
+                    canCollapse: true,  //boolean. Whether or not clicking the title bar collapses the box
+                    content: $container,//'Moo. We are a box. Take us to China.',  //The content within the box. Any HTML string or jquery element
+                    //optional list of controls to populate buttons on the right end of the title bar. Give it an icon
+                    //and a callback function.
+                }
+            );
+
+            $elem.append($box.$elem);
 
             if (this.options.controls) {
                 if (this.options.externalControls) {
-                    $div.append($controls);
+                    $container.parent().parent().append(this.fileBrowserControls());
                 }
                 else {
-                    $container.append($controls);
+                    $container.append(this.fileBrowserControls());
                 }
             }
 
-            this._rewireIds($div, this);
+            this._rewireIds($box.$elem, this);
+            console.log(this.data());
+            console.log(this.fileBrowserControls());
 
             $.each(
                 this.options.controlButtons,
@@ -238,9 +228,9 @@
                 }, this)
             );
 
-            this._rewireIds($div, this);
+            this._rewireIds($box.$elem, this);
 
-            this.listDirectory(this.options.root, $ul);
+            this.listDirectory(this.options.root, this.data('file-ul'));
             this.disableButtons();
 
             return this;
