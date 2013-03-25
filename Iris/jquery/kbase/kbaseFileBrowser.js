@@ -366,7 +366,7 @@
                         $.proxy( function (e) {
                             e.preventDefault();
                             e.stopPropagation();
-                            if (! this.deleteButton().hasClass('disabled')) {
+                            if (! this.addButton().hasClass('disabled')) {
                                 this.options.addFileCallback(this.data('activeFile'));
                             }
                         }, this)
@@ -426,6 +426,7 @@
 
             if (content == undefined) {
                 this.fetchContent(file, win);
+                return;
             }
 
             content = content.replace(/>/g, '&gt;');

@@ -126,6 +126,26 @@
             return $viewButton;
         },
 
+        addButton : function() {
+            var $addButton = this._super();
+            $addButton.data('require', 'a');
+            $addButton.unbind('click');
+            $addButton.bind('click',
+                $.proxy( function(e) {
+                    e.preventDefault();
+                    if (! this.addButton().hasClass('disabled')) {
+                        var file = this.data('activeFile');
+                        if (file == undefined) {
+                            file = this.data('activeDirectory');
+                        }
+
+                        this.options.addFileCallback( file );
+                    }
+                }, this)
+            );
+            return $addButton;
+        },
+
         stringify : function(key, val) {
             if (typeof val == 'array') {
                 val = val.join(", ");
@@ -156,8 +176,13 @@
                 $.proxy(
                     function(res) {
                         try {
-                            var jsonStr = JSON.stringify(res.data, undefined, 2);
-                            res = jsonStr;
+                            if (typeof res.data == 'string') {
+                                res = res.data;
+                            }
+                            else {
+                                var jsonStr = JSON.stringify(res.data, undefined, 2);
+                                res = jsonStr;
+                            }
                         }
                         catch(e) {
                             this.dbg("FAILURE");
