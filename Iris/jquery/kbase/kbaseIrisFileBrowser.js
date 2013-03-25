@@ -73,7 +73,8 @@
                     function(res) {
                         try {
                             var obj = JSON.parse(res);
-                            res = JSON.stringify(obj, undefined, 2);
+                            var jsonStr = JSON.stringify(obj, undefined, 2);
+                            res = jsonStr;
                         }
                         catch(e) {
                             this.dbg("FAILURE");

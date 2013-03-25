@@ -16,6 +16,7 @@
             'tallHeight' : '450px',
             'shouldToggleNavHeight' : true,
             'controlButtons' : ['deleteButton', 'viewButton', 'addDirectoryButton', 'uploadButton', 'addButton'],
+            'name' : 'File Browser',
         },
 
         init: function (options) {
@@ -48,13 +49,17 @@
         },
 
         sortByName : function (a,b) {
-                 if (a['name'] < b['name']) { return -1 }
-            else if (a['name'] > b['name']) { return 1  }
+                 if (a['name'].toLowerCase() < b['name'].toLowerCase()) { return -1 }
+            else if (a['name'].toLowerCase() > b['name'].toLowerCase()) { return 1  }
             else                            { return 0  }
         },
 
         sessionId : function() {
             return this.$loginbox.sessionId();
+        },
+
+        selected : function( path ) {
+
         },
 
         displayPath : function(path, $ul, filelist) {
@@ -79,6 +84,7 @@
                             $(this).parent().addClass('active');
                             $fb.data('activeFile', val.path);
                             $fb.enableButtons('f');
+                            $fb.selected(val.path);
                         }
                     };
 
@@ -106,6 +112,7 @@
                                     $fb.data('activeDirectory', val.path);
                                     $(this).parent().addClass('active');
                                     $fb.enableButtons('d');
+                                    $fb.selected(val.path);
                                 }
 
                             }
@@ -118,6 +125,7 @@
                                 $fb.data('activeDirectory', val.path);
                                 $fb.data(val.path, $(this).next());
                                 $fb.enableButtons('d');
+                                $fb.selected(val.path);
                             }
                         }
 
@@ -139,6 +147,8 @@
                                         callback
                                     )
                             )
+                            .data('meta', val.meta)
+                            .data('able', 'baker')
                             .append($('<ul></ul>').addClass('nav nav-list'))
                     );
 
@@ -196,7 +206,7 @@
 
             var $box = $('<div></div>').kbaseBox(
                 {
-                    title : 'File Browser',
+                    title : this.options.name,
                     canCollapse: true,  //boolean. Whether or not clicking the title bar collapses the box
                     content: $container,//'Moo. We are a box. Take us to China.',  //The content within the box. Any HTML string or jquery element
                     //optional list of controls to populate buttons on the right end of the title bar. Give it an icon
@@ -216,8 +226,6 @@
             }
 
             this._rewireIds($box.$elem, this);
-            console.log(this.data());
-            console.log(this.fileBrowserControls());
 
             $.each(
                 this.options.controlButtons,
@@ -419,6 +427,9 @@
             if (content == undefined) {
                 this.fetchContent(file, win);
             }
+
+            content = content.replace(/>/g, '&gt;');
+            content = content.replace(/</g, '&lt;');
 
             win.document.write(
                 $('<div></div>').append(
