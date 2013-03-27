@@ -25,6 +25,8 @@
         <script src = './jquery/kbase/kbaseIrisFileBrowser.js'></script>
         <script src = './jquery/kbase/kbaseIrisProcessList.js'></script>
 
+        <script src = './jquery/kbase/kbaseIrisTutorial.js'></script>
+
         <script src="./InvocationService.js" type="text/javascript" charset="utf-8"></script>
 
         <script type = 'text/javascript'>
