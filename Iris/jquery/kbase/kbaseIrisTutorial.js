@@ -12,9 +12,9 @@
         },
 
         dispatch : {
-            'How to annotate a genome' : 'http://www.prototypesite.net/iris/annotate_genome.html',
-            'How to create an IRIS tutorial' : 'http://www.prototypesite.net/iris/tutorial_tutorial.html',
-            'Constructing RAST2 in the IRIS Environment': 'http://www.prototypesite.net/iris/rast2.html',
+            'How to annotate a genome' : '/services/docs/invocation/Iris/annotate_genome.html',
+            'How to create an IRIS tutorial' : '/services/docs/invocation/Iris/tutorial_tutorial.html',
+            'Constructing RAST2 in the IRIS Environment': '/services/docs/invocation/Iris/rast2.html',
         },
 
         list : function() {
