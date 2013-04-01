@@ -45,8 +45,6 @@
 
             var url = this.dispatch[tutorial];
 
-            console.log(tutorial + ' , ' + url);
-
             this.pages = [];
 
             var token = undefined;
@@ -70,8 +68,6 @@
             		    this.$title = $(children[0]);
             		    this.$summary = $(children[1]);
             		    var $pages = $(children[2]);
-            		    console.log(this.$title);
-            		    console.log(this.$summary);
 
             		    this.pages.push(
             		        {
