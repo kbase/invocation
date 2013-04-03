@@ -46,6 +46,7 @@
             if (this.data(path)) {
                 this.listDirectory(path, this.data(path));
             }
+
         },
 
         sortByName : function (a,b) {

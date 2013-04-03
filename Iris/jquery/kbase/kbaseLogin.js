@@ -195,6 +195,8 @@
                         .text('Sign In')
                         .bind('click',
                             $.proxy( function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
                                 this.openDialog();
                             }, this)
                         )

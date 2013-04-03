@@ -101,9 +101,10 @@
                                 wsClient : new workspaceService('http://bio-data-1.mcs.anl.gov/services/fba_gapfill')
                             }
                         );
+                        $term.addFileBrowser($wb);
                     }
 
-                    $term.data('fileBrowser', $fb);
+                    $term.addFileBrowser($fb);
                     $term.data('processList', $plist);
 
                     $('#login').append($term.$loginbox.$elem);

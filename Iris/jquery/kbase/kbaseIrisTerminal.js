@@ -109,9 +109,7 @@
                                         this.kbase_sessionid = args.kbase_sessionid;
                                         this.input_box.focus();
 
-                                        if (this.data('fileBrowser')) {
-                                            this.data('fileBrowser').refreshDirectory(this.cwd);
-                                        }
+                                        this.refreshFileBrowser();
                                     }
                                 },
                                 this
@@ -120,10 +118,10 @@
                             jQuery.proxy(
                                 function() {
                                     this.sessionId = undefined;
+                                    this.cwd = '/';
                                     this.dbg("LOGOUT CALLBACK");
-                                    if (this.data('fileBrowser')) {
-                                        this.data('fileBrowser').refreshDirectory(this.cwd);
-                                    }
+                                    this.refreshFileBrowser();
+                                    this.terminal.empty();
                                 },
                                 this
                             )
@@ -160,12 +158,13 @@
                 this.$loginbox.kbaseLogin('openDialog');
             }
 
+            this.fileBrowsers = [];
+
             if (this.options.fileBrowser) {
-                this.data('fileBrowser', this.options.fileBrowser);
+                this.addFileBrowser(this.options.fileBrowser);
             }
             else {
-                this.data(
-                    'fileBrowser',
+                this.addFileBrowser(
                     $('<div></div>').kbaseIrisFileBrowser (
                         {
                             client : this.client,
@@ -178,6 +177,21 @@
 
             return this;
 
+        },
+
+        addFileBrowser : function ($fb) {
+            this.fileBrowsers.push($fb);
+        },
+
+        open_file : function(file) {
+            this.fileBrowsers[0].openFile(file);
+        },
+
+        refreshFileBrowser : function() {
+            for (var idx = 0; idx < this.fileBrowsers.length; idx++) {
+            console.log("REF");console.log(this.fileBrowsers[idx]);
+                this.fileBrowsers[idx].refreshDirectory(this.cwd);
+            }
         },
 
         loginbox : function () {
@@ -568,15 +582,6 @@
             this.terminal.animate({scrollTop: this.terminal.prop('scrollHeight') - this.terminal.height()}, speed);
         },
 
-        open_file : function(file) {
-            if (this.data('fileBrowser')) {
-                this.data('fileBrowser').openFile(file);
-            }
-            else {
-                this.dbg("Cannot open file - No file browser!");
-            }
-        },
-
         // Executes a command
         run: function(command) {
 
@@ -761,9 +766,7 @@
                     to,
                     $.proxy(
                         function () {
-                            if (this.data('fileBrowser')) {
-                                this.data('fileBrowser').refreshDirectory(this.cwd);
-                            }
+                            this.refreshFileBrowser();
                         },this
                     ),
                     jQuery.proxy(
@@ -792,9 +795,7 @@
                     to,
                     $.proxy(
                         function () {
-                            if (this.data('fileBrowser')) {
-                                this.data('fileBrowser').refreshDirectory(this.cwd);
-                            }
+                            this.refreshFileBrowser();
                         },this
                     ),
                     jQuery.proxy(
@@ -820,9 +821,7 @@
                     dir,
                     $.proxy(
                         function () {
-                            if (this.data('fileBrowser')) {
-                                this.data('fileBrowser').refreshDirectory(this.cwd);
-                            }
+                            this.refreshFileBrowser();
                         },this
                     ),
                     jQuery.proxy(
@@ -849,9 +848,7 @@
                     dir,
                     $.proxy(
                         function () {
-                            if (this.data('fileBrowser')) {
-                                this.data('fileBrowser').refreshDirectory(this.cwd);
-                            }
+                            this.refreshFileBrowser();
                         },this
                     ),
                     jQuery.proxy(
@@ -878,9 +875,7 @@
                     file,
                     $.proxy(
                         function () {
-                            if (this.data('fileBrowser')) {
-                                this.data('fileBrowser').refreshDirectory(this.cwd);
-                            }
+                            this.refreshFileBrowser();
                         },this
                     ),
                     jQuery.proxy(
@@ -1135,9 +1130,7 @@
                             var output = runout[0];
                             var error  = runout[1];
 
-                            if (this.data('fileBrowser')) {
-                                this.data('fileBrowser').refreshDirectory(this.cwd);
-                            }
+                            this.refreshFileBrowser();
 
                             if (output.length > 0 && output[0].indexOf("\t") >= 0) {
 

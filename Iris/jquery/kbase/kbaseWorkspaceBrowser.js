@@ -48,6 +48,10 @@
             }
         },
 
+        refreshDirectory : function(path) {
+            this.listWorkspaces();
+        },
+
         listDirectory : function (path, $ul) {
 
             if (path == this.workspace) {
