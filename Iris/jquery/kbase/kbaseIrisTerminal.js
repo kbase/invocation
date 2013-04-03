@@ -930,7 +930,6 @@
 
                     }, this)
                 );
-                console.log($commandDiv);
                 //this.out_to_div($commandDiv, output, 0, 1);
                 this.scroll();
                 return;

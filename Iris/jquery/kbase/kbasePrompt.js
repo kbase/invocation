@@ -223,15 +223,12 @@
                                 if ($firstField == undefined) {
                                     $firstField = $(val);
                                 }
-                                console.log('found ');console.log( val);console.log($(val).val());console.log($(val).text().length);
                                 if ($(val).is("input") && $(val).val() == undefined) {
-                                console.log('sel input');
                                     $(val).focus();
                                     selection = true;
                                     return;
                                 }
                                 else if ($(val).is("textarea") && $(val).text().length == 0) {
-                                console.log('sel txtarea');
                                     $(val).focus();
                                     selection = true;
                                     return;
