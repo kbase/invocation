@@ -502,7 +502,7 @@
 
                         var reader = new FileReader();
 
-                        var upload_dir = '/';
+                        var upload_dir = this.options.root;
                         if (this.data('activeDirectory')) {
                             upload_dir = this.data('activeDirectory');
                         }

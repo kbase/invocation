@@ -65,6 +65,7 @@
         },
 
         fetchContent : function(file, win) {
+
             this.client.get_file_async(
                 this.sessionId(),
                 file,
@@ -107,7 +108,6 @@
         },
 
         uploadFile : function(name, content, upload_dir, $processElem) {
-
              this.client.put_file_async(
                     this.sessionId(),
                     name,
