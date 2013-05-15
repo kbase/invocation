@@ -77,7 +77,7 @@ deploy-docs:
 	rsync -arv doc/. $(SERVICE_DIR)/webroot/.
 
 test: test-client test-scripts test-service
-        @echo "running client and script tests"
+	@echo "running client and script tests"
 
 test-client:
 
