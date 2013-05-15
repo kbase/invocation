@@ -76,4 +76,13 @@ deploy-docs:
 	$(DEPLOY_RUNTIME)/bin/perl $(DEPLOY_RUNTIME)/bin/pod2html -t "Invocation Service API" lib/Bio/KBase/$(BASE_NAME)/$(BASE_NAME)Impl.pm > doc/invocation_api.html
 	rsync -arv doc/. $(SERVICE_DIR)/webroot/.
 
+test: test-client test-scripts test-service
+        @echo "running client and script tests"
+
+test-client:
+
+test-scripts:
+
+test-service:
+
 include $(TOP_DIR)/tools/Makefile.common.rules
