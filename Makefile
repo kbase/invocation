@@ -48,7 +48,7 @@ deploy: build-libs deploy-client
 
 deploy-all: deploy-service deploy-client
 
-deploy-client: deploy-docs deploy-scripts
+deploy-client: deploy-docs deploy-libs deploy-scripts
 
 deploy-service: deploy-dir-service deploy-monit deploy-libs deploy-iris
 	$(TPAGE) $(TPAGE_ARGS) service/start_service.tt > $(TARGET)/services/$(SERVICE)/start_service
