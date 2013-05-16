@@ -28,6 +28,7 @@ foreach my $group (@$command_groups)
 	foreach my $command (@{$group->{'items'}})
 	{
 		my $cmd = $command->{'cmd'};
+		next unless $cmd;
 		print INDEX "$cmd\n";
 #		print qq{system($cmd, '-h' "1>$target_dir/$cmd.txt" "2>$target_dir/$cmd.err"); };
 #		print "\n";
