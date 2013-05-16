@@ -47,3 +47,16 @@ h1, h2 {
 	font-family : "courier new",courier,monospace;
 	font-weight: bold;
 }
+
+
+#pgfooter{
+    clear: left;
+    width: 100%;
+    background: black;
+    color: #FFF;
+    text-align: center;
+    padding: 4px 0;
+    position : fixed;
+    left : 0;
+    bottom : 0;
+}

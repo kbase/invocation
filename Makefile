@@ -63,7 +63,8 @@ deploy-iris:
 	mkdir -p $(IRIS_WEBROOT)/Iris
 	rsync -arv Iris/. $(IRIS_WEBROOT)
 	cp lib/$(BASE_NAME).js $(IRIS_WEBROOT)/$(BASE_NAME).js
-	$(TPAGE) $(TPAGE_ARGS) iris-index.html.tt > $(IRIS_WEBROOT)/index.html
+	$(TPAGE) $(TPAGE_ARGS) iris-index.html.tt > $(IRIS_WEBROOT)/iris.html
+	cp Iris/splash.html $(IRIS_WEBROOT)/index.html
 
 deploy-monit:
 	$(TPAGE) $(TPAGE_ARGS) service/process.$(SERVICE).tt > $(TARGET)/services/$(SERVICE)/process.$(SERVICE)
@@ -76,5 +77,14 @@ deploy-docs:
 	$(DEPLOY_RUNTIME)/bin/perl $(DEPLOY_RUNTIME)/bin/pod2html -t "Invocation Service API" lib/Bio/KBase/$(BASE_NAME)/$(BASE_NAME)Impl.pm > doc/invocation_api.html
 	$(DEPLOY_RUNTIME)/bin/perl gen-command-docs.pl
 	rsync -arv doc/. $(SERVICE_DIR)/webroot/.
+
+test: test-client test-scripts test-service
+	@echo "running client and script tests"
+
+test-client:
+
+test-scripts:
+
+test-service:
 
 include $(TOP_DIR)/tools/Makefile.common.rules
