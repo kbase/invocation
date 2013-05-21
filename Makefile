@@ -69,13 +69,16 @@ deploy-iris:
 deploy-monit:
 	$(TPAGE) $(TPAGE_ARGS) service/process.$(SERVICE).tt > $(TARGET)/services/$(SERVICE)/process.$(SERVICE)
 
+deploy-command-docs: deploy-docs
+	mkdir -p doc/command-docs
+	$(DEPLOY_RUNTIME)/bin/perl gen-command-docs.pl doc/command-docs
+	rsync -arv doc/. $(SERVICE_DIR)/webroot/.
+	
 deploy-docs:
 	mkdir -p doc
-	mkdir -p doc/command-docs
 	mkdir -p $(SERVICE_DIR)/webroot
 	rm -f doc/*html
 	$(DEPLOY_RUNTIME)/bin/perl $(DEPLOY_RUNTIME)/bin/pod2html -t "Invocation Service API" lib/Bio/KBase/$(BASE_NAME)/$(BASE_NAME)Impl.pm > doc/invocation_api.html
-	$(DEPLOY_RUNTIME)/bin/perl gen-command-docs.pl doc/command-docs
 	rsync -arv doc/. $(SERVICE_DIR)/webroot/.
 
 test: test-client test-scripts test-service
