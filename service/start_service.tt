@@ -7,4 +7,4 @@ export KB_SERVICE_DIR=$KB_TOP/services/[% kb_service_name %]
 
 pid_file=$KB_SERVICE_DIR/service.pid
 
-exec $KB_RUNTIME/bin/perl $KB_RUNTIME/bin/starman --max-requests 20 --listen :[% kb_service_port %] --pid $pid_file $KB_TOP/lib/InvocationService.psgi
+exec $KB_RUNTIME/bin/perl $KB_RUNTIME/bin/starman --max-workers 40 --max-requests 20 --listen :[% kb_service_port %] --pid $pid_file $KB_TOP/lib/InvocationService.psgi
