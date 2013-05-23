@@ -168,7 +168,7 @@
                     $('<div></div>').kbaseIrisFileBrowser (
                         {
                             client : this.client,
-                            $loginbox : this.$loginbox,
+                            $terminal : this,
                             externalControls : false,
                         }
                     )
@@ -189,7 +189,6 @@
 
         refreshFileBrowser : function() {
             for (var idx = 0; idx < this.fileBrowsers.length; idx++) {
-            console.log("REF");console.log(this.fileBrowsers[idx]);
                 this.fileBrowsers[idx].refreshDirectory(this.cwd);
             }
         },
@@ -617,6 +616,7 @@
                             this.set_session(sid);
                             this.loadCommandHistory();
                             this.out_to_div($commandDiv, "Set session to " + sid);
+                            this.refreshFileBrowser();
                         },
                         this
                     ),

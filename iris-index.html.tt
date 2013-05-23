@@ -32,8 +32,22 @@
 
         <script src="./InvocationService.js" type="text/javascript" charset="utf-8"></script>
 
+        <script src = './jquery/kbase/kbaseWorkspaceBrowser.js'></script>
+        <script src = './js/workspaceService/Client.js'></script>
+
         <script type = 'text/javascript'>
             <!--
+
+                function getParameterByName(name) {
+                  name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+                  var regexS = "[\\?&]" + name + "=([^&#]*)";
+                  var regex = new RegExp(regexS);
+                  var results = regex.exec(window.location.search);
+                  if(results == null)
+                    return "";
+                  else
+                    return decodeURIComponent(results[1].replace(/\+/g, " "));
+                }
 
                 $(function() {
 
@@ -52,7 +66,12 @@
                             overflow        : false,
                             link            : function (evt) {
                                 evt.preventDefault();
-                                $('#terminal').kbaseIrisTerminal('appendInput', $(this).attr('title') + ' ');
+                                var $terminal = $('#terminal').kbaseIrisTerminal();
+                                var append = $(this).attr('title') + ' ';
+                                if ($terminal.input_box.val().length && ! $terminal.input_box.val().match(/[\|;]\s*$/)) {
+                                    append = '| ' + append;
+                                }
+                                $terminal.appendInput(append);
                             }
                         }
                     );
@@ -60,13 +79,32 @@
                     var $fb = $('#file-browser').kbaseIrisFileBrowser (
                         {
                             client : $term.client,
-                            $loginbox : $term.$loginbox,
+                            $terminal : $term,
                             externalControls : true,
                             processList : $plist,
+                            addFileCallback : function (file) {
+                                $('#terminal').kbaseIrisTerminal('appendInput', file + ' ');
+                            },
                         }
                     );
 
-                    $term.data('fileBrowser', $fb);
+                    if (getParameterByName('ws') == 1) {
+                        var $wb = $('#ws-browser').kbaseWorkspaceBrowser (
+                            {
+                                client : $term.client,
+                                $loginbox : $term.$loginbox,
+                                externalControls : true,
+                                processList : $plist,
+                                addFileCallback : function (file) {
+                                    $('#terminal').kbaseIrisTerminal('appendInput', file + ' ');
+                                },
+                                wsClient : new workspaceService('http://bio-data-1.mcs.anl.gov/services/fba_gapfill')
+                            }
+                        );
+                        $term.addFileBrowser($wb);
+                    }
+
+                    $term.addFileBrowser($fb);
                     $term.data('processList', $plist);
 
                     $('#login').append($term.$loginbox.$elem);
@@ -111,6 +149,7 @@
                 <div id = 'command-list'></div>
                 <div id = 'process-list'></div>
                 <div id = 'file-browser'></div>
+                <div id = 'ws-browser'></div>
             </div>
             <div class = 'span9'>
                 <div id = 'terminal'></div>

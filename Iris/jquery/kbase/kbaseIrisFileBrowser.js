@@ -12,6 +12,21 @@
 
         },
 
+        init: function (options) {
+            if (options.$terminal) {
+                this.$terminal = options.$terminal;
+            }
+
+            this._super(options);
+
+            return this;
+
+        },
+
+        sessionId : function() {
+            return this.$terminal.sessionId;
+        },
+
         listDirectory : function (path, $ul) {
             this.data(path, $ul);
 
