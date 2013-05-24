@@ -1,0 +1,74 @@
+{
+    "invocation": {
+        "commandgroups": {
+        },
+        "config": {
+            "authenticated-storage-dir": "/tmp/storage-auth"
+            "nonauthenticated-storage-dir": "/tmp/storage-nonauth"
+            "service-url": "http://kbase.us/services/invocation"
+        },
+        "version": "0.1.0",
+        "dependencies": {
+            "trees": {
+                "version": null,
+                "client" : true
+            },
+            "networks": {
+                "version": null,
+                "client" : true
+            },
+            "genome_annotation": {
+                "version": null,
+                "client" : true
+            },
+            "kb_seed": {
+                "version": null,
+                "client" : true
+            },
+            "sim_service": {
+                "version": null,
+                "client" : true
+            },
+            "idserver": {
+                "version": null,
+                "client" : true
+            },
+            "genotype_phenotype_api": {
+                "version": null,
+                "client" : true
+            },
+            "KBaseFBAModeling": {
+                "version": null,
+                "client" : true
+            },
+            "workspace_service": {
+                "version": null,
+                "client" : true
+            },
+            "phispy": {
+                "version": null,
+                "client" : true
+            },
+            "plant_expression_service": {
+                "version": null,
+                "client" : true
+            },
+            "translation": {
+                "version": null,
+                "client" : true
+            },
+            "typecomp": {
+                "version": null,
+                "comptime" : true
+            },
+            "kbapi_common": {
+                "version": null,
+                "lib" : true
+            },
+            "auth": {
+                "version": null,
+                "lib" : true
+            }
+        }
+    }
+}
