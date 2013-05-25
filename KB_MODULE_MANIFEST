@@ -11,51 +11,63 @@
         "dependencies": {
             "trees": {
                 "version": null,
-                "client" : true
+                "client" : true,
+                "comptime": true
             },
             "networks": {
                 "version": null,
-                "client" : true
+                "client" : true,
+                "comptime": true
             },
             "genome_annotation": {
                 "version": null,
-                "client" : true
+                "client" : true,
+                "comptime": true
             },
             "kb_seed": {
                 "version": null,
-                "client" : true
+                "client" : true,
+                "comptime": true
             },
             "sim_service": {
                 "version": null,
-                "client" : true
+                "client" : true,
+                "comptime": true
             },
             "idserver": {
                 "version": null,
-                "client" : true
+                "client" : true,
+                "comptime": true
             },
             "genotype_phenotype_api": {
                 "version": null,
-                "client" : true
+                "client" : true,
+                "comptime": true
             },
             "KBaseFBAModeling": {
                 "version": null,
-                "client" : true
+                "client" : true,
+                "comptime": true
             },
             "workspace_service": {
                 "version": null,
-                "client" : true
+                "client" : true,
+                "comptime": true
             },
             "phispy": {
                 "version": null,
-                "client" : true
+                "client" : true,
+                "comptime": true
             },
             "plant_expression_service": {
                 "version": null,
-                "client" : true
+                "client" : true,
+                "comptime": true
             },
             "translation": {
                 "version": null,
-                "client" : true
+                "client" : true,
+                "comptime": true
             },
             "typecomp": {
                 "version": null,
