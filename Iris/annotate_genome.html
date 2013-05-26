@@ -354,42 +354,114 @@
                 </p>
             </div>
 
+			<div>
+
+                <h2>Select a workspace</h2>
+
+                <p>
+                    Now we would like to introduce the online collaborative workspaces for
+                    KBase. KBase workspaces provide an online location from which you can
+                    store, view, and share your data. Typed objects such as Genomes, Models
+                    FBA studies, and experimental data sets are stored in the workspace. All
+                    workspaces and workspace contents may be viewed from the <a href="http://140.221.84.142/browse.html">workspace browser</a>.
+                    Now, let's select a workspace to work in. For this tutorial, we will work
+                    in a special, publicly writable workspace called "tutorial":
+                </p>
+
+                <!-- needs links to API doc: -->
+                <pre>
+                kbws-workspace tutorial
+                </pre>
+
+                <p>
+                    In a few seconds, a message should appear stating that your work current
+                    workspace is "tutorial". Note, if you ever forget which workspace you
+                    are currently operating in, just run the "kbws-workspace" command again
+                    with no arguments. You can find a complete list of all workspaces accessible
+                    to you, see workspace contents, create workspaces, and manage workspaces
+                    using the <a href="http://140.221.84.142/browse.html">workspace browser</a> gui.
+                </p>
+            </div>
+
+			<div>
+
+                <h2>Load a genome into the online collaborative workspace</h2>
+
+                <p>
+                    Now that we've selected a workspace, let's start populating it with our
+                    data. First, we'll load our new genome typed object into the workspace:
+                </p>
+
+                <!-- needs links to API doc: -->
+                <pre>
+                kbfba-loadgenome annotated.genome -f
+                </pre>
+
+                <p>
+                    The "-f" flag in the above command indicates that the genome to be loaded
+                    should be pulled from the file in the shell or IRIS filespace. Note, the
+                    "kbfba-loadgenome" command can also load genomes from the KBase CDM, 
+                    SEED, or RAST directly into the workspace, rather than using the
+                    list of commands described above. Call "kbfba-loadgenome -h" to see the appropriate
+                    command syntax. If we examine the output of the "kbfba-loadgenome" command,
+                    we'll see a list of attributes gleaned from our loaded genome object, including
+                    the unique genome ID (listed under the "Object ID" attribute). You should
+                    copy and paste this ID and use it in all future commands in this tutorial
+                    where we refer to a <i>genome id</i>. Now that our genome is loaded in an online
+                    workspace, we can view this genome in HTML format using the <a href="http://140.221.84.142/browse.html">workspace browser</a>.
+                </p>
+            </div>
+            
+            <div>
+
+                <h2>Listing workspace contents</h2>
+
+                <p>
+                    With the "kbfba-loadgenome" command complete, our genome object should
+                    now be available within our currently selected workspace. To confirm this,
+                    we can use the KBase command that lists the contents of our currently
+                    selected workspace:
+                </p>
+
+                <!-- needs links to API doc: -->
+                <pre>
+                kbws-listobj
+                </pre>
+
+                <p>
+                    This command prints a table of all objects currently in our workspace.
+                    Note, there will be many objects besides our genome in the "tutorial" workspace 
+                    because this public workspace is where all output from users runnning this tutorial is
+                    directed. But we should see our genome listed under its unique <i>genome id</i>,
+                    and our KBase username should be listed as the owner of that object.
+                </p>
+            </div>
+
             <div>
 
                 <h2>Create an initial metabolic model</h2>
 
                 <p>
-                    Now that we have an annotated genome, we can create an
-                    initial <a name="metabolic326">metabolic</a> model using the command:
+                	In general, all modeling commands in KBase operate on objects and produce
+                	objects within the workspaces. Now that our genome object is loaded into
+                	our workspace, we can build an initial <a name="metabolic326">metabolic</a>
+                	model of that genome using the command:
                 </p>
 
                 <!-- needs links to API doc: -->
                 <pre>
-                genome_to_fbamodel &lt; annotated.genome &gt; initial.model
+                kbfba-buildfbamodel <i>genome id</i>
                 </pre>
 
                 <p>
                     After a minute or two, a <a name="metabolic327">metabolic</a> model
-                    object is stored in a file (named "initial.model").
-                </p>
-            </div>
-
-            <div>
-                <h2>View the model</h2>
-
-                <p>
-                We can convert this model into readable HTML to see what it
-                contains, using the command:
-                </p>
-
-                <!-- needs links to API doc: -->
-                <pre>
-                fbamodel_to_html &lt; initial.model &gt; initial.model.html
-                </pre>
-
-                <p>
-                After that command completes, use <em>ls</em> and click on the
-                generated html.
+                    object is created and added to our currently selected workspace, with the
+                    ID <i>genome id</i>.fbamdl.0. As with the "kbfba-loadgenome" command, we will 
+                    see a series of attributes of our new object printed as output, including
+                    stats about the model size, the models name, and the ID of the model in
+                    the workspace. Also like our genome, we can use the <a href="http://140.221.84.142/browse.html">workspace browser</a>
+                    to view our new model in HTML format. Just be sure to refresh the browser
+                    if it is already open in another window.
                 </p>
             </div>
 
@@ -397,63 +469,95 @@
                 <h2>Run flux balance analysis on the metabolic model</h2>
 
                 <p>
-                Flux balance analysis (FBA) is a mathematical approach in which our
-                model is used to simulate various cellular activities, typically the
-                production of biomass or metabolites from transportable nutrients. Now
-                that we have a model, apply flux balance analysis in order to
-                determine whether our model can grow, and to discover which pathways
-                are used during growth.</p>
+                Now that we have a metabolic model, one of the key analyses we can perform on
+                that model is Flux balance analysis (FBA). FBA is a mathematical approach
+                in which our model is used to simulate various cellular activities, typically the
+                production of biomass or metabolites from transportable nutrients. We will 
+                apply flux balance analysis in order to determine whether our new model can 
+                grow, and to discover which pathways are used during growth:
+                </p>
 
                 <!-- needs links to API doc: -->
                 <pre>
-                runfba &lt; initial.model &gt; solution.html
+                kbfba-runfba <i>genome id</i>.fbamdl.0
                 </pre>
 
                 <p>
-                The results from the FBA are printed in HTML in the output solution
-                file. Simply run the <em>ls</em> command and click on the HTML file to
-                view the solution.</p>
-
-                <p>
-                At the top of this file is a table of the parameters used to run the
-                FBA. Directly below this table is another table showing the objective
-                function and value. In all likelihood, your model did not grow at
-                all. This is because the model is missing pathways needed for biomass
+                As with the other modeling commands, the "kbfba-runfba" produces an object
+                in the currently selected workspace as it's output, and it prints a list of
+                attributes about the object to screen when the command it run. This time, the
+                object generated is an "FBA" typed object, holding all the parameters of our
+                FBA study, as well as all of the results from our FBA study. Also like the
+                Model and Genome objects, the FBA object may be viewed in html using the 
+                <a href="http://140.221.84.142/browse.html">workspace browser</a>. If one
+                refreshes the workspace browser, the new FBA object should now appear, with
+                the ID <i>genome id</i>.fbamdl.0.fba.0. Note, this ID will iterate every time
+                one runs the "kbfba-runfba" command. However, one can always pull the ID of
+                generated FBA object from the output produced by the kbfba-runfba command.
+                One key peice of information about the FBA analysis that is printed directly
+                by the FBA command is the objective value found by the flux balance analysis.
+                This objective value represents the maximum acheivable flux through the biomass
+                reaction of the metabolic model. In all likelihood, the objective value for our
+                first FBA run is zero. This is because the model is missing pathways needed for biomass
                 production. When a model fails to grow, the FBA command attempst to
                 diagnose the problem by identifying biomass components that cannot be
                 produced. This is done by maximizing the production of each individual
                 biomass component, one at a time. You can see these analysis results
-                in your solution HTML file (see the metabolite production table). Note
-                that some of your biomass components have no numbers in this
-                table. These are the components that cannot be produced.</p>
-
-                <p>
-                Next, we will try to fix the model by adding reactions to enable
-                production of these components.</p>
+                in the HTML view of the FBA object found from the <a href="http://140.221.84.142/browse.html">workspace browser</a>. Note
+                that some of your biomass components have a zero in this
+                table. These are the components that cannot be produced. Next, we will try 
+                to fix the model by adding reactions to enable production of these components.</p>
             </div>
 
             <div>
                 <h2>Gapfill the model</h2>
 
                 <p>
-                We can run a gapfilling command on our model to automatically add
-                reactions as needed to enable the production of all biomass
-                components:</p>
+                The gapfilling algorithm will automatically add the reactions required to
+                enable our metabolic model to be able to produce biomass. To run the gapfilling
+                algorithm, use the following command:
+                </p>
 
                 <!-- needs links to API doc: -->
                 <pre>
-                gapfill_fbamodel &lt; initial.model &gt; gapfilled.model
+                kbfba-gapfill <i>genome id</i>.fbamdl.0 --intsol
                 </pre>
 
                 <p>
-                Depending on the size and state of the genome, this could take minutes
-                to hours, but when the analysis is complete, your model will have
-                additional reactions in it, reflecting the ideal solution identified
-                by the gapfilling algorithm to enable growth.</p>
+                Depending on the size and state of the genome, gapfilling could take up to
+                an hour to complete. Because of the long run time, the "kbfba-gapfill" command
+                does not run the gapfilling directly. Instead, it queues up the gapfilling job
+                to run on the KBase cluster. Once the gapfilling is complete, your model will
+                have additional reactions in it, reflecting the ideal solution identified
+                by the gapfilling algorithm to enable growth. Now we will discuss the commands
+                used to check on the status of your gapfilling job.</p>
+                
+            </div>
+
+			<div>
+
+                <h2>Check on status of long running jobs</h2>
 
                 <p>
-                We next re-run flux balance analysis to determine the biomass
-                production pathways of the organism.</p>
+                When a command requires more than a few minutes to complete, we typically create
+                a "job object" in KBase to enable users to monitor the progress of that job.
+                You can retrieve a list of the current status and type of all ongoing jobs
+                using the following command:
+                </p>
+
+                <!-- needs links to API doc: -->
+                <pre>
+                kbws-jobs
+                </pre>
+
+                <p>
+                This command produces a list of all jobs that you have started within the KBase
+                environment. Your gapfilling job, which was created by running the "kbfba-gapfill"
+                command should be listed. You will also see the current job status, which will
+                be either "queued", "running", or "complete". To recheck the status of your job,
+                simple run the "kbws-jobs" command again. Once your gapfilling job is complete,
+                move on to the next step of the tutorial.
+                </p>
             </div>
 
             <div>
@@ -461,20 +565,23 @@
                 <h2>Run flux balance analysis on the gapfilled model</h2>
 
                 <p>
-                Now that the model has been gapfilled, it should be possible to
+                Now that our model has been gapfilled, it should be possible to
                 simulate biomass production using flux balance analysis.  Use
-                the runfba command again:</p>
+                the runfba command again:
+                </p>
 
                 <!-- needs links to API doc: -->
                 <pre>
-                runfba &lt; gapfilled.model &gt; solution.html
+                kbfba-runfba <i>genome id</i>.fbamdl.0
                 </pre>
 
                 <p>
-                Once this command completes, use <em>ls</em> and click on the HTML
-                produced by the FBA command. Your FBA solution should now include a
-                nonzero objective value as well as numerous compound and reaction
-                fluxes.</p>
+                As before, this command should create a new "FBA" typed object in the workspace.
+                You can view this object in HTML format using the <a href="http://140.221.84.142/browse.html">workspace browser</a>.
+                This time, the maximum biomass production for your model should be greater
+                than zero, and you should have meaningful fluxes listed under the reaction
+                tab of the HTML view.
+                </p>
             </div>
 
             <div>
@@ -486,16 +593,18 @@
                 genome-scale <a name="metabolic328">metabolic</a> models (e.g., the
                 Cobra toolbox). Most of these tools read models printed in SBML
                 format. Export the gapfilled model in SBML format so the model can be
-                used with these tools:</p>
+                used with these tools:
+                </p>
 
                 <!-- needs links to API doc: -->
                 <pre>
-                fbamodel_to_sbml &lt; gapfilled.model &gt; gapfilled.model.sbml
+                kbfba-exportfbamodel <i>genome id</i>.fbamdl.0 sbml &gt; <i>genome id</i>.fbamdl.0.sbml
                 </pre>
 
                 <p>
                 After the command completes, use <em>ls</em> and select the SBML file
-                for download.</p>
+                for download.
+                </p>
             </div>
         </div>
 </div>
