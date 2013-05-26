@@ -109,9 +109,7 @@
                                         this.kbase_sessionid = args.kbase_sessionid;
                                         this.input_box.focus();
 
-                                        if (this.data('fileBrowser')) {
-                                            this.data('fileBrowser').refreshDirectory(this.cwd);
-                                        }
+                                        this.refreshFileBrowser();
                                     }
                                 },
                                 this
@@ -120,10 +118,10 @@
                             jQuery.proxy(
                                 function() {
                                     this.sessionId = undefined;
+                                    this.cwd = '/';
                                     this.dbg("LOGOUT CALLBACK");
-                                    if (this.data('fileBrowser')) {
-                                        this.data('fileBrowser').refreshDirectory(this.cwd);
-                                    }
+                                    this.refreshFileBrowser();
+                                    this.terminal.empty();
                                 },
                                 this
                             )
@@ -160,16 +158,17 @@
                 this.$loginbox.kbaseLogin('openDialog');
             }
 
+            this.fileBrowsers = [];
+
             if (this.options.fileBrowser) {
-                this.data('fileBrowser', this.options.fileBrowser);
+                this.addFileBrowser(this.options.fileBrowser);
             }
             else {
-                this.data(
-                    'fileBrowser',
+                this.addFileBrowser(
                     $('<div></div>').kbaseIrisFileBrowser (
                         {
                             client : this.client,
-                            $loginbox : this.$loginbox,
+                            $terminal : this,
                             externalControls : false,
                         }
                     )
@@ -178,6 +177,20 @@
 
             return this;
 
+        },
+
+        addFileBrowser : function ($fb) {
+            this.fileBrowsers.push($fb);
+        },
+
+        open_file : function(file) {
+            this.fileBrowsers[0].openFile(file);
+        },
+
+        refreshFileBrowser : function() {
+            for (var idx = 0; idx < this.fileBrowsers.length; idx++) {
+                this.fileBrowsers[idx].refreshDirectory(this.cwd);
+            }
         },
 
         loginbox : function () {
@@ -568,15 +581,6 @@
             this.terminal.animate({scrollTop: this.terminal.prop('scrollHeight') - this.terminal.height()}, speed);
         },
 
-        open_file : function(file) {
-            if (this.data('fileBrowser')) {
-                this.data('fileBrowser').openFile(file);
-            }
-            else {
-                this.dbg("Cannot open file - No file browser!");
-            }
-        },
-
         // Executes a command
         run: function(command) {
 
@@ -612,6 +616,7 @@
                             this.set_session(sid);
                             this.loadCommandHistory();
                             this.out_to_div($commandDiv, "Set session to " + sid);
+                            this.refreshFileBrowser();
                         },
                         this
                     ),
@@ -761,9 +766,7 @@
                     to,
                     $.proxy(
                         function () {
-                            if (this.data('fileBrowser')) {
-                                this.data('fileBrowser').refreshDirectory(this.cwd);
-                            }
+                            this.refreshFileBrowser();
                         },this
                     ),
                     jQuery.proxy(
@@ -792,9 +795,7 @@
                     to,
                     $.proxy(
                         function () {
-                            if (this.data('fileBrowser')) {
-                                this.data('fileBrowser').refreshDirectory(this.cwd);
-                            }
+                            this.refreshFileBrowser();
                         },this
                     ),
                     jQuery.proxy(
@@ -820,9 +821,7 @@
                     dir,
                     $.proxy(
                         function () {
-                            if (this.data('fileBrowser')) {
-                                this.data('fileBrowser').refreshDirectory(this.cwd);
-                            }
+                            this.refreshFileBrowser();
                         },this
                     ),
                     jQuery.proxy(
@@ -849,9 +848,7 @@
                     dir,
                     $.proxy(
                         function () {
-                            if (this.data('fileBrowser')) {
-                                this.data('fileBrowser').refreshDirectory(this.cwd);
-                            }
+                            this.refreshFileBrowser();
                         },this
                     ),
                     jQuery.proxy(
@@ -878,9 +875,7 @@
                     file,
                     $.proxy(
                         function () {
-                            if (this.data('fileBrowser')) {
-                                this.data('fileBrowser').refreshDirectory(this.cwd);
-                            }
+                            this.refreshFileBrowser();
                         },this
                     ),
                     jQuery.proxy(
@@ -930,7 +925,6 @@
 
                     }, this)
                 );
-                console.log($commandDiv);
                 //this.out_to_div($commandDiv, output, 0, 1);
                 this.scroll();
                 return;
@@ -950,39 +944,9 @@
                 $page.append("<br>Type <i>tutorial list</i> to see available tutorials.");
 
                 $commandDiv.css('white-space', '');
-                //console.log($commandDiv);
                 this.out_to_div($commandDiv, $page, 0, 1);
                 this.scroll();
-                /*this.client.get_tutorial_text_async(
-                    this.tutorial_position,
-                    jQuery.proxy(
-                        function (what) {
-                            var text = what[0];
-                            var prev = what[1];
-                            var next = what[2];
 
-                            this.tutorial_next = next;
-                            this.tutorial_prev = prev;
-                            if (prev >= 0) {
-                                text += "<br>Type <i>back</i> to move to the previous step in the tutorial.";
-                            }
-                            if (next >= 0) {
-                                text += "<br>Type <i>next</i> to move to the next step in the tutorial.";
-                            }
-                            this.out_to_div($commandDiv, text,0,1);
-                            this.scroll();
-                        },
-                        this
-                    ),
-                    jQuery.proxy(
-                        function (err) {
-                            var m = err.message.replace("\n", "<br>\n");
-                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.code + "<br>" + m + "</i>");
-                            this.scroll();
-                        },
-                        this
-                    )
-                );*/
                 return;
             }
 
@@ -1166,9 +1130,7 @@
                             var output = runout[0];
                             var error  = runout[1];
 
-                            if (this.data('fileBrowser')) {
-                                this.data('fileBrowser').refreshDirectory(this.cwd);
-                            }
+                            this.refreshFileBrowser();
 
                             if (output.length > 0 && output[0].indexOf("\t") >= 0) {
 

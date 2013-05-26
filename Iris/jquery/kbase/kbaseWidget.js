@@ -21,7 +21,7 @@
         }
         var Widget = function($elem) {
             this.$elem = $elem;
-            this.options = $.extend(true, {}, def.options);
+            this.options = $.extend(true, {}, widgetRegistry[parent].prototype.options, def.options);
             return this;
         }
 

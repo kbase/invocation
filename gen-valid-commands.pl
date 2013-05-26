@@ -96,6 +96,7 @@ sub process_cmd_file
     my @list;
     my $have_re;
     my $dir = "../$module";
+    my @ignore;
 
     while (<F>)
     {
@@ -126,6 +127,17 @@ sub process_cmd_file
 	    push(@list, ['regexp', $re, $group]);
 	    $have_re++;
 	}
+	elsif ($fields[0] eq '#ignore')
+	{
+	    if (@fields != 2)
+	    {
+		die "Invalid #ignore line at line $.";
+	    }
+	    my $reg = $fields[1];
+	    my $re = qr/^$reg/;
+	    push(@ignore, $re);
+	    $have_re++;
+	}
 	elsif (@fields == 2)
 	{
 	    push(@$group_list, $fields[1]) if (!$groups_seen->{$fields[1]});
@@ -149,6 +161,15 @@ sub process_cmd_file
 	s,^$qdir/,, foreach @files;
     }
 
+    my %ignore_file;
+    #
+    # Find list of files to ignore.
+    #
+    for my $re (@ignore)
+    {
+	$ignore_file{$_} = 1foreach  grep { $_ =~ $re } @files;
+    }
+
     my %file_group;
 
     for my $ent (@list)
@@ -162,6 +183,7 @@ sub process_cmd_file
 	{
 	    for my $file (@files)
 	    {
+		next if $ignore_file{$file};
 		if (my($base) = $file =~ $val)
 		{
 		    $file_group{$base} = $group;

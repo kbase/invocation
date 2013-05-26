@@ -1,0 +1,260 @@
+      <div id = 'tutorial'>
+
+<h1>Constructing RAST2 in the IRIS Environment</h1>
+<div>
+<p><strong>Purpose: </strong> Using the KBase IRIS environment to
+generate an automated annotation system. </p>
+<p><strong>Required Prerequisite Activities: </strong> <a href="http://www.kbase.us/developer-zone/tutorials/getting-started/getting-started-with-kbase/">Getting
+Started with KBase</a> </p>
+<p><strong>Suggested Prerequisite Activities: </strong> <a href="/developer-zone/tutorials/command-line-scripts/accessing-central-store-data/getting-what-you-need-from-the-cs-using-command-line-scripts/">Getting
+What You Need from the CS Using Command-Line Scripts</a></p>
+<p><strong>Related Tutorials: </strong><a href="http://www.kbase.us/developer-zone/tutorials/iris/some-basic-exercises-using-the-kbase-iris-interface/">Some
+Basic Exercises Using the KBase IRIS interface</a></p>
+</div>
+<div>
+<div>
+<h2>Introduction</h2>
+<a href="http://rast.nmpdr.org/rast.cgi" target="_blank_">RAST</a> is
+an automated annotation system that accepts as input a set of contigs
+from a prokaryotic genome and produces as output the initial <a name="annotations32">annotations</a> needed to support researchers in
+their efforts to study the genome. Since the initial publication of <a href="http://www.ncbi.nlm.nih.gov/pubmed/18261238" name="subsystems34" target="_blank_"> The RAST Server: rapid annotations using subsystems
+technology</a> in 2008, over 60,000 requests for genome <a name="annotations35">annotations</a> have been processed, and the rate
+at which requests arrive has increased dramatically.
+<p> As demand for ever more accurate <a name="annotations36">annotations</a>
+and the number of newly-sequenced genomes increases, there is a growing
+demand for "the next generation" of the RAST technology. We are in the
+process of creating a new version of the architecture that will make it
+completely trivial for separate groups to construct custom pipelines,
+integrate new bioinformatic tools, and to make the developed pipelines
+easily accessible by a large user community. This work is being done
+within the DOE Knowledge Base (KBase), and initial versions are now
+available via the IRIS interface. </p>
+<p> To understand how the IRIS environment is used, we urge you to go
+to the <a href="http://kbase.us/developer-zone/tutorials/iris/some-basic-exercises-using-the-doe-kbase-iris-interface/" target="_blank_">IRIS site</a>, type </p>
+<pre>       login <i>name</i>  [ that is, use whatever name you wish.  No password is required, but<br>                        a workspace is maintained for you under this ID ]<br>       tutorial<br></pre>
+and just go through the initial tutorial. It is useful to have a small
+genome available on your machine. The tutorial will show you how to
+upload it to your IRIS workspace, annotate the genome, construct an
+initial <a name="metabolic37">metabolic</a> model for the genome,
+backfill the model, and run an initial flux-based analysis. This can
+all be done within 30 minutes for a small genome (we suggest trying a <i>Buchnera</i>
+genome, for example).
+</div>
+<div>
+<h2>The Concept of the <i>Genome Typed Object</i></h2>
+A <i>genomeTO</i> is just a perl data structure (a hash) that encodes
+the components of what is thought of as a <i>genome annotation</i>
+, along with the derived data supporting the annotation.
+<p> A genomeTO is stored as a JSON-encoded string in a file within the
+IRIS workspace. </p>
+<p> The RAST2 Toolkit is implemented as a set of tools that transform
+one genomeTO into another. That is, the typical tool takes as input a
+JSON-encoded string stored in a users IRIS workspace and outputs a new
+JSON-encoded string that extends in some way the contents of the input
+genomeTO. </p>
+<p> Pipelines are composed from the tools in the toolkit. </p>
+<p> A user creates an initial genomeTO by either </p>
+<ul>
+  <li>uploading a file of contigs (in FASTA, Genbank or EMBL format)
+for a single prokaryotic genome, which creates a genomeTO in the users
+workspace, or </li>
+  <li>generating a genomeTO from the contigs of a genome stored in the
+KBase CS. </li>
+</ul>
+This second alternative is useful for creating alternative <a name="annotations38">annotations</a> for genomes that have been
+integrated into the CS.
+<p> The first alternative requires that you upload a FASTA-formatted
+set of contigs into your work space and then run something like </p>
+<pre>    fasta_to_genome 'Buchnera aphidicola str. Tuc7 (Acyrthosiphon pisum)' Bacteria 11 &lt; ../buchnera.contigs &gt; buchnera.genomeTO<br></pre>
+The general form is
+<pre>    fasta_to_genome scientific-name domain genetic-code &lt; contigs &gt; genomeTO<br></pre>
+where the <i>domain</i> should be <i>archaea</i> or <i> bacteria,</i>,
+and the <i>genetic-code</i> is usually 11 for prokaryotes (usually 4
+for <i>Mycoplasmas</i>).
+<p> The second alternative requires that you use something like </p>
+<pre>    cs_to_genome 'kb|g.2323' &gt; buchnera.genomeTO<br></pre>
+</div>
+<div>
+<h2> Tools for Analysis </h2>
+The tools we list below represent a growing collection that can be
+invoked from within IRIS.
+<h2>Annotating a Genome: a Package</h2>
+We provide a basic annotation package that can be invoked using
+something like
+<pre>  annotate_genome &lt; buchnera.genomeTO &gt; annotated.buchnera.genomeTO<br></pre>
+This basic package calls genes using Glimmer, searches for tRNAs using
+a tool developed by Sean Eddy, searches for rRNAs using a tool
+contributed by Niels Larsen, and a number of tools developed by Gary
+Olsen. It uses a kmer-based strategy for assigning functions to
+protein-encoding genes. It produces a reasonably good initial
+annotation fairly quickly (usually, 5-30 minutes).
+<p> We mention this package first, since it offers a basic solution
+against which we can evaluate new tools. That is, we will be building
+new, often custom, pipelines, and we can use these base <a name="annotations39">annotations</a> to get some sense of progress. </p>
+</div>
+<div>
+<h2>Computing Close Genomes</h2>
+One early step in annotating a genome usually involves locating a set
+of well-annotated genomes that are phylogenetically very "close". As
+the community begins sequencing projects in which tens of thousands of
+very similar genomes are sequenced, strategies to exploit rapid
+projection of <a name="annotations40">annotations</a> from
+well-annotated reference genomes become more important.
+<p> The current tool supported in the RAST2 Toolkit uses a 2-step
+process: </p>
+<ol>
+  <li>First, it employs a rapid kmer-based annotation scheme that
+locates sections of coding regions in the <a name="DNA41">DNA</a>,
+along with functions of the encoded proteins, when they can be
+identified reliably. </li>
+  <li>Once a rapid initial estimate of which coding regions are present
+(taking a minute or so for a typical prokaryotic genome), we can locate
+regions of fairly universal genes (e.g., those encoding parts of the
+translation or transcription machinery), access the corresponding
+FIGfams for these genes (i.e., the <a name="protein families42">protein
+families</a> that encode these genes in annotated genomes), compute
+similarities between the coding regions identified in the new genome
+and proteins in the FIGfams, and locate the existing genomes that
+repeatedly show up as "close". </li>
+</ol>
+The output of this 2-step process is a list of genomes, along with
+estimates (very approximate) of average identity scores expected
+between the proteins encoded in the new genome and those in existing
+reference genomes. The generated genomeTO will include the data from
+the input genomeTO, along with a recorded list of "close genomes" and a
+crude estimate of how similar each is to the new genome. Thus,
+<pre>       <a href="http://kbase.us/developer-zone/api-documentation/cdm-command-line-scripts/#close_genomes" target="_blank">close_genomes</a> -g a.genomeTO &gt; genomeTO.with.close<br></pre>
+would take as input the file <i>a.genomeTO</i> and produce as output
+the file <i>genomeTO.with.close</i>, which is a JSON-encoded string
+representing a structure that includes the estimate of close genomes.
+This estimate is accessed via the field name <i><a name="close_genomes43"></a><a href="http://kbase.us/developer-zone/api-documentation/cdm-command-line-scripts/#close_genomes" target="_blank">close_genomes</a></i>, which is a pointer to a list of
+2-tuples. Each 2-tuple contains a genome ID and an estimate of average
+percent identity expected between proteins in the new genome and the
+corresponding proteins in the "close" genome.
+</div>
+<div>
+<h2>Identification of tRNAs</h2>
+To call the tRNAs, you can use
+<pre>       call_RNAs &lt; input.genomeTO &gt; output.genomeTO<br></pre>
+This estimate of the tRNA content is stored in the genomeTO via a field
+named <i>feature</i> which gives you access to a pointer to a list of
+hashes, each hash representing a single feature (i.e., features of all
+types, produced by all tools, are merged into a list of these "feature
+hashes". The features generated by this tool are registered via the ID
+server as features of type <i>tRNA</i>.
+</div>
+<div>
+<h2>Identification of rRNAs</h2>
+To call the rRNAs, you can use
+<pre>       call_RNAs &lt; input.genomeTO &gt; output.genomeTO<br></pre>
+This estimate of the rRNA content is stored in the genomeTO via a field
+named <i>feature</i> which gives you access to a pointer to a list of
+hashes, each hash representing a single feature (i.e., features of all
+types, produced by all tools, are merged into a list of these "feature
+hashes". The features generated by this tool are registered via the ID
+server as features of type <i>rRNA</i>.
+</div>
+<div>
+<h2>Identification of Genes Related to Selenocysteine</h2>
+In some genomes, machinery exists to support inclusion of unusual amino
+acids. In the case of selenocysteine, you can use a tool created by
+Gary Olsen to locate and annotate genes related to selenocysteine
+usage:
+<pre>       call_selenoproteins &lt; input.genomeTO &gt; output.enhanced.genomeTO<br></pre>
+This tool adds features of type CDS to the list of features encoded in
+the output.enhanced.genomeTO. Note that the features all include <a name="annotations44">annotations</a>, and that the fact that the
+features were called by this tool is
+computable from the <a name="annotations45">annotations</a>.
+</div>
+<div>
+<h2>Identification of Genes Related to Pyrrolysine</h2>
+In some genomes, machinery exists to support inclusion of unusual amino
+acids. In the case of pyrrolysine, you can use a tool created by Gary
+Olsen to locate and annotate genes related to pyrrolysine usage:
+<pre>       call_pyrrolysoproteins &lt; input.genomeTO &gt; output.enhanced.genomeTO<br></pre>
+This tool adds features of type CDS to the list of features encoded in
+the output.enhanced.genomeTO. Note that the features all include <a name="annotations46">annotations</a>, and that the fact that the
+features were called by this tool is
+computable from the <a name="annotations47">annotations</a>.
+</div>
+<div>
+<h2>Identifying Protein-encoding Genes Using Glimmer</h2>
+Currently, we implement the ability to call protein-encoding using
+several distinct tools and strategies. Invoking one of these tools has
+the effect of creating and registering a set of CDS genes. Thus,
+calling several, adds multiple distinct calls to the same 'features'
+field in the genomeTO. Each such added feature includes <a name="annotations48">annotations</a>. The tool and score can be parsed
+from these <a name="annotations49">annotations</a>.
+<p> The basic process implemented by a <a name="pipeline50">pipeline</a>
+will include generating calls from a number of tools, and then merging
+the results in a completely separate step. </p>
+<p> Glimmer is a very useful gene caller for prokaryotic genomes. To
+get Glimmers calls, one would use </p>
+<pre>       call_CDSs_by_glimmer &lt; input.genomeTO &gt; output.enhanced.genomeTO<br></pre>
+This implements a multi-step approach where initial calls are made,
+these initial calls are used to train glimmer, and then a second pass
+is made to construct an estimate.
+</div>
+<div>
+<h2>Initial Determination of Coding Regions and Probable Functions Via
+Projection from Close Genomes</h2>
+A second approach to calling genes is based on projecting calls from
+very close genomes (if they can be located). To generate calls using
+this strategy, where input.genomeTO was produced by
+genomeTO_to_coding_regions, one would use:
+<pre>       call_CDSs_by_projection &lt; input.genomeTO &gt; output.enhanced.genomeTO<br><br></pre>
+call_CDSs_by_projection produces both identification of gene locations
+and the functions assigned to those genes.
+</div>
+<div>
+<h2> Merging Gene Calls </h2>
+The basic strategy used by RAST2 is to use a selected set of tools to
+propose potential genes. This includes tools to call different types of
+genes (e.g., RNAs and protein-encoding genes), as well as different
+tools to call the same types of genes (e.g., there are multiple tools
+provided for proposing calls for protein-encoding genes).
+<p> To produce a <i>genomeTO</i> that can be used to support
+construction of <a name="metabolic51">metabolic</a> models, one should
+merge these sets of proposed genes into a single, "best estimate". We
+form this best estimate by looking at the entire collection of proposed
+genes, deleting some that appear specious, and then keeping the
+remaining set. Each gene in the merged set will include a very crude <i>score</i>
+between 0 and 1 estimating confidence levels for the calls (the numbers
+should be thought os as ordered, but the precise values have little
+statistical justification). </p>
+<p> To create a genome object that merges the gene calls use </p>
+<pre>       merge_featuress &lt; input.genomeTO &gt; output.merged.genomeTO<br></pre>
+</div>
+<div><h2>Assigning Functions to Putative Protein-encoding Genes Using Kmer
+Analysis</h2>
+If gene calls were made by a de novo technique (like glimmer), the
+functions must still be assigned. We have a tool that makes a rapid
+pass using a kmer-based technology to annotate. Thus,
+<pre>    assign_functions_to_CDSs &lt; input.genomeTO &gt; output.genomeTO<br></pre>
+Assigning a function causes the "function" field associated with a
+feature to be updated, and an annotation is added (from which the tool
+and score can be extracted).
+</div>
+<div>
+<h2>Summary</h2>
+The RAST2 Toolkit being developed at Argonne National Laboratory will
+offer a framework for constructing customized annotation pipelines.
+This is useful for at least two purposes:
+<ol>
+  <li>Customized pipelines offer a means of incorporating
+genus-specific algorithms like the tools for recognizing <i>Streptococcus</i>-specific
+repeats. These specialized tools offer the ability to rapidly propagate
+advances in tools to immediately impact the rapidly emerging
+collections of genomes. </li>
+  <li>The second major use of the RAST2 Toolkit will be to evaluate
+alternative approaches to <a name="annotations52">annotations</a>. We
+anticipate introducing a number of feature-calling algorithms, and
+RAST2 offers a framework for evaluating alternative approaches. </li>
+</ol>
+Once the components of the RAST2 Toolkit have been built, they can be
+easily pipelined. Thus, assuming you have an uploaded set of contigs,
+you can use
+<pre>fasta_to_genome 'Streptococcus thermophilus MN-ZLW-002' Bacteria 11 &lt; contigs &gt; genomeTO<br><br><a href="http://kbase.us/developer-zone/api-documentation/cdm-command-line-scripts/#close_genomes" target="_blank">close_genomes</a>  -g genomeTO | call_RNAs | call_selenoproteins | call_CDSs_by_glimmer &gt; with.glimmer.CDSs<br><br>genomeTO_to_coding_regions &lt; with.glimmer.CDSs  &gt; with.Kmers.and.basic<br><br>call_CDSs_by_projection &lt; with.Kmers.and.basic | merge_features &gt; withmerged<br><br>genomeTO_to_feature_data &lt; withmerged | sort_by_loc -c 2 &gt; features.tab<br></pre>
+</div>
+</div>
+</div>

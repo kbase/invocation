@@ -55,8 +55,8 @@
         version: "1.0.0",
         options: {
             style : 'button',
-            loginURL : "http://140.221.92.231/services/authorization/Sessions/Login",
-            //loginURL : "http://kbase.us/services/authorization/Sessions/Login",
+            //loginURL : "http://140.221.92.231/services/authorization/Sessions/Login",
+            loginURL : "http://kbase.us/services/authorization/Sessions/Login",
             possibleFields : ['verified','name','opt_in','kbase_sessionid','token','groups','user_id','email','system_admin'],
             fields : ['name', 'kbase_sessionid', 'user_id', 'token'],
         },
@@ -81,14 +81,13 @@
             }
 
             chips.success = 1;
-
             return field == undefined
                 ? chips
                 : chips[field];
         },
 
         sessionId : function () {
-            return this.get_kbase_cookie('kbase_session_id');
+            return this.get_kbase_cookie('kbase_sessionid');
         },
 
         init: function(options) {
@@ -196,6 +195,8 @@
                         .text('Sign In')
                         .bind('click',
                             $.proxy( function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
                                 this.openDialog();
                             }, this)
                         )
