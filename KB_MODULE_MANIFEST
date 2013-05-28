@@ -3,8 +3,8 @@
         "commandgroups": {
         },
         "config": {
-            "authenticated-storage-dir": "/tmp/storage-auth"
-            "nonauthenticated-storage-dir": "/tmp/storage-nonauth"
+            "authenticated-storage-dir": "/tmp/storage-auth",
+            "nonauthenticated-storage-dir": "/tmp/storage-nonauth",
             "service-url": "http://kbase.us/services/invocation"
         },
         "version": "0.1.0",
