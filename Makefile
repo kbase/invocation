@@ -44,7 +44,7 @@ $(SERVICE_MODULE): $(SERVICE_SPEC)
 
 bin: $(BIN_PERL)
 
-deploy: build-libs deploy-client
+deploy: deploy-client deploy-service
 
 deploy-all: deploy-service deploy-client
 
