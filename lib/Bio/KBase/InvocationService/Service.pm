@@ -28,6 +28,7 @@ our %return_counts = (
         'run_pipeline2' => 3,
         'exit_session' => 0,
         'valid_commands' => 1,
+        'installed_modules' => 1,
         'get_tutorial_text' => 3,
         'version' => 1,
 );
@@ -47,6 +48,7 @@ our %method_authentication = (
         'run_pipeline2' => 'optional',
         'exit_session' => 'optional',
         'valid_commands' => 'optional',
+        'installed_modules' => 'optional',
         'get_tutorial_text' => 'optional',
 );
 
@@ -69,6 +71,7 @@ sub _build_valid_methods
         'run_pipeline2' => 1,
         'exit_session' => 1,
         'valid_commands' => 1,
+        'installed_modules' => 1,
         'get_tutorial_text' => 1,
         'version' => 1,
     };

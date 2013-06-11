@@ -85,11 +85,11 @@ for my $gkey (@groups)
 
 my %data = (
 	    groups => \@group_ents,
-	    modules_with_commands => \@modules_with_commands,
+	    modules => \@modules_with_commands,
 	   );
 #print Dumper(\%data);
 my $tmpl = Template->new();
-$tmpl->process("ValidCommands.pm.tt", \%data);
+$tmpl->process("ValidCommands.pm.tt", \%data) || die "Error processing template: " . $tmpl->error;
 
 
 sub process_cmd_file

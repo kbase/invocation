@@ -1296,6 +1296,75 @@ sub valid_commands
 
 
 
+=head2 installed_modules
+
+  $return = $obj->installed_modules()
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$return is a reference to a list where each element is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$return is a reference to a list where each element is a string
+
+
+=end text
+
+=item Description
+
+Retrieve the set of modules installed in the current deployment.
+Note that this does not require authentication or a valid session, and thus
+may be used to set up a graphical interface before a login is done.
+
+=back
+
+=cut
+
+sub installed_modules
+{
+    my($self, @args) = @_;
+
+# Authentication: optional
+
+    if ((my $n = @args) != 0)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function installed_modules (received $n, expecting 0)");
+    }
+
+    my $result = $self->{client}->call($self->{url}, {
+	method => "InvocationService.installed_modules",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{code},
+					       method_name => 'installed_modules',
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method installed_modules",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'installed_modules',
+				       );
+    }
+}
+
+
+
 =head2 get_tutorial_text
 
   $text, $prev, $next = $obj->get_tutorial_text($step)
@@ -1655,7 +1724,9 @@ sub _post {
         }
     }
     else {
-        $obj->{id} = $self->id if (defined $self->id);
+        # $obj->{id} = $self->id if (defined $self->id);
+	# Assign a random number to the id if one hasn't been set
+	$obj->{id} = (defined $self->id) ? $self->id : substr(rand(),2);
     }
 
     my $content = $json->encode($obj);

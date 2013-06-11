@@ -23,8 +23,8 @@ our @command_groups = (
 );
 
 our @modules = (
-[% FOR mod IN modules -%]
-	'[% mod %]',
+[% FOR module IN modules -%]
+	'[% module %]',
 [% END -%]
 );
 
