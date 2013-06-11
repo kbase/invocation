@@ -133,6 +133,14 @@ module InvocationService
     funcdef valid_commands() returns (list<command_group_desc>);
 
     /*
+     * Retrieve the set of modules installed in the current deployment.
+     *
+     * Note that this does not require authentication or a valid session, and thus
+     * may be used to set up a graphical interface before a login is done.
+     */
+    funcdef installed_modules() returns (list<string>);
+
+    /*
      * Retrieve the tutorial text for the given tutorial step, along with the
      * the step numbers for the previous and next steps in the tutorial.
      */
