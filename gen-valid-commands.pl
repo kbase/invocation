@@ -167,7 +167,7 @@ sub process_cmd_file
     #
     for my $re (@ignore)
     {
-	$ignore_file{$_} = 1foreach  grep { $_ =~ $re } @files;
+	$ignore_file{$_} = 1 foreach  grep { $_ =~ $re } @files;
     }
 
     my %file_group;
