@@ -53,6 +53,7 @@ sub new
 
     $self->{valid_commands_hash} = Bio::KBase::InvocationService::ValidCommands::valid_commands();
     $self->{command_groups} = Bio::KBase::InvocationService::ValidCommands::command_groups();
+    $self->{modules} = Bio::KBase::InvocationService::ValidCommands::modules();
 
     my @command_path;
 
@@ -1104,6 +1105,64 @@ sub valid_commands
 	my $msg = "Invalid returns passed to valid_commands:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'valid_commands');
+    }
+    return($return);
+}
+
+
+
+
+=head2 installed_modules
+
+  $return = $obj->installed_modules()
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$return is a reference to a list where each element is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$return is a reference to a list where each element is a string
+
+
+=end text
+
+
+
+=item Description
+
+Retrieve the set of modules installed in the current deployment.
+Note that this does not require authentication or a valid session, and thus
+may be used to set up a graphical interface before a login is done.
+
+=back
+
+=cut
+
+sub installed_modules
+{
+    my $self = shift;
+
+    my $ctx = $Bio::KBase::InvocationService::Service::CallContext;
+    my($return);
+    #BEGIN installed_modules
+    return $self->{modules};
+    #END installed_modules
+    my @_bad_returns;
+    (ref($return) eq 'ARRAY') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to installed_modules:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'installed_modules');
     }
     return($return);
 }

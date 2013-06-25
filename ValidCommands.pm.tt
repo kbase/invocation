@@ -10,7 +10,7 @@ use strict;
 require Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(valid_commands command_groups);
+our @EXPORT_OK = qw(valid_commands command_groups modules);
 
 our @command_groups = (
 [% FOR group IN groups -%]
@@ -22,9 +22,20 @@ our @command_groups = (
 [% END -%]
 );
 
+our @modules = (
+[% FOR module IN modules -%]
+	'[% module %]',
+[% END -%]
+);
+
 sub command_groups
 {
     return \@command_groups;
+}
+
+sub modules
+{
+    return \@modules;
 }
 
 sub valid_commands

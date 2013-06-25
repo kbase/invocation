@@ -50,6 +50,7 @@ my @groups;
 my %groups;
 my %group_names;
 my %groups_seen;
+my @modules_with_commands;
 
 for my $module (@modules)
 {
@@ -60,7 +61,8 @@ for my $module (@modules)
     }
     next unless -f $cmd_file;
     print STDERR "Process $cmd_file\n";
-    process_cmd_file(\%groups_seen, \@groups, \%groups, \%group_names, $module, $cmd_file);
+    my $has_command = process_cmd_file(\%groups_seen, \@groups, \%groups, \%group_names, $module, $cmd_file);
+    push(@modules_with_commands, $module) if $has_command;
 }
 
 my @group_ents;
@@ -81,10 +83,13 @@ for my $gkey (@groups)
     push(@group_ents, $group);
 }
 
-my %data = ( groups => \@group_ents );
+my %data = (
+	    groups => \@group_ents,
+	    modules => \@modules_with_commands,
+	   );
 #print Dumper(\%data);
 my $tmpl = Template->new();
-$tmpl->process("ValidCommands.pm.tt", \%data);
+$tmpl->process("ValidCommands.pm.tt", \%data) || die "Error processing template: " . $tmpl->error;
 
 
 sub process_cmd_file
@@ -167,7 +172,7 @@ sub process_cmd_file
     #
     for my $re (@ignore)
     {
-	$ignore_file{$_} = 1foreach  grep { $_ =~ $re } @files;
+	$ignore_file{$_} = 1 foreach  grep { $_ =~ $re } @files;
     }
 
     my %file_group;
@@ -197,4 +202,6 @@ sub process_cmd_file
 	my $group = $file_group{$file};
 	push(@{$groups->{$group}}, $file);
     }
+
+    return %file_group ? 1 : 0;
 }
