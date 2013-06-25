@@ -46,6 +46,7 @@
             }
 
             this.commands = [];
+            this.commandCategories = {};
 
             return this;
 
@@ -121,6 +122,7 @@
             this.client.valid_commands_async(
                 $.proxy(
                     function (res) {
+
                         var commands = [];
                         $.each(
                             res,
@@ -150,6 +152,10 @@
                                                 }
 
                                                 this.commands.push(val.cmd);
+                                                if (this.commandCategories[group.name] == undefined) {
+                                                    this.commandCategories[group.name] = [];
+                                                }
+                                                this.commandCategories[group.name].push(val.cmd);
 
                                                 $ul.append(
                                                     this.createLI(val.cmd, label)
@@ -162,6 +168,7 @@
                                     commands.push(
                                         {
                                             'title' : group.title,
+                                            'category' : group.name,
                                             'body' : $ul
                                         }
                                     );
