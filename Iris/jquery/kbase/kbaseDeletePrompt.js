@@ -26,12 +26,9 @@
     $deleteModal.openPrompt();
 
     Sure, you could just set it up through kbasePrompt. But why bother?
-
 */
 
 (function( $, undefined ) {
-
-
     $.kbWidget("kbaseDeletePrompt", 'kbasePrompt', {
         version: "1.0.0",
         options: {

@@ -84,7 +84,7 @@
             return prefix;
         },
 
-        comonCommandPrefix : function (commands) {
+        commonCommandPrefix : function (commands) {
 
             var prefix = '';
 
@@ -195,18 +195,55 @@
                 func = this.options.link;
             }
 
+            var $commands = this;
+
             return $('<li></li>')
+                //.css('display', 'list-item')
+                .bind(
+                    'mouseover',
+                    function (e) {
+                        e.preventDefault();
+                    console.log('in');
+                    $(this).children().last().css('display', 'inline');
+                    }
+                )
+                .bind(
+                    'mouseout',
+                    function (e) {
+                        e.preventDefault();
+                    console.log('out');
+                    $(this).children().last().css('display', 'none');
+                    }
+                )
                 .append($('<a></a>')
                     .attr('href', '#')
                     .attr('title', cmd)
                     .data('type', 'invocation')
-                    .css('display', 'list-item')
+                    //.css('display', 'list-item')
                     //.tooltip()
                     .text(label)
                     .bind(
                         'click',
                         func
                     )
+                )
+                .append(
+                    $('<button></button>')
+                        .addClass('btn btn-mini')
+                        .css('display', 'none')
+                        .css('float', 'right')
+                        .append('?')
+                        .bind(
+                            'click',
+                            function (e) {
+                                e.preventDefault();
+                                if ($commands.options.terminal != undefined) {
+                                console.log("TERMINAL");
+                                console.log($commands.options.terminal);
+                                    $commands.options.terminal.run(cmd + ' -h');
+                                }
+                            }
+                        )
                 )
                 /*.draggable(
                     {
@@ -229,7 +266,7 @@
 
             var that = this;
 
-            $('input,textarea').live('focus.kbaseIrisCommands', $.proxy( function (e) {
+            $('input,textarea').on('focus.kbaseIrisCommands', $.proxy( function (e) {
                 if ($(':focus').get(0) != undefined && $(':focus').get(0) != this.data('searchField').get(0)) {
                     this.data('focused', $(':focus'));
                 }
@@ -251,7 +288,7 @@
                         .bind('click',
                             function(e) {
                                 $(this).parent().children().last().collapse('toggle');
-                                if (that.options.fileBrowser && that.options.fileBrowser.toggleNavHeight) {
+                                if (that.options.fileBrowser) {
                                     that.options.fileBrowser.toggleNavHeight();
                                 }
                             }

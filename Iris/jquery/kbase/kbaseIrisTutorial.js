@@ -30,7 +30,6 @@
                 this.options.configURL,
                 $.proxy(function(data) {
                     this.dispatch = data.dispatch;
-
                     if (this.options.tutorial == undefined) {
                         this.options.tutorial = data.default;
                     }

@@ -16,12 +16,12 @@
     $.kbWidget = function(name, parent, def) {
 
         if (widgetRegistry[name] != undefined) {
-            throw "Cannot re-register widget: " + name;
+            //throw "Cannot re-register widget: " + name;
             return;
         }
         var Widget = function($elem) {
             this.$elem = $elem;
-            this.options = $.extend(true, {}, widgetRegistry[parent].prototype.options, def.options);
+            this.options = $.extend(true, {}, def.options);
             return this;
         }
 

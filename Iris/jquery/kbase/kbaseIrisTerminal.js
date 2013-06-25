@@ -10,6 +10,12 @@
         version: "1.0.0",
         options: {
             invocationURL : 'http://localhost:5000',
+            searchURL : 'https://kbase.us/services/search-api/search/$category/$keyword?start=$start&count=$count&format=json',
+            searchStart : 1,
+            searchCount : 10,
+            searchFilter : {
+                literature : 'link,pid'
+            },
 //            invocationURL : 'http://bio-data-1.mcs.anl.gov/services/invocation',
             maxOutput : 100,
             scrollSpeed : 750,
@@ -135,6 +141,8 @@
 
             this.path = '.';
             this.cwd = "/";
+            this.variables = {};
+            this.aliases = {};
 
             this.appendUI( $( this.$elem ) );
 
@@ -354,6 +362,24 @@
 
                 this.dbg("Run (" + cmd + ')');
                 this.out_cmd(cmd);
+
+                var exception = cmd + cmd; //something that cannot possibly be a match
+                var m;
+                if (m = cmd.match(/^\s*(\$\S+)/)) {
+                    exception = m[1];
+                }
+
+                for (variable in this.variables) {
+                    if (variable.match(exception)) {
+                        continue;
+                    }
+                    var escapedVar = variable.replace(/\$/, '\\$');
+                    var varRegex = new RegExp(escapedVar, 'g');
+                    console.log("VR");
+                    console.log(varRegex);
+                    cmd = cmd.replace(varRegex, this.variables[variable]);
+                }
+
                 this.run(cmd);
                 this.scroll();
                 this.input_box.val('');
@@ -383,14 +409,78 @@
                     var cursorPosition = this.input_box.getCursorPosition();
 
                     if (cursorPosition != undefined && cursorPosition < input_box_length) {
+                        this.selectNextInputVariable(event);
                         return;
                     }
 
                     event.preventDefault();
 
                     var toComplete = this.input_box.val().match(/([^\s]+)\s*$/);
+
                     if (toComplete.length) {
                         toComplete = toComplete[1];
+console.log("TO COMPLETE " + toComplete);
+                        var ret = this.options.grammar.evaluate(
+                            this.input_box.val()
+                        );
+                        console.log("RET VAL IS "); console.log(ret);
+                        if (ret != undefined && ret['next'] && ret['next'].length) {
+
+                            var nextRegex = new RegExp('^' + toComplete);
+
+                            var newNext = [];
+                            for (var idx = 0; idx < ret['next'].length; idx++) {
+                                var n = ret['next'][idx];
+                                console.log("MATCHES " + n + " against " + toComplete);
+                                if (n.match(nextRegex)) {
+                                console.log("GOOD");
+                                    newNext.push(n);
+                                }
+                            }
+                            if (newNext.length || ret.parsed.length == 0) {
+                                ret['next'] = newNext;
+                                if (ret['next'].length == 1) {
+                                    var toCompleteRegex = new RegExp('\s*' + toComplete + '\s*$');
+                                    this.input_box.val(this.input_box.val().replace(toCompleteRegex, ''));
+                                }
+                            }
+console.log("NEXT IS ");console.log(ret['next']);
+                            //this.input_box.val(ret['parsed'] + ' ');
+
+                            if (ret['next'].length == 1) {
+                                var pad = ' ';
+                                if (this.input_box.val().match(/\s+$/)) {
+                                    pad = '';
+                                }
+                                this.appendInput(pad + ret['next'][0] + ' ', 0);
+                                /*if (ret['next'][0].match(/^\$/)) {
+                                    console.log("RET NEXT VARIABLE " + ret['next'][0]);
+                                    console.log(this.input_box.val().length - ret['next'][0]);
+                                    console.log(this.input_box.val().length);
+                                    console.log(ret['next'][0].length);
+                                    var start = this.input_box.val().length - ret['next'][0].length - 1;
+                                    console.log(start);
+                                    this.input_box.setSelection(start, this.input_box.val().length);
+                                }*/
+                                this.selectNextInputVariable();
+                                return;
+                            }
+                            else if (ret['next'].length){
+
+                                var shouldComplete = true;
+                                var regex = new RegExp(toComplete + '\\s*$');
+                                for (prop in ret.next) {
+                                console.log("CHECK " + prop + " AGAINST " + regex);
+                                    if (! prop.match(regex)) {
+                                        shouldComplete = false;
+                                    }
+                                }
+                                console.log("SHOULD " + shouldComplete + ", " + toComplete);
+
+                                this.displayCompletions(ret['next'], toComplete);//shouldComplete ? toComplete : '', false);
+                                return;
+                            }
+                        }
 
                         var completions = this.options.commandsElement.kbaseIrisCommands('completeCommand', toComplete);
                         if (completions.length == 1) {
@@ -398,67 +488,141 @@
                             this.appendInput(completion + ' ', 0);
                         }
                         else if (completions.length) {
-
-                            var prefix = this.options.commandsElement.kbaseIrisCommands('comonCommandPrefix', completions);
-
-                            if (prefix != undefined && prefix.length) {
-                                this.input_box.val(
-                                    this.input_box.val().replace(new RegExp(toComplete + '\s*$'), prefix)
-                                );
-                            }
-
-                            var $commandDiv = $('<div></div>');
-                            this.terminal.append($commandDiv);
-
-                            var $tbl = $('<table></table>')
-                                .attr('border', 1)
-                                .css('margin-top', '10px')
-                                .append(
-                                    $('<tr></tr>')
-                                        .append(
-                                            $('<th></th>')
-                                                .text('Suggested commands')
-                                        )
-                                    );
-                            jQuery.each(
-                                completions,
-                                jQuery.proxy(
-                                    function (idx, val) {
-                                        $tbl.append(
-                                            $('<tr></tr>')
-                                                .append(
-                                                    $('<td></td>')
-                                                        .append(
-                                                            $('<a></a>')
-                                                                .attr('href', '#')
-                                                                .text(val)
-                                                                .bind('click',
-                                                                    jQuery.proxy(
-                                                                        function (evt) {
-                                                                            evt.preventDefault();
-                                                                            this.input_box.val(
-                                                                                this.input_box.val().replace(new RegExp(toComplete + '\s*$'), '')
-                                                                            );
-                                                                            this.appendInput(val + ' ');
-                                                                        },
-                                                                        this
-                                                                    )
-                                                                )
-                                                        )
-                                                    )
-                                            );
-                                    },
-                                    this
-                                )
-                            );
-                            $commandDiv.append($tbl);
-                            this.scroll();
-
+                            this.displayCompletions(completions, toComplete);
                         }
+
                     }
 
                 }
             }
+
+        },
+
+        selectNextInputVariable : function(e) {
+            var match;
+
+            var pos = this.input_box.getCursorPosition();
+
+            if (match = this.input_box.val().match(/(\$\S+)/)) {
+                if (e != undefined) {
+                    e.preventDefault();
+                }
+
+                var start = this.input_box.val().indexOf(match[1]);
+                var end = this.input_box.val().indexOf(match[1]) + match[1].length;
+                //this.input_box.focusEnd();
+                this.input_box.setSelection(
+                    start,
+                    end
+                );
+                this.input_box.setSelection(start, end);
+            }
+        },
+
+        search_json_to_table : function(json, filter) {
+
+            var $div = $('<div></div>');
+
+            var filterRegex = new RegExp('.');
+            if (filter) {
+                filterRegex = new RegExp(filter.replace(/,/g,'|'));
+            };
+
+            console.log(filterRegex);
+
+
+            $.each(
+                json,
+                $.proxy(function(idx, record) {
+                    var $tbl = $('<table></table>')
+                        .css('border', '1px solid black')
+                        .css('margin-bottom', '2px');
+                        //console.log("KEYS");
+                        //console.log(Object.keys(record));
+                        var keys = Object.keys(record).sort();
+                    for (var idx = 0; idx < keys.length; idx++) {
+                        var prop = keys[idx];
+                        if (prop.match(filterRegex)) {
+                            $tbl
+                                .append(
+                                    $('<tr></tr>')
+                                        .css('text-align', 'left')
+                                        .append(
+                                            $('<th></th>').append(prop)
+                                        )
+                                        .append(
+                                            $('<td></td>').append(record[prop])
+                                        )
+                                )
+                        }
+                    }
+                    $div.append($tbl);
+                }, this)
+            );
+
+            return $div;
+
+        },
+
+        displayCompletions : function(completions, toComplete) {
+            var prefix = this.options.commandsElement.kbaseIrisCommands('commonCommandPrefix', completions);
+console.log("TO COMPLETE " + toComplete + ', ' + prefix);
+console.log(completions);
+            if (prefix != undefined && prefix.length) {
+                this.input_box.val(
+                    this.input_box.val().replace(new RegExp(toComplete + '\s*$'), prefix)
+                );
+            }
+            else {
+                prefix = toComplete;
+            }
+
+            var $commandDiv = $('<div></div>');
+            this.terminal.append($commandDiv);
+
+            var $tbl = $('<table></table>')
+                .attr('border', 1)
+                .css('margin-top', '10px')
+                .append(
+                    $('<tr></tr>')
+                        .append(
+                            $('<th></th>')
+                                .text('Suggested commands')
+                        )
+                    );
+            jQuery.each(
+                completions,
+                jQuery.proxy(
+                    function (idx, val) {
+                        $tbl.append(
+                            $('<tr></tr>')
+                                .append(
+                                    $('<td></td>')
+                                        .append(
+                                            $('<a></a>')
+                                                .attr('href', '#')
+                                                .text(val)
+                                                .bind('click',
+                                                    jQuery.proxy(
+                                                        function (evt) {
+                                                            evt.preventDefault();
+                                                            this.input_box.val(
+                                                                this.input_box.val().replace(new RegExp(prefix + '\s*$'), '')
+                                                            );
+                                                            this.appendInput(val + ' ');
+                                                        },
+                                                        this
+                                                    )
+                                                )
+                                        )
+                                    )
+                            );
+                    },
+                    this
+                )
+            );
+            $commandDiv.append($tbl);
+            this.scroll();
 
         },
 
@@ -751,6 +915,89 @@
                 return;
             }
 
+            if (m = command.match(/^(\$\S+)\s*=\s*(\S+)/)) {
+                this.variables[m[1]] = m[2];
+                this.out_to_div($commandDiv, m[1] + ' set to ' + m[2]);
+                return;
+            }
+
+            if (m = command.match(/^alias\s+(\S+)\s*=\s*(\S+)/)) {
+                this.aliases[m[1]] = m[2];
+                this.out_to_div($commandDiv, m[1] + ' set to ' + m[2]);
+                return;
+            }
+
+            if (m = command.match(/^search\s+(\S+)\s+(\S+)(?:\s*(\S+)\s+(\S+)(?:\s*(\S+))?)?/)) {
+
+                var parsed = this.options.grammar.evaluate(command);
+                //console.log("SEARCH PARSED");console.log(parsed);
+
+                var searchVars = {};
+                //'kbase.us/services/search-api/search/$category/$keyword?start=$start&count=$count&format=json',
+
+                var searchURL = this.options.searchURL;
+
+                searchVars.$category = m[1];
+                searchVars.$keyword = m[2];
+                searchVars.$start = m[3] || this.options.searchStart;
+                searchVars.$count = m[4] || this.options.searchCount;
+                var filter = m[5] || this.options.searchFilter[searchVars.$category];
+                console.log("FILTER " + filter);
+
+                for (prop in searchVars) {
+                    searchURL = searchURL.replace(prop, searchVars[prop]);
+                }
+
+                console.log(searchURL);
+
+                $.support.cors = true;
+                $.ajax(
+                    {
+                        type            : "GET",
+                        url             : searchURL,
+                        dataType        : "json",
+                        crossDomain     : true,
+                        xhrFields       : { withCredentials: true },
+                         xhrFields: {
+                            withCredentials: true
+                         },
+                         beforeSend : function(xhr){
+                            // make cross-site requests
+                            xhr.withCredentials = true;
+                         },
+                        success         : $.proxy(
+                            function (data,res,jqXHR) {
+                                this.out_to_div($commandDiv, $('<i></i>').html("Command completed."));
+                                this.out_to_div($commandDiv, $('<br/>'));
+                                this.out_to_div($commandDiv,
+                                    $('<span></span>')
+                                        .append($('<b></b>').html(data.found))
+                                        .append(" records found.")
+                                );
+                                this.out_to_div($commandDiv, $('<br/>'));
+                                this.out_to_div($commandDiv, this.search_json_to_table(data.body, filter));
+                                var res = this.search_json_to_table(data.body, filter);
+                                console.log("TABLE : ");
+                                console.log(res);
+                                console.log(data);
+                                this.scroll();
+
+                            },
+                            this
+                        ),
+                        error: $.proxy(
+                            function (jqXHR, textStatus, errorThrown) {
+
+                                this.out_to_div($commandDiv, errorThrown);
+
+                            }, this
+                        ),
+                   }
+                );
+
+                return;
+            }
+
             if (m = command.match(/^cp\s*(.*)/)) {
                 var args = m[1].split(/\s+/)
                 if (args.length != 2) {
@@ -996,6 +1243,42 @@
                 return;
             }
 
+            if (m = command.match(/^questions\s*(\S+)?/)) {
+
+                var questions = this.options.grammar.allQuestions(m[1]);
+                var $tbl = $('<table></table>');
+                $.each(
+                    questions,
+                    $.proxy(function (idx, question) {
+                        $tbl.append(
+                            $('<tr></tr>')
+                                .append(
+                                    $('<td></td>')
+                                        .append(
+                                            $('<a></a>')
+                                                .attr('href', '#')
+                                                .text(question)
+                                                .bind('click',
+                                                    jQuery.proxy(
+                                                        function (evt) {
+                                                            evt.preventDefault();
+                                                            this.input_box.val(question);
+                                                            this.selectNextInputVariable();
+                                                        },
+                                                        this
+                                                    )
+                                                )
+                                        )
+                                    )
+                            );
+                    }, this)
+                );
+                $commandDiv.append($tbl);
+                this.scroll();
+
+                return;
+            }
+
             if (d = command.match(/^ls\s*(.*)/)) {
                 var args = d[1].split(/\s+/)
                 var obj = this;
@@ -1104,6 +1387,25 @@
                 return;
             }
 
+            var parsed = this.options.grammar.evaluate(command);
+            console.log("PARSED");
+            console.log(parsed);
+            if (parsed != undefined) {
+                if (! parsed.fail && parsed.execute) {
+                    command = parsed.execute;
+
+                    if (parsed.explain) {
+                        $commandDiv.append(parsed.execute);
+                        return;
+                    }
+
+                }
+                else if (parsed.parsed.length && parsed.fail) {
+                    $commandDiv.append($('<i></i>').html(parsed.error));
+                    return;
+                }
+            }
+
             command = command.replace(/\\\n/g, " ");
             command = command.replace(/\n/g, " ");
 
@@ -1208,5 +1510,3 @@
     });
 
 }( jQuery ) );
-
-

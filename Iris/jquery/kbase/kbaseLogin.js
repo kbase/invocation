@@ -48,7 +48,6 @@
 
 */
 
-
 (function( $, undefined ) {
 
     $.kbWidget("kbaseLogin", 'kbaseWidget', {
@@ -81,13 +80,18 @@
             }
 
             chips.success = 1;
+
             return field == undefined
                 ? chips
                 : chips[field];
         },
 
         sessionId : function () {
-            return this.get_kbase_cookie('kbase_sessionid');
+            return this.get_kbase_cookie('kbase_session_id');
+        },
+
+        token : function () {
+            return this.get_kbase_cookie('token');
         },
 
         init: function(options) {
@@ -195,8 +199,6 @@
                         .text('Sign In')
                         .bind('click',
                             $.proxy( function(e) {
-                                e.preventDefault();
-                                e.stopPropagation();
                                 this.openDialog();
                             }, this)
                         )
@@ -383,7 +385,7 @@
                                 .append(
                                     $('<i></i>')
                                         .attr('id', 'logouticon')
-                                        .addClass('icon-remove-circle')
+                                        .addClass('icon-signout')
                                 )
                         )
                 );

@@ -17,6 +17,9 @@
             'shouldToggleNavHeight' : true,
             'controlButtons' : ['deleteButton', 'viewButton', 'addDirectoryButton', 'uploadButton', 'addButton'],
             'name' : 'File Browser',
+            'openFolderIcon' : 'icon-folder-open-alt',
+            'closedFolderIcon' : 'icon-folder-close-alt',
+            'fileIcon' : 'icon-file',
         },
 
         init: function (options) {
@@ -73,7 +76,7 @@
                 filelist,
                 $.proxy(function (idx, val) {
 
-                    var icon = 'icon-file';
+                    var icon = this.options.fileIcon;
                     var callback = function(e) {
                         e.preventDefault();
                         $fb.data('activeDirectory', undefined);
@@ -90,7 +93,7 @@
                     };
 
                     if (val.type == 'directory') {
-                        icon = this.data(val.path) ? 'icon-folder-open-alt' : 'icon-folder-close-alt'
+                        icon = this.data(val.path) ? $fb.options.openFolderIcon : $fb.options.closedFolderIcon
                         callback = function(e) {
                             e.preventDefault();
                             $fb.data('activeDirectory', undefined);
@@ -104,8 +107,8 @@
                             if ($(this).next().children().length) {
                                 //shut it if it's active. Otherwise, make it active
                                 if ($(this).parent().get(0) == $opened.get(0)) {
-                                    $(this).children().first().removeClass('icon-folder-open-alt');
-                                    $(this).children().first().addClass('icon-folder-close-alt');
+                                    $(this).children().first().removeClass($fb.options.openFolderIcon);
+                                    $(this).children().first().addClass($fb.options.closedFolderIcon);
                                     $(this).next().empty();
                                     $fb.data(val.path, undefined);
                                 }
@@ -119,8 +122,8 @@
                             }
                             //no children? it's closed. open it.
                             else {
-                                $(this).children().first().removeClass('icon-folder-close-alt');
-                                $(this).children().first().addClass('icon-folder-open-alt');
+                                $(this).children().first().removeClass($fb.options.closedFolderIcon);
+                                $(this).children().first().addClass($fb.options.openFolderIcon);
                                 $fb.listDirectory(val.path, $(this).next());
                                 $(this).parent().addClass('active');
                                 $fb.data('activeDirectory', val.path);

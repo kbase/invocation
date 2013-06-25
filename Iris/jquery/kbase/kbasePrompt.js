@@ -53,7 +53,6 @@
 
 (function( $, undefined ) {
 
-
     $.kbWidget("kbasePrompt", 'kbaseWidget', {
         version: "1.0.0",
         options: {
@@ -223,6 +222,7 @@
                                 if ($firstField == undefined) {
                                     $firstField = $(val);
                                 }
+
                                 if ($(val).is("input") && $(val).val() == undefined) {
                                     $(val).focus();
                                     selection = true;
