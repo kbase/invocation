@@ -119,7 +119,7 @@
 
 
         appendUI : function($elem) {
-            this.client.valid_commands_async(
+            this.client.valid_commands(
                 $.proxy(
                     function (res) {
 

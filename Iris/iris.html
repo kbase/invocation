@@ -14,7 +14,8 @@
         <link href="./jquery/external/bootstrap-combined.no-icons.min.css" rel="stylesheet">
         <link href="./jquery/external/font-awesome/css/font-awesome.min.css" rel="stylesheet">
 
-        <!--<script src = './jquery/kbase/kbaseWidget.js'></script>
+        <script src = './jquery/kbase/kbaseWidget.js'></script>
+        <script src = './jquery/kbase/kbaseButtonControls.js'></script>
         <script src = './jquery/kbase/kbaseBox.js'></script>
         <script src = './jquery/kbase/kbasePrompt.js'></script>
         <script src = './jquery/kbase/kbaseDeletePrompt.js'></script>
@@ -22,21 +23,17 @@
         <script src = './jquery/kbase/kbaseLogin.js'></script>
         <script src = './jquery/kbase/kbaseAccordion.js'></script>
         <script src = './jquery/kbase/kbaseIrisCommands.js'></script>
-        <script src = './jquery/kbase/kbaseFileBrowser.js'></script>
+        <script src = './jquery/kbase/kbaseDataBrowser.js'></script>
         <script src = './jquery/kbase/kbaseIrisFileBrowser.js'></script>
         <script src = './jquery/kbase/kbaseIrisProcessList.js'></script>
         <script src = './jquery/kbase/kbaseIrisTerminal.js'></script>
         <script src = './jquery/kbase/kbaseIrisGrammar.js'></script>
 
 
-        <script src = './jquery/kbase/kbaseIrisTutorial.js'></script>-->
-        <script src = './kbase.min.js'></script>
+        <script src = './jquery/kbase/kbaseIrisTutorial.js'></script>
 
 
         <script src="../lib/InvocationService.js" type="text/javascript" charset="utf-8"></script>
-
-        <script src = './jquery/kbase/kbaseWorkspaceBrowser.js'></script>
-        <script src = './js/workspaceService/Client.js'></script>
 
         <script type = 'text/javascript'>
             <!--
@@ -54,14 +51,14 @@
 
                 $(function() {
                     var $plist = $('#process-list').kbaseIrisProcessList();
-
+console.log("A");
                     var $term = $('#terminal').kbaseIrisTerminal({
                         'promptIfUnauthenticated'   : 0,
                         'invocationURL'             : 'http://kbase.us/services/invocation',
                         'commandsElement'           : $('#command-list'),
                         'grammar'                   : $('<div></div>').kbaseIrisGrammar(),
                     });
-
+console.log("B");
                     $('#command-list').kbaseIrisCommands(
                         {
                             client          : $term.getClient(),
@@ -79,12 +76,12 @@
                             terminal : $term
                         }
                     );
-
+console.log("LB");console.log($term.$loginbox);
                     var $fb = $('#file-browser').kbaseIrisFileBrowser (
                         {
                             client : $term.client,
+                            $loginbox : $term.$loginbox,
                             $terminal : $term,
-                            externalControls : true,
                             processList : $plist,
                             addFileCallback : function (file) {
                                 $('#terminal').kbaseIrisTerminal('appendInput', file + ' ');
@@ -95,21 +92,6 @@
                         }
                     );
 
-                    if (getParameterByName('ws') == 1) {
-                        var $wb = $('#ws-browser').kbaseWorkspaceBrowser (
-                            {
-                                client : $term.client,
-                                $loginbox : $term.$loginbox,
-                                externalControls : true,
-                                processList : $plist,
-                                addFileCallback : function (file) {
-                                    $('#terminal').kbaseIrisTerminal('appendInput', file + ' ');
-                                },
-                                wsClient : new workspaceService('http://bio-data-1.mcs.anl.gov/services/fba_gapfill')
-                            }
-                        );
-                        $term.addFileBrowser($wb);
-                    }
 
                     $term.addFileBrowser($fb);
                     $term.data('processList', $plist);
@@ -186,13 +168,14 @@ var aq = $g.allQuestions();console.log(aq);
                 <div id = 'command-list'></div>
                 <div id = 'process-list'></div>
                 <div id = 'file-browser'></div>
-                <div id = 'ws-browser'></div>
             </div>
             <div class = 'span9'>
                 <div id = 'terminal'></div>
             </div>
         </div>
 
+        <br clear = 'all'/>
+        <br clear = 'all'/>
         <br clear = 'all'/>
 
 

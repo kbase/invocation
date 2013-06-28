@@ -21,7 +21,7 @@
         }
         var Widget = function($elem) {
             this.$elem = $elem;
-            this.options = $.extend(true, {}, def.options);
+            this.options = $.extend(true, {}, this.constructor.prototype.options);
             return this;
         }
 
@@ -195,6 +195,14 @@
                      if (a.toLowerCase() < b.toLowerCase()) { return -1 }
                 else if (a.toLowerCase() > b.toLowerCase()) { return 1  }
                 else                            { return 0  }
+            },
+
+            sortByKey : function (key) {
+                return function (a,b) {
+                         if (a[key] < b[key]) { return -1 }
+                    else if (a[key] > b[key]) { return 1  }
+                    else                      { return 0  }
+                }
             },
 
             trigger : function () {

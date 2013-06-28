@@ -92,7 +92,7 @@
                                 function(args) {
                                     if (args.success) {
                                         this.out_line();
-                                        this.client.start_session_async(
+                                        this.client.start_session(
                                             args.user_id,
                                             jQuery.proxy(
                                                 function (newsid) {
@@ -177,6 +177,7 @@
                         {
                             client : this.client,
                             $terminal : this,
+                            $loginbox : this.$loginbox,
                             externalControls : false,
                         }
                     )
@@ -300,7 +301,7 @@
         },
 
         saveCommandHistory : function() {
-            this.client.put_file_async(
+            this.client.put_file(
                 this.sessionId,
                 "history",
                 JSON.stringify(this.commandHistory),
@@ -311,7 +312,7 @@
         },
 
         loadCommandHistory : function() {
-            this.client.get_file_async(
+            this.client.get_file(
                 this.sessionId,
                 "history", "/",
                 jQuery.proxy(
@@ -633,66 +634,6 @@ console.log(completions);
                 .css('white-space', 'pre')
                 .css('position', 'relative')
                 .append(
-                    $('<div></div>')
-                        .addClass('btn-group')
-                        .css('display', 'none')
-                        .css('position', 'absolute')
-                        .css('top', '0px')
-                        .css('right', '0px')
-                        .css('text-align', 'right')
-                        .append(
-                            $('<a></a>')
-                                .addClass('btn btn-mini')
-                                .append(
-                                    $('<i></i>')
-                                        .addClass('icon-download-alt')
-                                )
-                                .attr('title', 'Open results in new window')
-                                .bind('click',
-                                    function (e) {
-                                        var win = window.open();
-                                        win.document.open();
-                                        var output =
-                                            $('<div></div>')
-                                                .append(
-                                                    $('<div></div>')
-                                                        .css('white-space', 'pre')
-                                                        .css('font-family' , 'monospace')
-                                                        .append(
-                                                            $(this).parent().parent().next().clone()
-                                                        )
-                                                )
-                                        ;
-                                        $.each(
-                                            output.find('a'),
-                                            function (idx, val) {
-                                                $(val).replaceWith($(val).html());
-                                            }
-                                        );
-
-                                        win.document.write(output.html());
-                                        win.document.close();
-                                    }
-                                )
-                        )
-                        .append(
-                            $('<a></a>')
-                                .addClass('btn btn-mini')
-                                .append(
-                                    $('<i></i>')
-                                        .addClass('icon-remove')
-                                )
-                                .attr('title', 'delete command from window')
-                                .bind('click',
-                                    function (e) {
-                                        $(this).parent().parent().next().remove();
-                                        $(this).parent().parent().next().remove();
-                                        $(this).parent().parent().remove();
-                                    }
-                                )
-                        )
-                )
-                .append(
                     $('<span></span>')
                         .addClass('command')
                         .text(">" + this.cwd + " " + text)
@@ -708,6 +649,51 @@ console.log(completions);
                     }
                 )
             ;
+
+            $wrapperDiv.kbaseButtonControls(
+                {
+                    controls : [
+                        {
+                            icon : 'icon-download-alt',
+                            callback :
+                                function (e) {
+                                    var win = window.open();
+                                    win.document.open();
+                                    var output =
+                                        $('<div></div>')
+                                            .append(
+                                                $('<div></div>')
+                                                    .css('white-space', 'pre')
+                                                    .css('font-family' , 'monospace')
+                                                    .append(
+                                                        $(this).parent().parent().next().clone()
+                                                    )
+                                            )
+                                    ;
+                                    $.each(
+                                        output.find('a'),
+                                        function (idx, val) {
+                                            $(val).replaceWith($(val).html());
+                                        }
+                                    );
+
+                                    win.document.write(output.html());
+                                    win.document.close();
+                                },
+                        },
+                        {
+                            icon : 'icon-remove',
+                            callback :
+                                function (e) {
+                                    $(this).parent().parent().next().remove();
+                                    $(this).parent().parent().next().remove();
+                                    $(this).parent().parent().remove();
+                                }
+                        },
+
+                    ]
+                }
+            );
 
             this.terminal.append($wrapperDiv);
         },
@@ -773,7 +759,7 @@ console.log(completions);
                 sid = args[0];
 
                 //old login code. copy and pasted into iris.html.
-                this.client.start_session_async(
+                this.client.start_session(
                     sid,
                     jQuery.proxy(
                         function (newsid) {
@@ -894,7 +880,7 @@ console.log(completions);
                 }
                 dir = args[0];
 
-                this.client.change_directory_async(
+                this.client.change_directory(
                     this.sessionId,
                     this.cwd,
                     dir,
@@ -1006,7 +992,7 @@ console.log(completions);
                 }
                 from = args[0];
                 to   = args[1];
-                this.client.copy_async(
+                this.client.copy(
                     this.sessionId,
                     this.cwd,
                     from,
@@ -1035,7 +1021,7 @@ console.log(completions);
 
                 from = args[0];
                 to   = args[1];
-                this.client.rename_file_async(
+                this.client.rename_file(
                     this.sessionId,
                     this.cwd,
                     from,
@@ -1062,7 +1048,7 @@ console.log(completions);
                     return;
                 }
                 dir = args[0];
-                this.client.make_directory_async(
+                this.client.make_directory(
                     this.sessionId,
                     this.cwd,
                     dir,
@@ -1089,7 +1075,7 @@ console.log(completions);
                     return;
                 }
                 dir = args[0];
-                this.client.remove_directory_async(
+                this.client.remove_directory(
                     this.sessionId,
                     this.cwd,
                     dir,
@@ -1116,7 +1102,7 @@ console.log(completions);
                     return;
                 }
                 file = args[0];
-                this.client.remove_files_async(
+                this.client.remove_files(
                     this.sessionId,
                     this.cwd,
                     file,
@@ -1198,7 +1184,7 @@ console.log(completions);
             }
 
             if (command == 'commands') {
-                this.client.valid_commands_async(
+                this.client.valid_commands(
                     jQuery.proxy(
                         function (cmds) {
                             var $tbl = $('<table></table>');
@@ -1294,8 +1280,8 @@ console.log(completions);
                         d = args[0];
                     }
                 }
-
-                this.client.list_files_async(
+console.log("SESSION ID");console.log(this.sessionId);
+                this.client.list_files(
                     this.sessionId,
                     this.cwd,
                     d,
@@ -1415,7 +1401,7 @@ console.log(completions);
                 $pendingProcessElem = this.data('processList').addProcess(command);
             }
 
-            this.client.run_pipeline_async(
+            this.client.run_pipeline(
                 this.sessionId,
                 command,
                 [],
