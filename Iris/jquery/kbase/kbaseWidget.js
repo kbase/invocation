@@ -21,7 +21,7 @@
         }
         var Widget = function($elem) {
             this.$elem = $elem;
-            this.options = $.extend(true, {}, this.constructor.prototype.options);
+            this.options = $.extend(true, {}, def.options, this.constructor.prototype.options);
             return this;
         }
 
@@ -131,10 +131,8 @@
             dbg : function (txt) { if (window.console) console.log(txt); },
 
             init : function(args) {
-
                 var opts = $.extend(true, {}, this.options);
-                this.options = $.extend(false, {}, opts, args);
-
+                this.options = $.extend(true, {}, opts, args);
                 return this;
             },
 

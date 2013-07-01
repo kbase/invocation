@@ -112,7 +112,7 @@
                                             )
                                         );
 
-                                        this.kbase_sessionid = args.kbase_sessionid;
+                                        this.sessionId = args.kbase_sessionid;
                                         this.input_box.focus();
 
                                         this.refreshFileBrowser();
@@ -153,10 +153,10 @@
                 this.terminal.append($commandDiv);
                 this.out_line();
                 if (cookie.user_id) {
-                    this.out_to_div($commandDiv, 'Already logged in as ' + cookie.name + "\n");
+                    this.out_to_div($commandDiv, 'Already authenticated as ' + cookie.name + "\n");
                     this.set_session(cookie.user_id);
                     this.loadCommandHistory();
-                    this.out_to_div($commandDiv, "Set session to " + cookie.user_id);
+                    //this.out_to_div($commandDiv, "Set session to " + cookie.user_id);
                 }
                 else if (this.options.promptIfUnauthenticated) {
                     this.$loginbox.kbaseLogin('openDialog');
@@ -177,7 +177,6 @@
                         {
                             client : this.client,
                             $terminal : this,
-                            $loginbox : this.$loginbox,
                             externalControls : false,
                         }
                     )
@@ -198,6 +197,7 @@
 
         refreshFileBrowser : function() {
             for (var idx = 0; idx < this.fileBrowsers.length; idx++) {
+            console.log("REFRESHES ON " + this.cwd);
                 this.fileBrowsers[idx].refreshDirectory(this.cwd);
             }
         },
@@ -268,7 +268,12 @@
             this.terminal = this.data('terminal');
             this.input_box = this.data('input_box');
 
-            this.out('Welcome to the interactive KBase.');
+            this.out("Welcome to the interactive KBase terminal!<br/>\n"
+                    +"Please click the 'Sign in' button in the upper right to get started.<br/>\n"
+                    +"Type <b>commands</b> for a list of commands.<br/>\n"
+                    +"For usage information about a specific command, type the command name with -h or --help after it.<br/>\n"
+                    +"Please visit <a href = 'http://kbase.us/for-users/tutorials/navigating-iris/' target = '_blank'>http://kbase.us/for-users/tutorials/navigating-iris/</a> or type <b>tutorial</b> for an IRIS tutorial.",
+                    0,1);
             this.out_line();
 
             this.input_box.bind(
@@ -765,7 +770,7 @@ console.log(completions);
                         function (newsid) {
                             this.set_session(sid);
                             this.loadCommandHistory();
-                            this.out_to_div($commandDiv, "Set session to " + sid);
+                            this.out_to_div($commandDiv, "Unauthenticated logged in as " + sid);
                             this.refreshFileBrowser();
                         },
                         this

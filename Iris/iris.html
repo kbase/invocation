@@ -63,7 +63,7 @@ console.log("B");
                         {
                             client          : $term.getClient(),
                             englishCommands : false,
-                            overflow        : false,
+                            overflow        : true,
                             link            : function (evt) {
                                 evt.preventDefault();
                                 var $terminal = $('#terminal').kbaseIrisTerminal();
@@ -73,14 +73,13 @@ console.log("B");
                                 }
                                 $terminal.appendInput(append);
                             },
-                            terminal : $term
+                            terminal : $term,
                         }
                     );
 console.log("LB");console.log($term.$loginbox);
                     var $fb = $('#file-browser').kbaseIrisFileBrowser (
                         {
                             client : $term.client,
-                            $loginbox : $term.$loginbox,
                             $terminal : $term,
                             processList : $plist,
                             addFileCallback : function (file) {

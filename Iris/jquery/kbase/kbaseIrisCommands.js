@@ -195,71 +195,38 @@
                 func = this.options.link;
             }
 
-            var $commands = this;
-
-            return $('<li></li>')
-                //.css('display', 'list-item')
-                .bind(
-                    'mouseover',
-                    function (e) {
-                        e.preventDefault();
-                    console.log('in');
-                    $(this).children().last().css('display', 'inline');
-                    }
-                )
-                .bind(
-                    'mouseout',
-                    function (e) {
-                        e.preventDefault();
-                    console.log('out');
-                    $(this).children().last().css('display', 'none');
-                    }
-                )
+            var $li = $('<li></li>')
                 .append($('<a></a>')
                     .attr('href', '#')
                     .attr('title', cmd)
                     .data('type', 'invocation')
-                    //.css('display', 'list-item')
-                    //.tooltip()
                     .text(label)
                     .bind(
                         'click',
                         func
                     )
                 )
-                .append(
-                    $('<button></button>')
-                        .addClass('btn btn-mini')
-                        .css('display', 'none')
-                        .css('float', 'right')
-                        .append('?')
-                        .bind(
-                            'click',
-                            function (e) {
-                                e.preventDefault();
-                                if ($commands.options.terminal != undefined) {
-                                console.log("TERMINAL");
-                                console.log($commands.options.terminal);
-                                    $commands.options.terminal.run(cmd + ' -h');
+            ;
+
+            $li.kbaseButtonControls(
+                {
+                    context : this,
+                    controls : [
+                        {
+                            icon : 'icon-question',
+                            callback : function(e, $ic) {
+                                if ($ic.options.terminal != undefined) {
+                                    $ic.options.terminal.run(cmd + ' -h');
                                 }
-                            }
-                        )
-                )
-                /*.draggable(
-                    {
-                        distance : 20,
-                        cursor   : 'pointer',
-                        opacity  : 0.7,
-                        helper   : 'clone',
-                        connectToSortable: this.options.connectToSortable,
-                        revert : 'invalid',
-                        disabled : this.options.connectToSortable == undefined,
-                        cursorAt : {
-                            left : 5,
-                            top  : 5
-                        }
-                    }
-                )*/
+                            },
+                            id : 'removeDirectoryButton'
+                        },
+                    ]
+                }
+            );
+
+            return $li;
+
         },
 
         loadedCallback : function($elem, commands) {
@@ -274,6 +241,7 @@
 
             this.data('focused', $(':focus'));
 
+            /*
             var $div = $('<div></div>')
                 .css('border', '1px solid lightgray')
                 .css('padding', '2px')
@@ -405,7 +373,29 @@
                         .css('max-height', this.options.overflow ? this.options.sectionHeight : '5000px')
                         .css('overflow', this.options.overflow ? 'auto' : 'visible')
                 )
-            ;
+            ;*/
+
+            var $div = $('<div></div>');
+
+            var $box = $div.kbaseBox(
+                {
+                    'title' : 'Command list',
+                    'content' :
+                        $('<ul></ul>')
+                            .css('font-size', this.options.fontSize)
+                            .css('padding-left', '15px')
+                            .attr('id', 'searchResults')
+                            .addClass('unstyled')
+                            .css('max-height', this.options.overflow ? this.options.sectionHeight : '5000px')
+                            .css('overflow', this.options.overflow ? 'auto' : 'visible'),
+                    'controls' : [
+                        {
+                            'icon' : 'icon-search',
+                        },
+                    ]
+                }
+            );
+
             $elem.append($div);
 
             this._rewireIds($div, this);

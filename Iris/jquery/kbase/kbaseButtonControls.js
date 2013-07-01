@@ -7,6 +7,7 @@
             //list of controls to populate buttons on the right end of the title bar. Give it an icon
             //and a callback function.
             onMouseover : true,
+            id: some_id, //arbitrary value to associate with these controls. Each button gets a copy in .data('id')
             controls : [
                 {
                     icon : 'icon-search',
@@ -101,7 +102,7 @@
                 this._controls[control] = undefined;
             }
 
-            var $box = this;
+            var $buttonControls = this;
 
             $.each(
                 controls,
@@ -124,18 +125,20 @@
                                 function(e) {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    console.log(this);
                                     if (val['icon-alt']) {
                                         $(this).children().first().toggleClass(val.icon);
                                         $(this).children().first().toggleClass(val['icon-alt']);
                                     }
-                                    val.callback.call(this, e, $box);
+                                    val.callback.call(this, e, $buttonControls.options.context);
                                 }
                             )
                     ;
 
                     if (val.id) {
                         this._controls[val.id] = $button;
+                    }
+                    if (this.options.id) {
+                        $button.data('id', this.options.id);
                     }
 
                     this.data('control-buttons').append($button);
