@@ -375,7 +375,64 @@
                 )
             ;*/
 
-            var $div = $('<div></div>');
+            var $div = $('<div></div>')
+                .css('max-height', this.options.overflow ? this.options.sectionHeight : '5000px')
+                .css('overflow', this.options.overflow ? 'auto' : 'visible')
+                .append(
+                    $('<div></div>')
+                        .css('right', '0px')
+                        .css('top', '24px')
+                        .css('position', 'absolute')
+                        .css('z-index', '999')
+                        .css('display', 'none')
+                        .attr('id', 'searchFieldBox')
+                )
+                .append(
+                    $('<input></input')
+                        .attr('type', 'text')
+                        .addClass('input-medium search-query')
+                        .attr('name', 'search')
+                        .css('padding-top', '1px')
+                        .css('padding-bottom', '1px')
+                        .attr('id', 'searchField')
+                        .keypress($.proxy(function (e) {
+                            if (e.which == 13) {
+                                var regex = new RegExp(this.data('searchField').val(), 'i');
+                                var commands = this.commandsMatchingRegex(regex);
+
+                                $.each(
+                                    commands,
+                                    $.proxy( function (idx, cmd) {
+                                        this.data('searchResults').append(
+                                            this.createLI(
+                                                cmd,
+                                                cmd,
+                                                function (e) {
+                                                    that.options.link.call(this, e);
+                                                    //that.data('deleteSearchResults').trigger('click');
+                                                }
+                                            )
+                                        );
+                                    }, this)
+                                );
+
+                                if (! commands.length) {
+                                    this.data('searchResults').append(
+                                        $('<li></li>')
+                                            .css('font-style', 'italic')
+                                            .text('No matching commands found')
+                                    );
+                                };
+
+                                this.data('deleteSearchResults').show();
+                                this.data('searchFieldBox').hide();
+                                if (! commands.length) {
+                                    this.data('focused').focus();
+                                }
+                            };
+                        }, this))
+                )
+            ;
 
             var $box = $div.kbaseBox(
                 {
@@ -385,9 +442,7 @@
                             .css('font-size', this.options.fontSize)
                             .css('padding-left', '15px')
                             .attr('id', 'searchResults')
-                            .addClass('unstyled')
-                            .css('max-height', this.options.overflow ? this.options.sectionHeight : '5000px')
-                            .css('overflow', this.options.overflow ? 'auto' : 'visible'),
+                            .addClass('unstyled'),
                     'controls' : [
                         {
                             'icon' : 'icon-search',
@@ -400,7 +455,7 @@
 
             this._rewireIds($div, this);
 
-            this._superMethod('appendUI', $div, commands);
+            this._superMethod('appendUI', $div.kbaseBox('content'), commands);
 
             this.data('accordion').css('margin-bottom', '0px');
 

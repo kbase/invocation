@@ -92,6 +92,7 @@
                                 function(args) {
                                     if (args.success) {
                                         this.out_line();
+                                        console.log("able");
                                         this.client.start_session(
                                             args.user_id,
                                             jQuery.proxy(
@@ -99,6 +100,7 @@
                                                     this.set_session(args.user_id);
                                                     this.loadCommandHistory();
                                                     this.out("Set session to " + args.user_id);
+                                        console.log("baker");
                                                     this.scroll();
                                                 },
                                                 this
@@ -111,10 +113,11 @@
                                                 this
                                             )
                                         );
-
+                                        console.log("charlie");
                                         this.sessionId = args.kbase_sessionid;
+                                        console.log('delta');
                                         this.input_box.focus();
-
+console.log("RFB1");
                                         this.refreshFileBrowser();
                                     }
                                 },
@@ -196,6 +199,7 @@
         },
 
         refreshFileBrowser : function() {
+        console.log("RFB");
             for (var idx = 0; idx < this.fileBrowsers.length; idx++) {
             console.log("REFRESHES ON " + this.cwd);
                 this.fileBrowsers[idx].refreshDirectory(this.cwd);
