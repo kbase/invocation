@@ -31,7 +31,7 @@
                 alert("clicked on " + $(evt.target).text());
             },
             englishCommands : 0,
-            fontSize : '75%',
+            fontSize : '90%',
             overflow : true,
             sectionHeight : '300px',
         },
@@ -219,7 +219,8 @@
                                     $ic.options.terminal.run(cmd + ' -h');
                                 }
                             },
-                            id : 'removeDirectoryButton'
+                            id : 'helpButton',
+                            'tooltip' : {title : label + ' help', placement : 'bottom'},
                         },
                     ]
                 }
@@ -386,52 +387,52 @@
                         .css('z-index', '999')
                         .css('display', 'none')
                         .attr('id', 'searchFieldBox')
-                )
-                .append(
-                    $('<input></input')
-                        .attr('type', 'text')
-                        .addClass('input-medium search-query')
-                        .attr('name', 'search')
-                        .css('padding-top', '1px')
-                        .css('padding-bottom', '1px')
-                        .attr('id', 'searchField')
-                        .keypress($.proxy(function (e) {
-                            if (e.which == 13) {
-                                var regex = new RegExp(this.data('searchField').val(), 'i');
-                                var commands = this.commandsMatchingRegex(regex);
+                        .append(
+                            $('<input></input')
+                                .attr('type', 'text')
+                                .addClass('input-medium search-query')
+                                .attr('name', 'search')
+                                .css('padding-top', '1px')
+                                .css('padding-bottom', '1px')
+                                .attr('id', 'searchField')
+                                .keypress($.proxy(function (e) {
+                                    if (e.which == 13) {
+                                        var regex = new RegExp(this.data('searchField').val(), 'i');
+                                        var commands = this.commandsMatchingRegex(regex);
 
-                                $.each(
-                                    commands,
-                                    $.proxy( function (idx, cmd) {
-                                        this.data('searchResults').append(
-                                            this.createLI(
-                                                cmd,
-                                                cmd,
-                                                function (e) {
-                                                    that.options.link.call(this, e);
-                                                    //that.data('deleteSearchResults').trigger('click');
-                                                }
-                                            )
+                                        $.each(
+                                            commands,
+                                            $.proxy( function (idx, cmd) {
+                                                this.data('searchResults').append(
+                                                    this.createLI(
+                                                        cmd,
+                                                        cmd,
+                                                        function (e) {
+                                                            that.options.link.call(this, e);
+                                                            //that.data('deleteSearchResults').trigger('click');
+                                                        }
+                                                    )
+                                                );
+                                            }, this)
                                         );
-                                    }, this)
-                                );
 
-                                if (! commands.length) {
-                                    this.data('searchResults').append(
-                                        $('<li></li>')
-                                            .css('font-style', 'italic')
-                                            .text('No matching commands found')
-                                    );
-                                };
+                                        if (! commands.length) {
+                                            this.data('searchResults').append(
+                                                $('<li></li>')
+                                                    .css('font-style', 'italic')
+                                                    .text('No matching commands found')
+                                            );
+                                        };
 
-                                this.data('deleteSearchResults').show();
-                                this.data('searchFieldBox').hide();
-                                if (! commands.length) {
-                                    this.data('focused').focus();
-                                }
-                            };
-                        }, this))
-                )
+                                        this.data('deleteSearchResults').show();
+                                        this.data('searchFieldBox').hide();
+                                        if (! commands.length) {
+                                            this.data('focused').focus();
+                                        }
+                                    };
+                                }, this))
+                        )
+                    )
             ;
 
             var $box = $div.kbaseBox(
@@ -446,6 +447,7 @@
                     'controls' : [
                         {
                             'icon' : 'icon-search',
+                            tooltip : {title : 'search for a command', placement : 'bottom', container : 'body'},
                         },
                     ]
                 }

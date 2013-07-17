@@ -91,16 +91,16 @@
                             jQuery.proxy(
                                 function(args) {
                                     if (args.success) {
-                                        this.out_line();
-                                        console.log("able");
+                                        //this.out_line();
+
                                         this.client.start_session(
                                             args.user_id,
                                             jQuery.proxy(
                                                 function (newsid) {
                                                     this.set_session(args.user_id);
                                                     this.loadCommandHistory();
-                                                    this.out("Set session to " + args.user_id);
-                                        console.log("baker");
+                                                    this.out("Authenticated as " + args.name);
+                                                    this.out_line();
                                                     this.scroll();
                                                 },
                                                 this
@@ -113,11 +113,10 @@
                                                 this
                                             )
                                         );
-                                        console.log("charlie");
+
                                         this.sessionId = args.kbase_sessionid;
-                                        console.log('delta');
                                         this.input_box.focus();
-console.log("RFB1");
+
                                         this.refreshFileBrowser();
                                     }
                                 },
@@ -154,8 +153,8 @@ console.log("RFB1");
             if (cookie = this.$loginbox.get_kbase_cookie()) {
                 var $commandDiv = $("<div></div>").css('white-space', 'pre');
                 this.terminal.append($commandDiv);
-                this.out_line();
                 if (cookie.user_id) {
+                    this.out_line();
                     this.out_to_div($commandDiv, 'Already authenticated as ' + cookie.name + "\n");
                     this.set_session(cookie.user_id);
                     this.loadCommandHistory();
@@ -199,9 +198,7 @@ console.log("RFB1");
         },
 
         refreshFileBrowser : function() {
-        console.log("RFB");
             for (var idx = 0; idx < this.fileBrowsers.length; idx++) {
-            console.log("REFRESHES ON " + this.cwd);
                 this.fileBrowsers[idx].refreshDirectory(this.cwd);
             }
         },
@@ -251,7 +248,7 @@ console.log("RFB1");
                 .append(
                     $('<textarea></textarea>')
                         .attr('id', 'input_box')
-                        .attr('style', 'width : 99%;')
+                        .attr('style', 'width : 95%;')
                         .attr('height', '3')
                     )
                 .append(
@@ -385,8 +382,6 @@ console.log("RFB1");
                     }
                     var escapedVar = variable.replace(/\$/, '\\$');
                     var varRegex = new RegExp(escapedVar, 'g');
-                    console.log("VR");
-                    console.log(varRegex);
                     cmd = cmd.replace(varRegex, this.variables[variable]);
                 }
 
@@ -429,11 +424,11 @@ console.log("RFB1");
 
                     if (toComplete.length) {
                         toComplete = toComplete[1];
-console.log("TO COMPLETE " + toComplete);
+
                         var ret = this.options.grammar.evaluate(
                             this.input_box.val()
                         );
-                        console.log("RET VAL IS "); console.log(ret);
+
                         if (ret != undefined && ret['next'] && ret['next'].length) {
 
                             var nextRegex = new RegExp('^' + toComplete);
@@ -441,9 +436,8 @@ console.log("TO COMPLETE " + toComplete);
                             var newNext = [];
                             for (var idx = 0; idx < ret['next'].length; idx++) {
                                 var n = ret['next'][idx];
-                                console.log("MATCHES " + n + " against " + toComplete);
+
                                 if (n.match(nextRegex)) {
-                                console.log("GOOD");
                                     newNext.push(n);
                                 }
                             }
@@ -454,7 +448,7 @@ console.log("TO COMPLETE " + toComplete);
                                     this.input_box.val(this.input_box.val().replace(toCompleteRegex, ''));
                                 }
                             }
-console.log("NEXT IS ");console.log(ret['next']);
+
                             //this.input_box.val(ret['parsed'] + ' ');
 
                             if (ret['next'].length == 1) {
@@ -480,12 +474,10 @@ console.log("NEXT IS ");console.log(ret['next']);
                                 var shouldComplete = true;
                                 var regex = new RegExp(toComplete + '\\s*$');
                                 for (prop in ret.next) {
-                                console.log("CHECK " + prop + " AGAINST " + regex);
                                     if (! prop.match(regex)) {
                                         shouldComplete = false;
                                     }
                                 }
-                                console.log("SHOULD " + shouldComplete + ", " + toComplete);
 
                                 this.displayCompletions(ret['next'], toComplete);//shouldComplete ? toComplete : '', false);
                                 return;
@@ -538,17 +530,12 @@ console.log("NEXT IS ");console.log(ret['next']);
                 filterRegex = new RegExp(filter.replace(/,/g,'|'));
             };
 
-            console.log(filterRegex);
-
-
             $.each(
                 json,
                 $.proxy(function(idx, record) {
                     var $tbl = $('<table></table>')
                         .css('border', '1px solid black')
                         .css('margin-bottom', '2px');
-                        //console.log("KEYS");
-                        //console.log(Object.keys(record));
                         var keys = Object.keys(record).sort();
                     for (var idx = 0; idx < keys.length; idx++) {
                         var prop = keys[idx];
@@ -576,8 +563,7 @@ console.log("NEXT IS ");console.log(ret['next']);
 
         displayCompletions : function(completions, toComplete) {
             var prefix = this.options.commandsElement.kbaseIrisCommands('commonCommandPrefix', completions);
-console.log("TO COMPLETE " + toComplete + ', ' + prefix);
-console.log(completions);
+
             if (prefix != undefined && prefix.length) {
                 this.input_box.val(
                     this.input_box.val().replace(new RegExp(toComplete + '\s*$'), prefix)
@@ -925,7 +911,6 @@ console.log(completions);
             if (m = command.match(/^search\s+(\S+)\s+(\S+)(?:\s*(\S+)\s+(\S+)(?:\s*(\S+))?)?/)) {
 
                 var parsed = this.options.grammar.evaluate(command);
-                //console.log("SEARCH PARSED");console.log(parsed);
 
                 var searchVars = {};
                 //'kbase.us/services/search-api/search/$category/$keyword?start=$start&count=$count&format=json',
@@ -937,13 +922,10 @@ console.log(completions);
                 searchVars.$start = m[3] || this.options.searchStart;
                 searchVars.$count = m[4] || this.options.searchCount;
                 var filter = m[5] || this.options.searchFilter[searchVars.$category];
-                console.log("FILTER " + filter);
 
                 for (prop in searchVars) {
                     searchURL = searchURL.replace(prop, searchVars[prop]);
                 }
-
-                console.log(searchURL);
 
                 $.support.cors = true;
                 $.ajax(
@@ -972,9 +954,7 @@ console.log(completions);
                                 this.out_to_div($commandDiv, $('<br/>'));
                                 this.out_to_div($commandDiv, this.search_json_to_table(data.body, filter));
                                 var res = this.search_json_to_table(data.body, filter);
-                                console.log("TABLE : ");
-                                console.log(res);
-                                console.log(data);
+
                                 this.scroll();
 
                             },
@@ -1148,18 +1128,24 @@ console.log(completions);
 
             if (command == 'tutorial list') {
                 var list = this.tutorial.list();
+
+                if (list.length == 0) {
+                    this.out_to_div($commandDiv, "Could not load tutorials");
+                    return;
+                }
+
                 $.each(
                     list,
                     $.proxy( function (idx, val) {
                         $commandDiv.append(
                             $('<a></a>')
                                 .attr('href', '#')
-                                .append(val)
+                                .append(val.title)
                                 .bind('click', $.proxy( function (e) {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    this.out_to_div($commandDiv, 'Set tutorial to <i>' + val + '</i><br>', 0, 1);
-                                    this.tutorial = $('<div></div>').kbaseIrisTutorial({tutorial : val});
+                                    this.out_to_div($commandDiv, 'Set tutorial to <i>' + val.title + '</i><br>', 0, 1);
+                                    this.tutorial.retrieveTutorial(val.url);
                                     this.input_box.focus();
                                 }, this))
                             .append('<br>')
@@ -1173,7 +1159,15 @@ console.log(completions);
             }
 
             if (command == 'show_tutorial') {
-                var $page = this.tutorial.contentForCurrentPage().clone();
+                var $page = this.tutorial.contentForCurrentPage();
+
+                if ($page == undefined) {
+                    this.out_to_div($commandDiv, "Could not load tutorial");
+                    return;
+                }
+console.log("PAGE IS ");console.log($page);
+                $page = $page.clone();
+
                 var headerCSS = { 'text-align' : 'left', 'font-size' : '100%' };
                 $page.find('h1').css( headerCSS );
                 $page.find('h2').css( headerCSS );
@@ -1289,7 +1283,7 @@ console.log(completions);
                         d = args[0];
                     }
                 }
-console.log("SESSION ID");console.log(this.sessionId);
+
                 this.client.list_files(
                     this.sessionId,
                     this.cwd,
@@ -1328,6 +1322,7 @@ console.log("SESSION ID");console.log(this.sessionId);
                                 jQuery.proxy(
                                     function (idx, val) {
                                         var url = this.options.invocationURL + "/download/" + val['full_path'] + "?session_id=" + this.sessionId;
+                                        console.log("URL IS " + url);
                                         $tbl.append(
                                             $('<tr></tr>')
                                                 .append(
@@ -1383,8 +1378,7 @@ console.log("SESSION ID");console.log(this.sessionId);
             }
 
             var parsed = this.options.grammar.evaluate(command);
-            console.log("PARSED");
-            console.log(parsed);
+
             if (parsed != undefined) {
                 if (! parsed.fail && parsed.execute) {
                     command = parsed.execute;

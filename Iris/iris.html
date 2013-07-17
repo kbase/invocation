@@ -22,6 +22,7 @@
         <script src = './jquery/kbase/kbaseErrorPrompt.js'></script>
         <script src = './jquery/kbase/kbaseLogin.js'></script>
         <script src = './jquery/kbase/kbaseAccordion.js'></script>
+        <script src = './jquery/kbase/kbaseTabs.js'></script>
         <script src = './jquery/kbase/kbaseIrisCommands.js'></script>
         <script src = './jquery/kbase/kbaseDataBrowser.js'></script>
         <script src = './jquery/kbase/kbaseIrisFileBrowser.js'></script>
@@ -50,15 +51,30 @@
                 }
 
                 $(function() {
+
                     var $plist = $('#process-list').kbaseIrisProcessList();
-console.log("A");
-                    var $term = $('#terminal').kbaseIrisTerminal({
+
+                    var $term = $.jqElem('div').kbaseIrisTerminal({
                         'promptIfUnauthenticated'   : 0,
                         'invocationURL'             : 'http://kbase.us/services/invocation',
                         'commandsElement'           : $('#command-list'),
                         'grammar'                   : $('<div></div>').kbaseIrisGrammar(),
                     });
-console.log("B");
+
+                    var $tabs = $('#tabs').kbaseTabs(
+                        {
+                            tabPosition : 'bottom', //or left or right or top. Defaults to 'top'
+                            canDelete : true,
+                            tabs : [
+                                {
+                                    tab : 'IRIS Terminal',
+                                    content : $term.$elem,
+                                    canDelete : false
+                                },
+                            ],
+                        }
+                    );
+
                     $('#command-list').kbaseIrisCommands(
                         {
                             client          : $term.getClient(),
@@ -145,6 +161,7 @@ var aq = $g.allQuestions();console.log(aq);
                modify in css as needed. */
             padding-top: 60px;
           }
+
         </style>
 
     </head>
@@ -156,7 +173,7 @@ var aq = $g.allQuestions();console.log(aq);
             <a href="http://www.kbase.us/labs/"><img class="logo" src="img/labs_icon.png" width="46"></a>
             <a class="brand">IRIS</a>
             <ul class="nav" style="float:right;">
-              <li id = 'login' style = 'padding : 9px 15px 7px 10px'></li>
+              <li id = 'login'></li>
             </ul>
           </div>
         </div>
@@ -169,7 +186,8 @@ var aq = $g.allQuestions();console.log(aq);
                 <div id = 'file-browser'></div>
             </div>
             <div class = 'span9'>
-                <div id = 'terminal'></div>
+                <!--<div id = 'terminal'></div>-->
+                <div id = 'tabs'></div>
             </div>
         </div>
 

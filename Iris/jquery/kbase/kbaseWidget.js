@@ -1,6 +1,9 @@
 (function( $, undefined) {
 
     var widgetRegistry = {};
+    if (window.KBase == undefined) {
+        window.KBase = {};
+    }
 
     function subclass(constructor, superConstructor) {
         function surrogateConstructor(){}
@@ -13,23 +16,62 @@
         constructor.prototype = prototypeObject;
     }
 
-    $.kbWidget = function(name, parent, def) {
+    $.jqElem = function (tagName) {
+        var tag = "<" + tagName + ">";
+        if (! tag.match(/^(area|base|br|col|command|embed|hr|img|input|keygen|link|meta|param|source|track)/) ) {
+            tag += '</' + tagName + '>';
+        }
+        return $(tag);
+    }
+
+    $.kbObject = function(name, parent, def, asPlugin) {
+        if (asPlugin == undefined) {
+            asPlugin = false;
+        }
+
+        return $.kbWidget(name, parent, def, asPlugin);
+    }
+
+    $.kbWidget = function(name, parent, def, asPlugin) {
+
+        if (asPlugin == undefined) {
+            asPlugin = true;
+        }
 
         if (widgetRegistry[name] != undefined) {
             //throw "Cannot re-register widget: " + name;
             return;
         }
+
         var Widget = function($elem) {
             this.$elem = $elem;
             this.options = $.extend(true, {}, def.options, this.constructor.prototype.options);
             return this;
         }
 
+        var directName = name;
+        directName = directName.replace(/^kbase/, '');
+        directName = directName.charAt(0).toLowerCase() + directName.slice(1);
+
+        KBase[directName] = function (options, $elem) {
+            var $w = new Widget();
+            if ($elem == undefined) {
+                $elem = $.jqElem('div');
+            }
+            $w.$elem = $elem;
+            $w.init(options);
+            $w._init = true;
+            return $w;
+        }
+
         widgetRegistry[name] = Widget;
 
         if (def == undefined) {
             def = parent;
-            parent = undefined;
+            parent = 'kbaseWidget';
+            if (def == undefined) {
+                def = {};
+            }
         }
 
         if (parent) {
@@ -57,7 +99,7 @@
                         }
 
                         var _superMethod = function(superMethodName) {
-                            return widgetRegistry[parent].prototype[superMethodName].apply(this, Array.prototype.slice.apply(arguments, [1]));
+                            return widgetRegistry[parent].prototype[superMethodName].apply(this, Array.prototype.slice.call(arguments, 1));
                         }
                     }
 
@@ -87,31 +129,44 @@
             Widget.prototype.options = $.extend(true, {}, widgetRegistry[parent].prototype.options, Widget.prototype.options);
         }
 
-        $.fn[name] = function( method, args ) {
+        if (asPlugin) {
+            $.fn[name] = function( method, args ) {
 
-            if (this.data(name) == undefined) {
-                this.data(name, new Widget(this));
-            }
-
-            // Method calling logic
-            if ( Widget.prototype[method] ) {
-                return Widget.prototype[method].apply(this.data(name), Array.prototype.slice.call( arguments, 1 ));
-            } else if ( typeof method === 'object' || ! method ) {
-                //return this.data(name).init( arguments );
-                var args = arguments;
-                $w = this.data(name);
-                if (! $w._init) {
-                    $w = Widget.prototype.init.apply($w, arguments);
+                if (this.length > 1) {
+                    var methodArgs = arguments;
+                    $.each(
+                        this,
+                        function (idx, elem) {
+                            $.fn[name].apply($(elem), methodArgs);
+                        }
+                    )
+                    return this;
                 }
-                $w._init = true;
-                return $w;
-            } else {
-                $.error( 'Method ' +  method + ' does not exist on ' + name);
-            }
 
-            return this;
+                if (this.data(name) == undefined) {
+                    this.data(name, new Widget(this));
+                }
 
-        };
+                // Method calling logic
+                if ( Widget.prototype[method] ) {
+                    return Widget.prototype[method].apply(this.data(name), Array.prototype.slice.call( arguments, 1 ));
+                } else if ( typeof method === 'object' || ! method ) {
+                    //return this.data(name).init( arguments );
+                    var args = arguments;
+                    $w = this.data(name);
+                    if (! $w._init) {
+                        $w = Widget.prototype.init.apply($w, arguments);
+                    }
+                    $w._init = true;
+                    return $w;
+                } else {
+                    $.error( 'Method ' +  method + ' does not exist on ' + name);
+                }
+
+                return this;
+
+            };
+        }
 
         Widget.prototype[name] = function () {
             return $.fn[name].apply(this.$elem, arguments);

@@ -21,14 +21,15 @@
                                 $fb.deleteFile($(this).data('id'), 'file');
                             },
                             id : 'removeButton',
-                            //tooltip : 'Delete this file',
+                            tooltip : 'delete this file',
                         },
                         {
                             icon : 'icon-eye-open',
                             callback : function(e, $fb) {
                                 $fb.openFile($(this).data('id'));
                             },
-                            id : 'viewButton'
+                            id : 'viewButton',
+                            'tooltip' : 'view this file',
                         },
                         {
                             icon : 'icon-pencil',
@@ -36,7 +37,8 @@
                                 console.log("clicked on edit");
                                 console.log($(this).data('id'));
                             },
-                            id : 'editButton'
+                            id : 'editButton',
+                            tooltip : 'edit this file',
                         },
                         {
                             icon : 'icon-arrow-right',
@@ -45,7 +47,8 @@
                                     $fb.$terminal.kbaseIrisTerminal('appendInput', $(this).data('id') + ' ');
                                 }
                             },
-                            id : 'addButton'
+                            id : 'addButton',
+                            'tooltip' : 'add this file to terminal input',
                         },
                     ],
                 },
@@ -59,6 +62,7 @@
                     controls : [
                         {
                             icon : 'icon-minus',
+                            'tooltip' : 'delete this folder',
                             callback : function(e, $fb) {
                                 $fb.deleteFile($(this).data('id'), 'folder');
                             },
@@ -66,11 +70,22 @@
                         },
                         {
                             icon : 'icon-plus',
+                            'tooltip' : 'add a subdirectory',
                             callback : function(e, $fb) {
                                 $fb.addDirectory($(this).data('id'));
                             },
                             id : 'addDirectoryButton'
                         },
+                        {
+                            icon : 'icon-arrow-up',
+                            'tooltip' : 'upload a file',
+                            callback : function(e, $fb) {
+                                $fb.data('active_directory', $(this).data('id'));
+                                $fb.data('fileInput').trigger('click');
+                            },
+                            id : 'uploadFileButton'
+                        },
+
                     ],
                 }
             },
@@ -84,6 +99,10 @@
 
             if (options.$terminal) {
                 this.$terminal = options.$terminal;
+            }
+
+            if (options.$loginbox) {
+                this.$loginbox = options.$loginbox;
             }
 
             this._super(options);
@@ -119,6 +138,7 @@
                             'icon' : 'icon-arrow-up',
                             'tooltip' : 'upload a file',
                             callback : function(e, $fb) {
+                                $fb.data('active_directory', $(this).data('id'));
                                 $fb.data('fileInput').trigger('click');
                             }
                         },
@@ -140,7 +160,15 @@
         },
 
         sessionId : function() {
-            return this.$terminal.sessionId;
+            if (this.$terminal != undefined) {
+                return this.$terminal.sessionId;
+            }
+            else if (this.$loginbox != undefined) {
+                return this.$loginbox.sessionId();
+            }
+            else {
+                return undefined;
+            }
         },
 
         refreshDirectory : function(path) {
@@ -260,8 +288,8 @@
                         var reader = new FileReader();
 
                         var upload_dir = '/';
-                        if (this.data('activeDirectory')) {
-                            upload_dir = this.data('activeDirectory');
+                        if (this.data('active_directory')) {
+                            upload_dir = this.data('active_directory');
                         }
 
 

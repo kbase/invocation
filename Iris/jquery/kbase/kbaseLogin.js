@@ -67,7 +67,9 @@
             var cookieString = $.cookie('kbase_session');
 
             if (cookieString == undefined) {
-                return chips;
+                return field == undefined
+                    ? chips
+                    : undefined;
             }
 
             var pairs = cookieString.split('\|');
@@ -191,6 +193,8 @@
         _textStyle : function() {
             this._createLoginDialog();
 
+            this.$elem.css('padding', '9px 15px 7px 10px');
+
             var $prompt = $('<span></span>')
                 .append(
                     $('<a></a>')
@@ -221,7 +225,7 @@
                                 //$.proxy(
                                 function(e) {
                                     e.preventDefault(); e.stopPropagation();
-                                    $(this).next().slideToggle();//toggle('dropdown');
+                                    $(this).next().toggle();//slideToggle('fast');
                                     console.log($(this).next());
                                 }
                                 //, this)
@@ -266,7 +270,7 @@
                                             .bind('click',
                                                 $.proxy( function(e) {
                                                     e.stopPropagation();e.preventDefault();
-                                                    this.data('login-dropdown-menu').slideUp();
+                                                    this.data('login-dropdown-menu').hide();//slideUp('fast');
                                                     this.logout();
                                                 }, this)
                                             )
@@ -744,7 +748,7 @@
                                                     .attr('style', 'display : none')
                                                     .append(
                                                         $('<div></div>')
-                                                            .append(
+                                                            /*.append(
                                                                 $('<div></div>')
                                                                     .addClass('pull-left')
                                                                     .append(
@@ -752,7 +756,7 @@
                                                                             .addClass('icon-info-sign')
                                                                             .attr('style', 'float: left; margin-right: .3em;')
                                                                     )
-                                                            )
+                                                            )*/
                                                             .append(
                                                                 $('<div></div>')
                                                                     .append(
