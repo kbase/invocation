@@ -178,9 +178,10 @@ foreach my $group_name (@top_level_commands_grouping_names)
 	$number_found++;
     }
 }
-ok($number_found >= scalar(@top_level_commands_grouping_names),
-   "Valid commands works and has at least the expected command groupings\n(".
-    join(",",@top_level_commands_grouping_names).")");
+#  Removed because it relies on a hard coded list of groups which change a lot
+#ok($number_found >= scalar(@top_level_commands_grouping_names),
+#   "Valid commands works and has at least the expected command groupings\n(".
+#    join(",",@top_level_commands_grouping_names).")");
 
 #
 # GET_TUTORIAL_TEXT
