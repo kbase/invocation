@@ -211,24 +211,6 @@ my ($output, $errors) = $obj->run_pipeline($session_id, $pipeline, $input, $max_
 ok(ref($output) eq 'ARRAY',"Run Pipeline output is an array");
 ok(ref($errors) eq 'ARRAY',"Run Pipeline errors is an array");
 
-#                                                                                                             
-# RUN PIPELINE 2                                                                                                
-#                                                                                                              
-#Not sure what valid inputs are for  $pipeline, $input, $max_output_size                                     
-#print "\nTest 20-23 : \n";
-$pipeline = "annotate"; 
-@input_array = ("1","2","a","b"); 
-$input = \@input_array; 
-$max_output_size = 10000; 
-my $stdweb;
-($output, $errors, $stdweb) = $obj->run_pipeline2($session_id, $pipeline, $input, $max_output_size, $cwd); 
- 
-ok(ref($output) eq 'ARRAY',"Run Pipeline2 output is an array"); 
-print Dumper ($output);
-ok(ref($errors) eq 'ARRAY',"Run Pipeline2 errors is an array"); 
-print Dumper($errors);
-ok(defined($stdweb),"Run Pipeline2 stdweb is defined");
-#ok($stdweb ne '',"Run Pipeline2 stdweb is not an empty string");
 
 
 cleanup_session($obj,$session_id,$cwd,'after');
