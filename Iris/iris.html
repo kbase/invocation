@@ -29,6 +29,7 @@
         <script src = './jquery/kbase/kbaseIrisProcessList.js'></script>
         <script src = './jquery/kbase/kbaseIrisTerminal.js'></script>
         <script src = './jquery/kbase/kbaseIrisGrammar.js'></script>
+        <script src = './jquery/kbase/kbaseIrisFileEditor.js'></script>
 
 
         <script src = './jquery/kbase/kbaseIrisTutorial.js'></script>
@@ -61,6 +62,38 @@
                         'grammar'                   : $('<div></div>').kbaseIrisGrammar(),
                     });
 
+console.log("TERM");
+
+console.log($term.foo('able'));
+console.log($term.foo());
+console.log($term._attributes);
+console.log($term.bar('baker'));
+console.log($term.bar());
+console.log($term.bar(undefined));
+console.log($term.bar());
+console.log($term.baz('oof'));
+console.log($term.baz());
+console.log($term);
+console.log($term._attributes);
+console.log("ETERM");
+
+var cb = function(e, $target, vals) {
+    console.log("FOO CHANGED WITH : " );
+    console.log(e);
+    console.log($target);
+    console.log(vals);
+    console.log(this);
+};
+
+$plist.kb_bind($term, 'foo', cb);
+
+$term.foo('bar');
+$plist.kb_unbind($term, 'foo', cb);
+
+$term.foo('baz');
+console.log($term.foo());
+
+
                     var $tabs = $('#tabs').kbaseTabs(
                         {
                             tabPosition : 'bottom', //or left or right or top. Defaults to 'top'
@@ -72,6 +105,7 @@
                                     canDelete : false
                                 },
                             ],
+                            tabsHeight : (parseInt($term.terminalHeight()) + 100) + 'px',
                         }
                     );
 
@@ -98,14 +132,52 @@ console.log("LB");console.log($term.$loginbox);
                             client : $term.client,
                             $terminal : $term,
                             processList : $plist,
-                            addFileCallback : function (file) {
-                                $('#terminal').kbaseIrisTerminal('appendInput', file + ' ');
+                            addFileCallback : function (file, $fb) {
+                            console.log("adds this " + file);
+                                $fb.$terminal().kbaseIrisTerminal('appendInput', file + ' ');
+                            },
+                            editFileCallback : function (file, $fb) {
+
+                                var $editor = $.jqElem('div').kbaseIrisFileEditor(
+                                    {
+                                        file : file,
+                                        client : $fb.client(),
+                                        $terminal : $fb.$terminal(),
+                                        saveFileCallback : function(file) {
+                                            $tabs.removeTab(file)
+                                        },
+                                        cancelSaveFileCallback : function(file) {
+                                            $tabs.removeTab(file)
+                                        },
+                                    }
+                                )
+
+                                console.log("edits this " + file);
+                                if ($tabs.hasTab(file)) {
+                                    $tabs.showTab(file);
+                                }
+                                else {
+                                    $tabs.addTab(
+                                        {
+                                            tab : file,
+                                            content : $editor.$elem,
+                                            canDelete : true,
+                                            show : true,
+                                            deleteCallback : function(tab) {
+                                                $editor.savePrompt();
+                                            }
+                                        }
+                                    );
+                                }
                             },
                             //openFolderIcon : 'icon-angle-down',
                             //closedFolderIcon : 'icon-angle-right',
                             //fileIcon : 'icon-eraser',
                         }
                     );
+                    console.log("CALLBACKS");
+                    console.log($fb.addFileCallback());
+                    console.log($fb.editFileCallback());
 
 
                     $term.addFileBrowser($fb);
@@ -126,7 +198,7 @@ console.log("LB");console.log($term.$loginbox);
                     console.log(tokens);
 
                         $g.evaluate(question, function(ret) {console.log(ret)});
-var aq = $g.allQuestions();console.log(aq);
+//var aq = $g.allQuestions();console.log(aq);
 
                     // to see the auth token
                     // console.log( $('#terminal').terminal('authToken') );
@@ -145,6 +217,12 @@ var aq = $g.allQuestions();console.log(aq);
                             200
                         );
                     }
+
+//$('#bindingBox').kb_bind($term, 'foo');
+//$('#binder2').kb_bind($term, 'foo');
+$('.xyz').kb_bind($term, 'foo');
+console.log("FOO : " + $term.foo());
+$term.foo('NEWEST');
 
                 });
 
@@ -191,10 +269,12 @@ var aq = $g.allQuestions();console.log(aq);
             </div>
         </div>
 
-        <br clear = 'all'/>
-        <br clear = 'all'/>
-        <br clear = 'all'/>
+        <input class = 'xyz' type = 'text' id = 'bindingBox' size = '20' value = 'xyz'>
+        <div class = 'xyz' id = 'binder2'></div>
 
+        <br clear = 'all'/>
+        <br clear = 'all'/>
+        <br clear = 'all'/>
 
         <div id="pgfooter">Copyright &copy; 2012 DOE <a href = 'http://www.kbase.us/'>KBase</a></div>
 

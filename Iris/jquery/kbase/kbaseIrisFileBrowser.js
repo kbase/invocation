@@ -8,7 +8,9 @@
 
     $.kbWidget("kbaseIrisFileBrowser", 'kbaseDataBrowser', {
         version: "1.0.0",
+        _accessors : ['client', '$terminal', '$loginbox', 'addFileCallback', 'editFileCallback'],
         options: {
+
             title : 'File Browser',
             'root' : '/',
             types : {
@@ -33,18 +35,24 @@
                         },
                         {
                             icon : 'icon-pencil',
-                            callback : function(e) {
-                                console.log("clicked on edit");
-                                console.log($(this).data('id'));
+                            callback : function(e, $fb) {
+                                if ($fb.editFileCallback() != undefined) {
+                                    $fb.editFileCallback()($(this).data('id'), $fb);
+                                }
                             },
                             id : 'editButton',
                             tooltip : 'edit this file',
+                            condition : function (control, $fb) {
+                                return $fb.editFileCallback() == undefined
+                                    ? false
+                                    : true;
+                            },
                         },
                         {
                             icon : 'icon-arrow-right',
                             callback : function(e, $fb) {
-                                if ($fb.$terminal) {
-                                    $fb.$terminal.kbaseIrisTerminal('appendInput', $(this).data('id') + ' ');
+                                if ($fb.addFileCallback() != undefined) {
+                                    $fb.addFileCallback()($(this).data('id'), $fb);
                                 }
                             },
                             id : 'addButton',
@@ -92,18 +100,6 @@
         },
 
         init: function (options) {
-
-            if (options.client) {
-                this.client = options.client;
-            }
-
-            if (options.$terminal) {
-                this.$terminal = options.$terminal;
-            }
-
-            if (options.$loginbox) {
-                this.$loginbox = options.$loginbox;
-            }
 
             this._super(options);
 
@@ -160,11 +156,11 @@
         },
 
         sessionId : function() {
-            if (this.$terminal != undefined) {
-                return this.$terminal.sessionId;
+            if (this.$terminal() != undefined) {
+                return this.$terminal().sessionId;
             }
-            else if (this.$loginbox != undefined) {
-                return this.$loginbox.sessionId();
+            else if (this.$loginbox() != undefined) {
+                return this.$loginbox().sessionId();
             }
             else {
                 return undefined;
@@ -218,7 +214,7 @@
 
         listDirectory : function (path, callback) {
 
-            this.client.list_files(
+            this.client().list_files(
                 this.sessionId(),
                 '/',
                 path,
@@ -308,7 +304,7 @@
                         reader.onload = jQuery.proxy(
                             function(e) {
 
-                                this.client.put_file(
+                                this.client().put_file(
                                     this.sessionId(),
                                     file.name,
                                     e.target.result,
@@ -347,7 +343,7 @@
             var win = window.open();
             win.document.open();
 
-            this.client.get_file(
+            this.client().get_file(
                 this.sessionId(),
                 file,
                 '/',
@@ -404,7 +400,7 @@
                     name : promptFile,
                     callback : function(e, $prompt) {
                         $prompt.closePrompt();
-                        that.client[deleteMethod](
+                        that.client()[deleteMethod](
                             that.sessionId,
                             '/',
                             file,
@@ -449,7 +445,7 @@
                             type : 'primary',
                             callback : function(e, $prompt) {
                                 $prompt.closePrompt();
-                                that.client.make_directory(
+                                that.client().make_directory(
                                     that.sessionId,
                                     parentDir,
                                     $addDirectoryModal.dialogModal().find('input').val(),

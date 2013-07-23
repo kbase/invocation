@@ -8,6 +8,7 @@
 
     $.kbWidget("kbaseIrisTerminal", 'kbaseWidget', {
         version: "1.0.0",
+        _accessors : ['foo', 'bar', {name : 'baz', type : 'w'}, 'terminalHeight'],
         options: {
             invocationURL : 'http://localhost:5000',
             searchURL : 'https://kbase.us/services/search-api/search/$category/$keyword?start=$start&count=$count&format=json',
@@ -944,8 +945,9 @@
                          },
                         success         : $.proxy(
                             function (data,res,jqXHR) {
+                                this.out_to_div($commandDiv, $('<br>'));
                                 this.out_to_div($commandDiv, $('<i></i>').html("Command completed."));
-                                this.out_to_div($commandDiv, $('<br/>'));
+                                this.out_to_div($commandDiv, $('<br>'));
                                 this.out_to_div($commandDiv,
                                     $('<span></span>')
                                         .append($('<b></b>').html(data.found))
@@ -1165,7 +1167,7 @@
                     this.out_to_div($commandDiv, "Could not load tutorial");
                     return;
                 }
-console.log("PAGE IS ");console.log($page);
+
                 $page = $page.clone();
 
                 var headerCSS = { 'text-align' : 'left', 'font-size' : '100%' };
@@ -1322,7 +1324,7 @@ console.log("PAGE IS ");console.log($page);
                                 jQuery.proxy(
                                     function (idx, val) {
                                         var url = this.options.invocationURL + "/download/" + val['full_path'] + "?session_id=" + this.sessionId;
-                                        console.log("URL IS " + url);
+
                                         $tbl.append(
                                             $('<tr></tr>')
                                                 .append(
@@ -1482,7 +1484,7 @@ console.log("PAGE IS ");console.log($page);
                                     );
                                 }
                                 else {
-                                    this.out_to_div($commandDiv, $('<i></i>').html("Command completed."));
+                                    this.out_to_div($commandDiv, $('<i></i>').html("<br>Command completed."));
                                 }
                             }
                         }

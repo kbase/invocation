@@ -108,6 +108,13 @@
                 controls,
                 $.proxy(function (idx, val) {
 
+                    if (val.condition) {
+                    console.log("CALLS CONDITION!");
+                        if (val.condition(val, $buttonControls.options.context) == false) {
+                            return;
+                        }
+                    }
+
                     var btnClass = 'btn btn-mini';
                     if (val.type) {
                         btnClass = btnClass + ' btn-' + val.type;
