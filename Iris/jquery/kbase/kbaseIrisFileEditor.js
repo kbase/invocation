@@ -68,7 +68,15 @@
         appendUI : function ($elem) {
 
             $elem.empty();
-            $elem.append('Loading file ' + this.file() + '...please wait');
+            $elem
+                .append('Loading file ' + this.file() + '...<br>please wait...')
+                .append($.jqElem('br'))
+                .append(
+                    $.jqElem('div')
+                        .attr('align', 'center')
+                        .append($.jqElem('i').addClass('icon-spinner').addClass('icon-spin icon-4x'))
+                )
+            ;
 
             this.client().get_file(
                 this.sessionId(),

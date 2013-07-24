@@ -20,7 +20,7 @@
 //            invocationURL : 'http://bio-data-1.mcs.anl.gov/services/invocation',
             maxOutput : 100,
             scrollSpeed : 750,
-            terminalHeight : '500px',
+            terminalHeight : '450px',
             promptIfUnauthenticated : 1,
         },
 
