@@ -51,19 +51,19 @@ isnt($ret_session_id, '',"Has Non Null Session_id");
 is($ret_session_id,$session_id,"Session id is as expected");
 
 #
-# VALID SESSION
+# VALID SESSION -- no longer a valid METHOD
 #
 #print "Test 5:\n"; 
-my $val_session_id = $obj->valid_session($session_id);
-isnt($val_session_id, '',"Has Non Null Valid Session_id");
+#my $val_session_id = $obj->valid_session($session_id);
+#isnt($val_session_id, '',"Has Non Null Valid Session_id");
 #print "Test 6 :\n"; 
-ok($val_session_id>0,"Valid Session id is as expected");
+#ok($val_session_id>0,"Valid Session id is as expected");
 
 #print "Test 7:\n"; 
-my $inval_session_id = $obj->valid_session('not real session'); 
-isnt($inval_session_id, '',"Has Non Null Valid Session_id for bad session id"); 
+#my $inval_session_id = $obj->valid_session('not real session'); 
+#isnt($inval_session_id, '',"Has Non Null Valid Session_id for bad session id"); 
 #print "Test 8 :\n"; 
-ok(!defined($inval_session_id),"Invalid Session id is as expected");
+#ok(!defined($inval_session_id),"Invalid Session id is as expected");
 
 #
 # PUT and GET FILE
@@ -161,6 +161,14 @@ foreach my $grouping_hash_ref (@{$valid_commands})
     $grouping_names_hash{$grouping_hash_ref->{'name'}} = scalar(@{$grouping_hash_ref->{'items'}});
     print "Command Grouping Name: ".$grouping_hash_ref->{'name'}.
 	"\tNumber of Commands:".scalar(@{$grouping_hash_ref->{'items'}})."\n";
+
+    foreach my $item (@{$grouping_hash_ref->{'items'}})
+    {
+            my $cmd = $item->{'cmd'};
+            my $RC;
+            eval { $RC = `which $cmd`; };
+            isnt($RC, '', "Call which $cmd  return ");
+    }
 }
 my $number_found = 0;
 foreach my $group_name (@top_level_commands_grouping_names)
@@ -170,9 +178,10 @@ foreach my $group_name (@top_level_commands_grouping_names)
 	$number_found++;
     }
 }
-ok($number_found >= scalar(@top_level_commands_grouping_names),
-   "Valid commands works and has at least the expected command groupings\n(".
-    join(",",@top_level_commands_grouping_names).")");
+#  Removed because it relies on a hard coded list of groups which change a lot
+#ok($number_found >= scalar(@top_level_commands_grouping_names),
+#   "Valid commands works and has at least the expected command groupings\n(".
+#    join(",",@top_level_commands_grouping_names).")");
 
 #
 # GET_TUTORIAL_TEXT
@@ -202,24 +211,6 @@ my ($output, $errors) = $obj->run_pipeline($session_id, $pipeline, $input, $max_
 ok(ref($output) eq 'ARRAY',"Run Pipeline output is an array");
 ok(ref($errors) eq 'ARRAY',"Run Pipeline errors is an array");
 
-#                                                                                                             
-# RUN PIPELINE 2                                                                                                
-#                                                                                                              
-#Not sure what valid inputs are for  $pipeline, $input, $max_output_size                                     
-#print "\nTest 20-23 : \n";
-$pipeline = "annotate"; 
-@input_array = ("1","2","a","b"); 
-$input = \@input_array; 
-$max_output_size = 10000; 
-my $stdweb;
-($output, $errors, $stdweb) = $obj->run_pipeline2($session_id, $pipeline, $input, $max_output_size, $cwd); 
- 
-ok(ref($output) eq 'ARRAY',"Run Pipeline2 output is an array"); 
-print Dumper ($output);
-ok(ref($errors) eq 'ARRAY',"Run Pipeline2 errors is an array"); 
-print Dumper($errors);
-ok(defined($stdweb),"Run Pipeline2 stdweb is defined");
-#ok($stdweb ne '',"Run Pipeline2 stdweb is not an empty string");
 
 
 cleanup_session($obj,$session_id,$cwd,'after');
