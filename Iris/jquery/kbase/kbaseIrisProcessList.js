@@ -54,7 +54,7 @@
             this.pendingLi().remove();
 
             var $li = $('<li></li>')
-                .text(process);
+                .append(process);
 
             this.$elem.find('ul').append($li);
 

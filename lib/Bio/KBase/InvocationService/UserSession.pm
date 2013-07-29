@@ -122,7 +122,7 @@ sub _expand_filename
     {
 	return $self->validate_path($cwd);
     }
-    elsif ($file =~ m,^(/?)(?:[a-zA-Z0-9_.-]*(?:/[a-zA-Z0-9_.-]*)*),)
+    elsif ($file =~ m!^(/?)([\w.-]+)(\/[\w.-]+)*$!) 
     {
 	if ($1)
 	{
@@ -398,7 +398,7 @@ sub put_file
     #
     # Filenames can't have any special characters or start with a /.
     #
-    if ($filename !~ /^([a-zA-Z][a-zA-Z0-9-_]*(?:\/[a-zA-Z][a-zA-Z0-9-_]*)*)/)
+    if ($filename !~ /^([\w.-]+)(\/[\w.-]+)*$/) {
     {
 	die "Invalid filename";
     }

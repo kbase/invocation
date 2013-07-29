@@ -22,6 +22,7 @@
             scrollSpeed : 750,
             terminalHeight : '450px',
             promptIfUnauthenticated : 1,
+            autocreateFileBrowser: true,
         },
 
         init: function(options) {
@@ -170,11 +171,12 @@
             }
 
             this.fileBrowsers = [];
-
+            console.log("AUTO CREATA " + this.options.autocreateFileBrowser);
             if (this.options.fileBrowser) {
                 this.addFileBrowser(this.options.fileBrowser);
             }
-            else {
+            else if (this.options.autocreateFileBrowser) {
+            console.log("AUTO CREATE " + this.options.autocreateFileBrowser);
                 this.addFileBrowser(
                     $('<div></div>').kbaseIrisFileBrowser (
                         {
@@ -1420,6 +1422,7 @@
                         }
 
                         if (runout) {
+
                             var output = runout[0];
                             var error  = runout[1];
 
