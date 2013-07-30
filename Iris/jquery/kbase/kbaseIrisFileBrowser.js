@@ -619,6 +619,8 @@ console.log("VN " + val.name);
                         }, this)
                     );
 
+                    var concatenatedFileSize = fileSizes['upload'] || 0;
+
                     $.each(
                         completeChunks,
                         $.proxy (function (name, val) {
@@ -626,7 +628,19 @@ console.log("VN " + val.name);
 
 console.log("COMPARES SIZE " + size + " vs " + fileSizes[name] + ' on ' + name);
 
+                            //if the file sizes are equal, then this chunk was successful.
                             if (size == fileSizes[name]) {
+                                completeChunks[val.name].complete = true;
+                                successfulChunks++;
+                            }
+                            //okay, here's a nasty special case to check. If there's no defined file size
+                            //(meaning that chunk does not exist on the server) AND we have a concatenatedFileSize
+                            //(meaning we've started merging files), then instead we subtract that file's size
+                            //from the concatenated size, and assume success.
+                            else if (fileSizes[name] == undefined && concatenatedFileSize > 0) {
+
+                                concatenatedFileSize -= size;
+
                                 completeChunks[val.name].complete = true;
                                 successfulChunks++;
                             }
@@ -639,6 +653,17 @@ console.log("COMPARES SIZE " + size + " vs " + fileSizes[name] + ' on ' + name);
 
                         }, this)
                     );
+
+                    //one more bitch of a case to handle. If the concatenatedFileSize is NOT zero
+                    //then it's possible that we bombed out after a file was concatenated into it, but before
+                    //the file was deleted. So we need to find out the lowest chunk and see if its file size
+                    //matches the discrepancy. If it does, it needs to be nuked, and then we otherwise continue
+                    //stitching it all together as normal.
+
+                    if (concatenatedFileSize != 0) {
+
+                    }
+
 
                     if (canMerge) {
                         var chunkList = [];
