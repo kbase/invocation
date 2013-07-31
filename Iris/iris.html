@@ -132,7 +132,6 @@ console.log("LB");console.log($term.$loginbox);
                         {
                             client : $term.client,
                             $terminal : $term,
-                            processList : $plist,
                             addFileCallback : function (file, $fb) {
                             console.log("adds this " + file);
                                 $fb.$terminal().kbaseIrisTerminal('appendInput', file + ' ');
@@ -182,7 +181,6 @@ console.log("LB");console.log($term.$loginbox);
 
 
                     $term.addFileBrowser($fb);
-                    $term.data('processList', $plist);
 
                     $('#login').append($term.$loginbox.$elem);
 

@@ -1402,11 +1402,15 @@
             command = command.replace(/\\\n/g, " ");
             command = command.replace(/\n/g, " ");
 
-            var $pendingProcessElem;
-
-            if (this.data('processList')) {
-                $pendingProcessElem = this.data('processList').addProcess(command);
-            }
+            var pid = this.uuid();
+console.log("PID IS " + pid);
+            this.trigger(
+                'updateIrisProcess',
+                {
+                    pid : pid,
+                    msg : command
+                }
+            );
 
             this.client.run_pipeline(
                 this.sessionId,
@@ -1417,9 +1421,7 @@
                 jQuery.proxy(
                     function (runout) {
 
-                        if (this.data('processList')) {
-                            this.data('processList').removeProcess($pendingProcessElem);
-                        }
+                        this.trigger( 'removeIrisProcess', pid );
 
                         if (runout) {
 
