@@ -16,13 +16,13 @@
 
             this._super(options);
 
-            $('body').on(
+            $(document).on(
                 'updateIrisProcess.kbaseIris',
                 $.proxy(function (e, params) {
                     this.updateProcess(e, params);
                 }, this)
             );
-            $('body').on(
+            $(document).on(
                 'removeIrisProcess.kbaseIris',
                 $.proxy(function (e, pid) {
                     this.removeProcess(e, pid);

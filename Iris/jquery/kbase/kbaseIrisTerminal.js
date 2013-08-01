@@ -997,8 +997,8 @@
                     ),
                     jQuery.proxy(
                         function (err) {
-                            var m = err.message.replace("\n", "<br>\n");
-                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.code + "<br>" + m + "</i>");
+                            var m = err.error.message.replace("\n", "<br>\n");
+                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.error.code + "<br>" + m + "</i>");
                         },
                         this
                     )
@@ -1026,8 +1026,8 @@
                     ),
                     jQuery.proxy(
                         function (err) {
-                            var m = err.message.replace("\n", "<br>\n");
-                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.code + "<br>" + m + "</i>");
+                            var m = err.error.message.replace("\n", "<br>\n");
+                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.error.code + "<br>" + m + "</i>");
                         },
                         this
                     ));

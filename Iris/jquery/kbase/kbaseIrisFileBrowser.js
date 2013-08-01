@@ -375,7 +375,7 @@ console.log("LOADS size " + file.size);
                             'updateIrisProcess',
                             {
                                 pid : pid,
-                                msg : 'Uploading ' + fullFilePath + ' ...0%',
+                                msg : 'Uploading ' + fullFilePath + ' ... 0%',
                                 /*content : $.jqElem('div')
                                     .addClass('progress')
                                     .addClass('progress-striped')
@@ -534,10 +534,13 @@ console.log(chunkMap);
                                     console.log("chunk " + chunk + " == " + chunkSize);
                                     console.log("from " + offset + " to " + (offset + chunkSize - 1));
 
+                                    var pad         = '00000000';
+                                    var paddedChunk = (pad + chunk).slice(-8);
+console.log("PADDED CHUNK = " + paddedChunk);
                                     chunkMap.chunks.push(
                                         {
                                             chunk : chunk,
-                                            name : 'chunk.' + chunk,
+                                            name : 'chunk.' + paddedChunk,
                                             start : offset,
                                             end : (offset + chunkSize),
                                             size : chunkSize,
@@ -750,13 +753,15 @@ console.log("COMPARES SIZE " + size + " vs " + fileSizes[chunk.name] + ' on ' + 
                             //(meaning that chunk does not exist on the server) AND we have a concatenatedFileSize
                             //(meaning we've started merging files), then instead we subtract that file's size
                             //from the concatenated size, and assume success.
+                            //we don't toss it into the list of doneChunks because as far as we're concerned it doesn't
+                            //actually exist anymore.
                             else if (fileSizes[chunk.name] == undefined && concatenatedFileSize > 0) {
 
                                 concatenatedFileSize -= size;
 
                                 chunk.complete = true;
                                 successfulChunks++;
-                                newDoneChunks.push(chunk);
+                                //newDoneChunks.push(chunk);
                             }
                             else {
                                 console.log("FAILED ON CHUNK " + chunk.name + " " + size + " != " + fileSizes[chunk.name]);
@@ -777,9 +782,73 @@ console.log("COMPARES SIZE " + size + " vs " + fileSizes[chunk.name] + ' on ' + 
                     //stitching it all together as normal.
 
                     if (concatenatedFileSize != 0) {
+                        canMerge = false;
+                    console.log("FILE SIZE IS NOW = " + concatenatedFileSize);
+                        var smallestFile = Object.keys(fileSizes).sort()[0];
+console.log("FS");console.log(fileSizes);
+                        var smallestSize = fileSizes[smallestFile];
+                        for (prop in fileSizes) {
+                            console.log("PROP IS " + prop + " WITH " + fileSizes[prop]);
+                        }
+console.log("SMALLEST FILE IS " + smallestFile + " AT " + smallestSize);
+                        //okay, if we just need to get rid of that one, then we're solid.
+                        if (concatenatedFileSize - smallestSize == 0) {
+                        console.log("CAN RECOVER");
+                            var newDoneChunks = [];
+                            for (var idx = 0; idx < chunkMap.doneChunks.length; idx++) {
+                                var chunk = chunkMap.doneChunks[idx];
+                                if (chunk.name != smallestFile) {
+                                    newDoneChunks.push(chunk);
+                                }
+                            }
 
+                            chunkMap.doneChunks = newDoneChunks;
+                            canMerge = true;
+                            console.log("CHUNK KNOWLEDGE IS NOW");
+                            console.log(chunkMap);
+                            console.log("MERGE ? " + canMerge);
+                        }
+                        //otherwise the whole ball of wax is junked up and we need to fail out entirely. Unrecoverable.
+                        else {
+                            var $pe = $('<div></div>').text('Uploading ' + chunkMap.fullFilePath + ' failed. Please start over');
+                            $pe.kbaseButtonControls(
+                                {
+                                    onMouseover : true,
+                                    context : this,
+                                    controls : [
+                                        {
+                                            'icon' : 'icon-ban-circle',
+                                            'tooltip' : 'Cancel',
+                                            callback : function(e, $fb) {
+                                                console.log("Canceling job");
+
+                                                $fb.client().remove_directory(
+                                                    $fb.sessionId(),
+                                                    '/',
+                                                    '/' + chunkMap.fullUploadPath,
+                                                    function () {
+                                                        $fb.trigger('removeIrisProcess', chunkMap.pid);
+                                                        $fb.refreshDirectory('/' + target_dir);
+                                                    }
+                                                );
+
+                                            }
+                                        },
+                                    ]
+
+                                }
+                            );
+
+                            this.trigger(
+                                'updateIrisProcess',
+                                {
+                                    pid : chunkMap.pid,
+                                    content : $pe
+                                }
+                            );
+                            return;
+                        }
                     }
-
 
                     if (canMerge) {
                         var merger = this.makeChunkMerger(chunkMap);
