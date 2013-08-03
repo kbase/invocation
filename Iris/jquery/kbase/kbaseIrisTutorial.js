@@ -94,7 +94,7 @@
                                 this.pages.push($(page));
             		        }, this)
             		    );
-console.log("HAS PAGES");console.log(this.pages);
+
             		    this.renderAsHTML();
 		            }, this),
             		error: $.proxy(function(xhr, textStatus, errorThrown) {

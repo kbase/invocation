@@ -184,7 +184,7 @@
                             .bind('click', $.proxy(function (e) {
                                 e.preventDefault();
                                 e.stopPropagation();
-console.log(tab);
+
                                 if (tab.deleteCallback != undefined) {
                                     tab.deleteCallback(tab.tab);
                                 }

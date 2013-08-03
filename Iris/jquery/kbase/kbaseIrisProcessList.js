@@ -37,8 +37,7 @@
         },
 
         updateProcess : function (e, params) {
-        console.log("UPDATES WITH");console.log(params);
-        console.log(this);
+
             var pid = params.pid;
 
             if (pid == undefined) {
@@ -63,13 +62,13 @@
                 this.$elem.find('ul').append($processElem);
                 this.processList()[pid] = $processElem;
             }
-console.log(this.processList());
+
             return $processElem;
 
         },
 
         removeProcess : function (e, pid) {
-        console.log("REMOVES WITH");console.log(pid);
+
             if (pid == undefined) {
                 throw "Cannot update process w/o pid";
             }

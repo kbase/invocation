@@ -8,7 +8,7 @@
 
     $.kbWidget("kbaseIrisTerminal", 'kbaseAuthenticatedWidget', {
         version: "1.0.0",
-        _accessors : ['foo', 'bar', {name : 'baz', type : 'w'}, 'terminalHeight', 'client'],
+        _accessors : ['terminalHeight', 'client'],
         options: {
             invocationURL : 'http://localhost:5000',
             searchURL : 'https://kbase.us/services/search-api/search/$category/$keyword?start=$start&count=$count&format=json',
@@ -114,13 +114,9 @@
         },
 
         loggedInCallback : function(e, args) {
-        console.log("LIC CALLBACK");
-        console.log("WTF?");
-        console.log("LOGGED IN CALLBACK!");
-//        console.log(e);
-        console.log(args);
+
+
             if (args.success) {
-console.log(this);
                 this.client().start_session(
                     args.user_id,
                     $.proxy( function (newsid) {
@@ -152,7 +148,7 @@ console.log(this);
         },
 
         loggedOutCallback : function(e) {
-console.log("LOGGED OUT CALLBACK");
+
             this.cwd = '/';
             this.commandHistory = undefined;
             this.terminal.empty();
@@ -408,15 +404,7 @@ console.log("LOGGED OUT CALLBACK");
                                     pad = '';
                                 }
                                 this.appendInput(pad + ret['next'][0] + ' ', 0);
-                                /*if (ret['next'][0].match(/^\$/)) {
-                                    console.log("RET NEXT VARIABLE " + ret['next'][0]);
-                                    console.log(this.input_box.val().length - ret['next'][0]);
-                                    console.log(this.input_box.val().length);
-                                    console.log(ret['next'][0].length);
-                                    var start = this.input_box.val().length - ret['next'][0].length - 1;
-                                    console.log(start);
-                                    this.input_box.setSelection(start, this.input_box.val().length);
-                                }*/
+
                                 this.selectNextInputVariable();
                                 return;
                             }

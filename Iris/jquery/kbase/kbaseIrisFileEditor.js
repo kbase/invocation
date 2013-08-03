@@ -27,7 +27,7 @@
         init: function (options) {
 
             this._super(options);
-console.log("INIT EDITOR");
+
             this.appendUI(this.$elem);
 
             return this;

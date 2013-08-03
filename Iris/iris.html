@@ -66,38 +66,6 @@
                         autocreateFileBrowser       : false,
                     });
 
-/*console.log("TERM");
-
-console.log($term.foo('able'));
-console.log($term.foo());
-console.log($term._attributes);
-console.log($term.bar('baker'));
-console.log($term.bar());
-console.log($term.bar(undefined));
-console.log($term.bar());
-console.log($term.baz('oof'));
-console.log($term.baz());
-console.log($term);
-console.log($term._attributes);
-console.log("ETERM");
-
-var cb = function(e, $target, vals) {
-    console.log("FOO CHANGED WITH : " );
-    console.log(e);
-    console.log($target);
-    console.log(vals);
-    console.log(this);
-};
-
-$plist.kb_bind($term, 'foo', cb);
-
-$term.foo('bar');
-$plist.kb_unbind($term, 'foo', cb);
-
-$term.foo('baz');
-console.log($term.foo());*/
-
-
                     var $tabs = $('#tabs').kbaseTabs(
                         {
                             tabPosition : 'bottom', //or left or right or top. Defaults to 'top'
@@ -112,8 +80,7 @@ console.log($term.foo());*/
                             tabsHeight : (parseInt($term.terminalHeight()) + 100) + 'px',
                         }
                     );
-console.log("CLIENT IS ");console.log($term.client());
-var cl = $term.client();
+
                     $('#command-list').kbaseIrisCommands(
                         {
                             client          : $term.client(),
@@ -129,12 +96,11 @@ var cl = $term.client();
                             },
                         }
                     );
-//console.log("LB");console.log($term.$loginbox);
+
                     var $fb = $('#file-browser').kbaseIrisFileBrowser (
                         {
                             client : $term.client(),
                             addFileCallback : function (file, $fb) {
-                            console.log("adds this " + file);
                                 $term.appendInput(file + ' ');
                             },
                             editFileCallback : function (file, $fb) {
@@ -152,7 +118,6 @@ var cl = $term.client();
                                     }
                                 )
 
-                                console.log("edits this " + file);
                                 if ($tabs.hasTab(file)) {
                                     $tabs.showTab(file);
                                 }
@@ -170,33 +135,10 @@ var cl = $term.client();
                                     );
                                 }
                             },
-                            //openFolderIcon : 'icon-angle-down',
-                            //closedFolderIcon : 'icon-angle-right',
-                            //fileIcon : 'icon-eraser',
                         }
                     );
-//                    console.log("CALLBACKS");
-//                    console.log($fb.addFileCallback());
-//                    console.log($fb.editFileCallback());
-
 
                     $term.addFileBrowser($fb);
-
-                    //$('#login').append($term.$loginbox.$elem);
-
-                    var $g = $('<div></div>').kbaseIrisGrammar();
-                    //var tokens = $g.tokenize('but here: "this has \'lots of quotes \' and \\"escaped quotes\\" and will it work?" who knows.');
-                    //var question = 'What is the function of feature foobar?';// and your big butt?';
-                    //var question = 'Which are the closet genomes to foobar?';
-                    var question = 'Display the dna sequence of contig foobar from a to b';
-                    var tokens = $g.tokenize(question);
-//                    console.log(tokens);
-
-                        $g.evaluate(question, function(ret) {console.log(ret)});
-//var aq = $g.allQuestions();console.log(aq);
-
-                    // to see the auth token
-                    // console.log( $('#terminal').terminal('authToken') );
 
                     var command = getParameterByName('command');
                     if (command.length) {
@@ -212,12 +154,6 @@ var cl = $term.client();
                             200
                         );
                     }
-
-//$('#bindingBox').kb_bind($term, 'foo');
-//$('#binder2').kb_bind($term, 'foo');
-$('.xyz').kb_bind($term, 'foo');
-//console.log("FOO : " + $term.foo());
-//$term.foo('NEWEST');
 
                 });
 
@@ -263,13 +199,6 @@ $('.xyz').kb_bind($term, 'foo');
                 <div id = 'tabs'></div>
             </div>
         </div>
-
-        <input class = 'xyz' type = 'text' id = 'bindingBox' size = '20' value = 'xyz'>
-        <div class = 'xyz' id = 'binder2'></div>
-
-        <br clear = 'all'/>
-        <br clear = 'all'/>
-        <br clear = 'all'/>
 
         <div id="pgfooter">Copyright &copy; 2012-2013 DOE <a href = 'http://www.kbase.us/'>KBase</a></div>
 

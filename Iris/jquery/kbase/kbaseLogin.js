@@ -128,10 +128,8 @@
             $(document).on(
                 'loggedInQuery.kbase',
                 $.proxy(function (e, callback) {
-                console.log("GOT LIQ");
-                console.log(e);
+
                 var cookie = this.get_kbase_cookie()
-                console.log(callback && cookie != undefined);
                     if (callback) {
                         callback(cookie);
                     }
@@ -258,7 +256,6 @@
                                 function(e) {
                                     e.preventDefault(); e.stopPropagation();
                                     $(this).next().toggle();//slideToggle('fast');
-                                    console.log($(this).next());
                                 }
                                 //, this)
                                 )
@@ -959,7 +956,7 @@
                                     $.cookie('kbase_session', cookieArray.join('|'));
 
                                     this.populateLoginInfo(args);
-console.log("TRIGGERS loggedIn!");
+
                                     this.trigger('loggedIn', this.get_kbase_cookie());
 
                                     callback.call(this,args);

@@ -109,7 +109,6 @@
                 $.proxy(function (idx, val) {
 
                     if (val.condition) {
-                    console.log("CALLS CONDITION!");
                         if (val.condition.call(this, val, $buttonControls.options.context, this.$elem) == false) {
                             return;
                         }

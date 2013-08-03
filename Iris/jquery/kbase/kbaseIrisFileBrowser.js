@@ -185,7 +185,7 @@
 
             if (args.success) {
                 this.refreshDirectory('/');
-                console.log("CHECKS FOR STALLS");
+
                 this.client().make_directory(
                     this.sessionId(),
                     '/',
@@ -465,8 +465,7 @@
                             chunkUploadPath         = chunkUploadPath.replace(/\//g, '::');
 
                             var fileSize = file.size;
-                            var chunkSize = this.chunkSize();;
-                            console.log("CS - " + chunkSize);
+                            var chunkSize = this.chunkSize();
                             var chunk = 1;
                             var offset = 0;
                             var chunkMap = {
