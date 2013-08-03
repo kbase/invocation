@@ -22,6 +22,7 @@
                     this.updateProcess(e, params);
                 }, this)
             );
+
             $(document).on(
                 'removeIrisProcess.kbaseIris',
                 $.proxy(function (e, pid) {

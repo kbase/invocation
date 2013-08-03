@@ -532,6 +532,24 @@
 
             dbg : function (txt) { if (window.console) console.log(txt); },
 
+            callAfterInit : function (func) {
+                var $me = this;
+                var delayer = function () {
+
+                    var recursion = arguments.callee;
+
+                    if ($me._init) {
+                        func();
+                    }
+                    else {
+                        setTimeout(recursion, 10);
+                    }
+                }
+
+                delayer();
+                return delayer;
+            },
+
             init : function(args) {
 
                 this._attributes = {};

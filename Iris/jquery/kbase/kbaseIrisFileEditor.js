@@ -6,12 +6,10 @@
 (function( $, undefined ) {
 
 
-    $.kbWidget("kbaseIrisFileEditor", 'kbaseWidget', {
+    $.kbWidget("kbaseIrisFileEditor", 'kbaseAuthenticatedWidget', {
         version: "1.0.0",
         _accessors : [
             'client',
-            '$loginbox',
-            '$terminal',
             {name : 'file', 'setter' : 'setFile'},
             'rows',
             'cols',
@@ -29,7 +27,7 @@
         init: function (options) {
 
             this._super(options);
-
+console.log("INIT EDITOR");
             this.appendUI(this.$elem);
 
             return this;
@@ -107,19 +105,6 @@
                 function (err) { this.dbg("FILE FAILURE"); this.dbg(err) }
             );
 
-        },
-
-
-        sessionId : function() {
-            if (this.$terminal() != undefined) {
-                return this.$terminal().sessionId;
-            }
-            else if (this.$loginbox() != undefined) {
-                return this.$loginbox().sessionId();
-            }
-            else {
-                return undefined;
-            }
         },
 
         savePrompt : function() {

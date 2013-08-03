@@ -8,12 +8,13 @@
 
     $.kbWidget("kbaseIrisFileBrowser", 'kbaseDataBrowser', {
         version: "1.0.0",
-        _accessors : ['client', '$terminal', '$loginbox', 'addFileCallback', 'editFileCallback', 'singleFileSize', 'stalledUploads'],
+        _accessors : ['client', 'addFileCallback', 'editFileCallback', 'singleFileSize', 'chunkSize', 'stalledUploads'],
         options: {
             stalledUploads : {},
             uploadDir : 'uploads',
-            concurrentUploads : 3,
-            singleFileSize : '1000000',
+            concurrentUploads : 4,
+            singleFileSize  : 15000000,
+            chunkSize       :  1000000,
             title : 'File Browser',
             'root' : '/',
             types : {
@@ -46,9 +47,15 @@
                             id : 'editButton',
                             tooltip : 'edit this file',
                             condition : function (control, $fb) {
-                                return $fb.editFileCallback() == undefined
-                                    ? false
-                                    : true;
+                                var size = this.$elem.data('data').size;
+                                if (size > $fb.singleFileSize() ) {
+                                    return false;
+                                }
+                                else {
+                                    return $fb.editFileCallback() == undefined
+                                        ? false
+                                        : true;
+                                }
                             },
                         },
                         {
@@ -117,64 +124,83 @@
             )
             .always(
                 $.proxy( function(res) {
-                console.log(res);
-                console.log('list files after create upload');
-                    this.client().list_files(
-                        this.sessionId(),
-                        '/',
-                        this.options.uploadDir
-                    )
-                    .done(
-                        $.proxy(function(filelist) {
-                            var dirs = filelist[0];
-
-                            $.each(
-                                dirs,
-                                $.proxy(function (idx, dir) {
-                                    console.log('already has dir ' + dir.name);
-                                    console.log(dir);
-                                    this.client().get_file(
-                                        this.sessionId(),
-                                        'chunkMap',
-                                        '/' + this.options.uploadDir + '/' + dir.name
-                                    )
-                                    .done(
-                                        $.proxy( function (res) {
-                                            var chunkMap;
-                                            try {
-                                                var chunkMap = JSON.parse(res);
-                                            }
-                                            catch(e) {
-                                                this.dbg("Could not load chunk map");
-                                                this.dbg(e);
-                                            };
-
-                                            console.log("LOADED CHUNKMAP");
-                                            console.log(chunkMap);
-                                            console.log(dir.name);
-
-                                            while (chunkMap.chunks.length > 0) {
-                                                var chunk = chunkMap.chunks.shift();
-                                                chunkMap.chunksByName[chunk.name] = chunk;
-                                                chunkMap.doneChunks.push(chunk);
-                                            }
-
-                                            this.checkAndMergeChunks(chunkMap);
-                                        }, this)
-                                    )
-
-
-                                }, this)
-                            );
-
-
-                        }, this)
-                    )
+                    this.checkStalledUploads();
                 }, this)
             );
 
             return this;
 
+        },
+
+        checkStalledUploads : function() {
+            this.client().list_files(
+                this.sessionId(),
+                '/',
+                this.options.uploadDir
+            )
+            .done(
+                $.proxy(function(filelist) {
+                    var dirs = filelist[0];
+
+                    $.each(
+                        dirs,
+                        $.proxy(function (idx, dir) {
+
+                            this.client().get_file(
+                                this.sessionId(),
+                                'chunkMap',
+                                '/' + this.options.uploadDir + '/' + dir.name
+                            )
+                            .done(
+                                $.proxy( function (res) {
+                                    var chunkMap;
+                                    try {
+                                        var chunkMap = JSON.parse(res);
+                                    }
+                                    catch(e) {
+                                        this.dbg("Could not load chunk map");
+                                        this.dbg(e);
+                                    };
+
+                                    while (chunkMap.chunks.length > 0) {
+                                        var chunk = chunkMap.chunks.shift();
+                                        chunkMap.chunksByName[chunk.name] = chunk;
+                                        chunkMap.doneChunks.push(chunk);
+                                    }
+
+                                    this.checkAndMergeChunks(chunkMap);
+                                }, this)
+                            )
+
+
+                        }, this)
+                    );
+
+
+                }, this)
+            )
+        },
+
+        loggedInCallback : function(e, args) {
+
+            if (args.success) {
+                this.refreshDirectory('/');
+                console.log("CHECKS FOR STALLS");
+                this.client().make_directory(
+                    this.sessionId(),
+                    '/',
+                    this.options.uploadDir
+                )
+                .always(
+                    $.proxy( function(res) {
+                        this.checkStalledUploads();
+                    }, this)
+                );
+            }
+        },
+
+        loggedOutCallback : function(e) {
+            this.data('ul-nav').empty();
         },
 
         prepareRootContent : function() {
@@ -221,26 +247,12 @@
                 )
         },
 
-        sessionId : function() {
-            if (this.$terminal() != undefined) {
-                return this.$terminal().sessionId;
-            }
-            else if (this.$loginbox() != undefined) {
-                return this.$loginbox().sessionId();
-            }
-            else {
-                return undefined;
-            }
-        },
-
         refreshDirectory : function(path) {
 
             if (this.sessionId() == undefined) {
                 this.data('ul-nav').empty();
                 return;
             }
-console.log(path);
-console.log(this.targets);
 
             var $target;
 
@@ -310,10 +322,10 @@ console.log(this.targets);
                             val['full_path'] = val['full_path'].replace(/\/+/g, '/');
                             results.push(
                                 {
-                                    'type' : 'folder',
-                                    'id' : val['full_path'],
-                                    'label' : val['name'],
-                                    'open' : $fb.openTargets[ val['full_path'] ]
+                                    'type'  : 'folder',
+                                    'id'    : val.full_path,
+                                    'label' : val.name,
+                                    'open'  : $fb.openTargets[ val['full_path'] ],
                                 }
                             )
                         }, this)
@@ -326,9 +338,10 @@ console.log(this.targets);
 
                             results.push(
                                 {
-                                    'type' : 'file',
-                                    'id' : val['full_path'],
-                                    'label' : val['name'],
+                                    'type'  : 'file',
+                                    'id'    : val.full_path,
+                                    'label' : val.name,
+                                    'data'  : val,
                                 }
                             )
                         }, this)
@@ -363,9 +376,6 @@ console.log(this.targets);
                         if (this.data('active_directory')) {
                             upload_dir = this.data('active_directory');
                         }
-
-console.log("LOADS FILE " + file.name);
-console.log("LOADS size " + file.size);
 
                         var fullFilePath     = upload_dir + '/' + file.name;
                         fullFilePath         = fullFilePath.replace(/\/\/+/g, '/');
@@ -439,7 +449,6 @@ console.log("LOADS size " + file.size);
                                             this.refreshDirectory(upload_dir)
                                         }, this),
                                         jQuery.proxy( function (res) {
-                                        console.log("FAILED?");console.log(res);
                                             this.trigger('removeIrisProcess', pid);
                                             this.dbg(res);
                                         }, this)
@@ -451,13 +460,13 @@ console.log("LOADS size " + file.size);
                             reader.readAsText(file);
                         }
                         else {
-                            console.log('file needs to be chunked');
 
                             var chunkUploadPath     = fullFilePath;
                             chunkUploadPath         = chunkUploadPath.replace(/\//g, '::');
 
                             var fileSize = file.size;
-                            var chunkSize = parseInt(this.singleFileSize());
+                            var chunkSize = this.chunkSize();;
+                            console.log("CS - " + chunkSize);
                             var chunk = 1;
                             var offset = 0;
                             var chunkMap = {
@@ -472,11 +481,8 @@ console.log("LOADS size " + file.size);
                                 fullUploadPath      : this.options.uploadDir + '/' + chunkUploadPath,
                                 pid                 : pid
                             };
-console.log("STALLED UPLOADS");
-console.log(this.stalledUploads());
-console.log(chunkMap.fullFilePath);
+
                             if (this.stalledUploads()[chunkMap.fullFilePath] != undefined) {
-                                console.log("RESUME IT ANYWAY!");
                                 this.data('resumed_chunkMap', this.stalledUploads()[chunkMap.fullFilePath]);
                                 this.stalledUploads()[chunkMap.fullFilePath] = undefined;
                             }
@@ -485,13 +491,9 @@ console.log(chunkMap.fullFilePath);
                                 chunkMap = this.data('resumed_chunkMap');
                                 //remove the junk status created by the newly manufactured pid.
                                 this.trigger('removeIrisProcess', pid);
-console.log("OLD " + chunkMap.pid + " vs " + pid);
-console.log(chunkMap);
+
                                 var percent = (100 * chunkMap.doneChunks.length / (chunkMap.doneChunks.length + chunkMap.chunks.length)).toFixed(2);
-                                console.log("PERCENTAGE");
-                                console.log(chunkMap.doneChunks.length);
-                                console.log(chunkMap.doneChunks.length + chunkMap.chunks.length);
-                                console.log((100 * chunkMap.doneChunks.length / (chunkMap.doneChunks.length + chunkMap.chunks.length)).toFixed(2));
+
                                 if (percent >= 100) {
                                     percent = 99;
                                 }
@@ -520,9 +522,6 @@ console.log(chunkMap);
                                 );
 
                                 this.data('resumed_chunkMap', undefined);
-                                console.log("RESTART WITH");console.log(chunkMap);
-                                console.log(chunkMap.complete);
-
                             }
                             else {
 
@@ -531,12 +530,10 @@ console.log(chunkMap);
                                         chunkSize = fileSize;
                                     }
                                     fileSize -= chunkSize;
-                                    console.log("chunk " + chunk + " == " + chunkSize);
-                                    console.log("from " + offset + " to " + (offset + chunkSize - 1));
 
                                     var pad         = '00000000';
                                     var paddedChunk = (pad + chunk).slice(-8);
-console.log("PADDED CHUNK = " + paddedChunk);
+
                                     chunkMap.chunks.push(
                                         {
                                             chunk : chunk,
@@ -580,7 +577,7 @@ console.log("PADDED CHUNK = " + paddedChunk);
 
                             ).always(
                                 $.proxy(function() {
-console.log("CM");console.log(chunkMap);
+
                                     this.client().put_file(
                                         this.sessionId(),
                                         'chunkMap',
@@ -607,26 +604,21 @@ console.log("CM");console.log(chunkMap);
             var $fb = this;
 
             return function() {
-console.log("FILE IS ");console.log(file);
-//console.log(file.prototype.webkitSlice);
-//console.log(file.prototype.slice);
-console.log("PATH " + chunkMap.fullUploadPath);
-console.log(chunkMap);
-var recursion = arguments.callee;
+
+                var recursion = arguments.callee;
                 if (chunkMap.chunks.length > 0) {
                     var chunk = chunkMap.chunks.shift();
 
-                    var blob = file.webkitSlice(chunk.start, chunk.end);
-console.log('uploading chunk + ' + chunk.chunk);
+                    var slice = file.slice || file.webkitSlice || file.mozSlice;
+
+                    var blob = slice.call(file, chunk.start, chunk.end);
+
                     var reader = new FileReader();
 
                     reader.onloadend = function(e) {
 
                         if (e.target.readyState == FileReader.DONE) {
-console.log("UPLOADS CHUNK " + chunk);
-console.log(e);
-console.log(chunk.chunk);
-console.log(chunkMap.fullUploadPath);
+
                             $fb.client().put_file(
                                 $fb.sessionId(),
                                 chunk.name,
@@ -642,22 +634,11 @@ console.log(chunkMap.fullUploadPath);
                                         percent = 99;
                                     }
 
-
-
-                                console.log("PERCENTAGE==" + percent);
-                                console.log(chunkMap.doneChunks.length);
-                                console.log(chunkMap.doneChunks.length + chunkMap.chunks.length);
-                                console.log(chunkMap.jobs);
-                                //total chunks is done + not done + current jobs - 1 (because we're done, but still flagged as a pending job)
-                                console.log((100 * chunkMap.doneChunks.length / ((chunkMap.jobs - 1) + chunkMap.doneChunks.length + chunkMap.chunks.length)).toFixed(2));
-
-
-                                    console.log($fb);
                                     $fb.trigger(
                                         'updateIrisProcess',
                                         {
                                             pid : chunkMap.pid,
-                                            msg : 'Uploading ' + file.name + ' ... ' + percent + '%',
+                                            msg : 'Uploading ' + chunkMap.fullFilePath + ' ... ' + percent + '%',
                                             /*content : $.jqElem('div')
                                                 .addClass('progress')
                                                 .addClass('progress-striped')
@@ -677,14 +658,11 @@ console.log(chunkMap.fullUploadPath);
                                     );
 
                                     chunkMap.jobs--;
-                                    console.log('uploaded chunk!');
                                     recursion();
                                 },
                                 function (res) {
                                     chunkMap.jobs--;
                                     chunkMap.chunks.push(chunk);
-                                    console.log('failed chunk!');
-                                    console.log(res);
                                     recursion();
                                 }
                             );
@@ -695,18 +673,16 @@ console.log(chunkMap.fullUploadPath);
                     reader.readAsBinaryString(blob);
                 }
                 else if (chunkMap.jobs == 0) {
-                    console.log("success...begin concatenation");
                     $fb.checkAndMergeChunks(chunkMap, recursion);
                 }
                 else {
-                    console.log("done uploading, but jobs still pending");
-                    console.log(chunkMap.jobs);
+                    //we're done uploading, but other jobs are still pending
                 }
             }
         },
 
         checkAndMergeChunks : function(chunkMap, chunkUploader) {
-console.log("PATH " + chunkMap.chunkUploadPath + ", " + this.options.uploadDir);
+
             this.client().list_files(
                 this.sessionId(),
                 '/' + this.options.uploadDir,
@@ -727,21 +703,18 @@ console.log("PATH " + chunkMap.chunkUploadPath + ", " + this.options.uploadDir);
                     jQuery.each(
                         files,
                         $.proxy(function (idx, val) {
-console.log("VN " + val.name + ',' + val.size);
                             fileSizes[val.name] = val.size;
                         }, this)
                     );
 
                     var concatenatedFileSize = fileSizes['upload'] || 0;
                     var newDoneChunks = [];
-console.log("DC");console.log(chunkMap);
+
                     $.each(
                         chunkMap.doneChunks,
                         $.proxy (function (idx, chunk) {
-                        console.log(chunk);
-                            var size = chunk.size;
 
-console.log("COMPARES SIZE " + size + " vs " + fileSizes[chunk.name] + ' on ' + chunk.name);
+                            var size = chunk.size;
 
                             //if the file sizes are equal, then this chunk was successful.
                             if (size == fileSizes[chunk.name]) {
@@ -764,7 +737,6 @@ console.log("COMPARES SIZE " + size + " vs " + fileSizes[chunk.name] + ' on ' + 
                                 //newDoneChunks.push(chunk);
                             }
                             else {
-                                console.log("FAILED ON CHUNK " + chunk.name + " " + size + " != " + fileSizes[chunk.name]);
                                 chunk.complete = false;
                                 chunkMap.chunks.push(chunk);
                                 canMerge = false;
@@ -783,17 +755,15 @@ console.log("COMPARES SIZE " + size + " vs " + fileSizes[chunk.name] + ' on ' + 
 
                     if (concatenatedFileSize != 0) {
                         canMerge = false;
-                    console.log("FILE SIZE IS NOW = " + concatenatedFileSize);
+
                         var smallestFile = Object.keys(fileSizes).sort()[0];
-console.log("FS");console.log(fileSizes);
+
                         var smallestSize = fileSizes[smallestFile];
-                        for (prop in fileSizes) {
-                            console.log("PROP IS " + prop + " WITH " + fileSizes[prop]);
-                        }
-console.log("SMALLEST FILE IS " + smallestFile + " AT " + smallestSize);
+
+
                         //okay, if we just need to get rid of that one, then we're solid.
                         if (concatenatedFileSize - smallestSize == 0) {
-                        console.log("CAN RECOVER");
+
                             var newDoneChunks = [];
                             for (var idx = 0; idx < chunkMap.doneChunks.length; idx++) {
                                 var chunk = chunkMap.doneChunks[idx];
@@ -804,9 +774,7 @@ console.log("SMALLEST FILE IS " + smallestFile + " AT " + smallestSize);
 
                             chunkMap.doneChunks = newDoneChunks;
                             canMerge = true;
-                            console.log("CHUNK KNOWLEDGE IS NOW");
-                            console.log(chunkMap);
-                            console.log("MERGE ? " + canMerge);
+
                         }
                         //otherwise the whole ball of wax is junked up and we need to fail out entirely. Unrecoverable.
                         else {
@@ -820,7 +788,6 @@ console.log("SMALLEST FILE IS " + smallestFile + " AT " + smallestSize);
                                             'icon' : 'icon-ban-circle',
                                             'tooltip' : 'Cancel',
                                             callback : function(e, $fb) {
-                                                console.log("Canceling job");
 
                                                 $fb.client().remove_directory(
                                                     $fb.sessionId(),
@@ -828,7 +795,6 @@ console.log("SMALLEST FILE IS " + smallestFile + " AT " + smallestSize);
                                                     '/' + chunkMap.fullUploadPath,
                                                     function () {
                                                         $fb.trigger('removeIrisProcess', chunkMap.pid);
-                                                        $fb.refreshDirectory('/' + target_dir);
                                                     }
                                                 );
 
@@ -858,7 +824,6 @@ console.log("SMALLEST FILE IS " + smallestFile + " AT " + smallestSize);
                         chunkUploader();
                     }
                     else {
-                        console.log("cannot merge, no chunkuploader");console.log(chunkMap);
                         //okay. We fall into here IF we have a chunkmap and no chunkuploader.
                         //this'll occur if we're checking a chunkmap from a prior upload and it's
                         //incomplete.
@@ -892,8 +857,6 @@ console.log("SMALLEST FILE IS " + smallestFile + " AT " + smallestSize);
                                         'icon' : 'icon-refresh',
                                         'tooltip' : 'Resume',
                                         callback : function(e, $fb) {
-                                            console.log("Syncing job " + chunkMap.pid);
-                                            console.log(chunkMap);
                                             $fb.data('resumed_chunkMap', chunkMap);
                                             $fb.data('fileInput').trigger('click');
                                         },
@@ -903,7 +866,6 @@ console.log("SMALLEST FILE IS " + smallestFile + " AT " + smallestSize);
                                         'icon' : 'icon-ban-circle',
                                         'tooltip' : 'Cancel',
                                         callback : function(e, $fb) {
-                                            console.log("Canceling job");
 
                                             $fb.client().remove_directory(
                                                 $fb.sessionId(),
@@ -940,7 +902,7 @@ console.log("SMALLEST FILE IS " + smallestFile + " AT " + smallestSize);
         },
 
         makeChunkMerger : function(chunkMap) {
-console.log("MCM");console.log(chunkMap);
+
             var $fb = this;
 
             var mergedUploadPath = chunkMap.fullUploadPath + '/upload';
@@ -953,7 +915,7 @@ console.log("MCM");console.log(chunkMap);
             return function() {
 
                 if (chunkMap.doneChunks.length == 0) {
-console.log("MOVES FROM " + mergedUploadPath + " TO " + chunkMap.fullFilePath);
+
                     $fb.client().rename_file(
                         $fb.sessionId(),
                         '/',
@@ -967,15 +929,13 @@ console.log("MOVES FROM " + mergedUploadPath + " TO " + chunkMap.fullFilePath);
                                 chunkMap.fullUploadPath,
                                 function () {
                                     $fb.trigger('removeIrisProcess', chunkMap.pid);
-                                    console.log("REFRESH " + chunkMap.upload_dir);
                                     $fb.refreshDirectory(chunkMap.upload_dir);
                                 }
                             );
 
                         },
                         function (res) {
-                            console.log("RENAME FAIL");
-                            console.log(res);
+                            this.dbg("rename file failure"); this.dbg(res);
                         }
                     );
 
@@ -985,13 +945,6 @@ console.log("MOVES FROM " + mergedUploadPath + " TO " + chunkMap.fullFilePath);
                 var chunk = chunkMap.doneChunks.shift();
 
                 var recursion = arguments.callee;
-
-                console.log(chunk);
-//recursion();
-//return;
-
-console.log("WILL COPY FROM " + chunkMap.fullUploadPath + '/' + chunk.name + " -> " + mergedUploadPath);
-
 
                 $fb.client().run_pipeline(
                     $fb.sessionId(),
@@ -1028,7 +981,7 @@ console.log("WILL COPY FROM " + chunkMap.fullUploadPath + '/' + chunk.name + " -
                         }
                     }, this),
                     function (res) {
-                        console.log("OMFG ERR");console.log(res);
+                        this.dbg("OMFG ERR");this.dbg(res);
                     }
                 )
 

@@ -110,7 +110,7 @@
 
                     if (val.condition) {
                     console.log("CALLS CONDITION!");
-                        if (val.condition(val, $buttonControls.options.context) == false) {
+                        if (val.condition.call(this, val, $buttonControls.options.context, this.$elem) == false) {
                             return;
                         }
                     }
