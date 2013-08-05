@@ -11,9 +11,9 @@
         _accessors : ['client', 'addFileCallback', 'editFileCallback', 'singleFileSize', 'chunkSize', 'stalledUploads'],
         options: {
             stalledUploads : {},
-            uploadDir : 'uploads',
+            uploadDir : '.uploads',
             concurrentUploads : 4,
-            singleFileSize  : 15000000,
+            singleFileSize  : 3000000,
             chunkSize       :  1000000,
             title : 'File Browser',
             'root' : '/',
@@ -107,6 +107,10 @@
                     ],
                 }
             },
+        },
+
+        uploadFile : function() {
+            this.data('fileInput').trigger('click');
         },
 
         init: function (options) {
@@ -243,6 +247,7 @@
                         .attr('type', 'file')
                         .attr('id', 'fileInput')
                         .css('display', 'none')
+                        .attr('multiple', 'multiple')
                         .bind( 'change', $.proxy(this.handleFileSelect, this) )
                 )
         },
@@ -317,7 +322,7 @@
                     var $fb = this;
 
                     jQuery.each(
-                        dirs.sort(this.sortByKey('name')),
+                        dirs,
                         $.proxy(function (idx, val) {
                             val['full_path'] = val['full_path'].replace(/\/+/g, '/');
                             results.push(
@@ -332,7 +337,7 @@
                     );
 
                     jQuery.each(
-                        files.sort(this.sortByKey('name')),
+                        files,
                         $.proxy(function (idx, val) {
                             val['full_path'] = val['full_path'].replace(/\/+/g, '/');
 
@@ -347,7 +352,7 @@
                         }, this)
                     );
 
-                    results = results.sort(this.sortByKey('label'));
+                    results = results.sort(this.sortByKey('label', 'insensitively'));
 
                     callback(results);
 
@@ -377,7 +382,13 @@
                             upload_dir = this.data('active_directory');
                         }
 
-                        var fullFilePath     = upload_dir + '/' + file.name;
+                        var fileName = file.name;
+                        if (this.data('override_filename')) {
+                            fileName = this.data('override_filename');
+                            this.data('override_filename', undefined);
+                        }
+
+                        var fullFilePath     = upload_dir + '/' + fileName;
                         fullFilePath         = fullFilePath.replace(/\/\/+/g, '/');
 
                         var pid = this.uuid();
@@ -399,7 +410,7 @@
                                             .css('white-space', 'nowrap')
                                             .css('text-align', 'left')
                                             .css('padding', '2px')
-                                            .text('Uploading ' + upload_dir + '/' + file.name)
+                                            .text('Uploading ' + upload_dir + '/' + fileName)
                                     )//*/
                             }
                         );
@@ -427,7 +438,7 @@
                                                     .css('white-space', 'nowrap')
                                                     .css('text-align', 'left')
                                                     .css('padding', '2px')
-                                                    .text('Uploading ' + upload_dir + '/' + file.name)
+                                                    .text('Uploading ' + upload_dir + '/' + fileName)
                                             )//*/
                                     }
                                 );
@@ -441,7 +452,7 @@
 
                                     this.client().put_file(
                                         this.sessionId(),
-                                        file.name,
+                                        fileName,
                                         e.target.result,
                                         upload_dir,
                                         jQuery.proxy( function (res) {
@@ -457,7 +468,7 @@
                                 this
                             );
 
-                            reader.readAsText(file);
+                            reader.readAsBinaryString(file);
                         }
                         else {
 
@@ -473,7 +484,7 @@
                                 doneChunks          : [],
                                 chunksByName        : {},
                                 size                : 0,
-                                fileName            : file.name,
+                                fileName            : fileName,
                                 upload_dir          : upload_dir,
                                 fullFilePath        : fullFilePath,
                                 chunkUploadPath     : chunkUploadPath,
@@ -1053,11 +1064,10 @@
                     callback : function(e, $prompt) {
                         $prompt.closePrompt();
                         that.client()[deleteMethod](
-                            that.sessionId,
+                            that.sessionId(),
                             '/',
                             file,
-                            function (res) { that.refreshDirectory(active_dir) },
-                            function() {}
+                            function (res) {that.refreshDirectory(active_dir) }
                             );
                     }
                 }
@@ -1098,7 +1108,7 @@
                             callback : function(e, $prompt) {
                                 $prompt.closePrompt();
                                 that.client().make_directory(
-                                    that.sessionId,
+                                    that.sessionId(),
                                     parentDir,
                                     $addDirectoryModal.dialogModal().find('input').val(),
                                     function (res) { that.refreshDirectory(parentDir) },

@@ -657,11 +657,20 @@
                 else                            { return 0  }
             },
 
-            sortByKey : function (key) {
-                return function (a,b) {
-                         if (a[key] < b[key]) { return -1 }
-                    else if (a[key] > b[key]) { return 1  }
-                    else                      { return 0  }
+            sortByKey : function (key, insensitively) {
+                if (insensitively) {
+                    return function (a,b) {
+                             if (a[key].toLowerCase() < b[key].toLowerCase()) { return -1 }
+                        else if (a[key].toLowerCase() > b[key].toLowerCase()) { return 1  }
+                        else                                                  { return 0  }
+                    }
+                }
+                else {
+                    return function (a,b) {
+                             if (a[key] < b[key]) { return -1 }
+                        else if (a[key] > b[key]) { return 1  }
+                        else                      { return 0  }
+                    }
                 }
             },
 

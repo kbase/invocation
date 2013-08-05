@@ -132,7 +132,7 @@
                     }, this ),
                     $.proxy( function (err) {
                         this.out("<i>Error on session_start:<br>" +
-                        err.message.replace("\n", "<br>\n") + "</i>");
+                        err.error.message.replace("\n", "<br>\n") + "</i>", 0, 1);
                     }, this )
                 );
 
@@ -665,6 +665,16 @@
             this.terminal.animate({scrollTop: this.terminal.prop('scrollHeight') - this.terminal.height()}, speed);
         },
 
+        cleanUp : function ($commandDiv) {
+            setTimeout(function() {
+                var cleanupTime = 5000;
+                setTimeout(function() {$commandDiv.prev().fadeOut(500, function() {$commandDiv.prev().remove()})}, cleanupTime);
+                setTimeout(function() {$commandDiv.next().fadeOut(500, function() {$commandDiv.next().remove()})}, cleanupTime);
+                setTimeout(function() {$commandDiv.fadeOut(500, function() {$commandDiv.remove()})}, cleanupTime);
+            }, 1000);
+        },
+
+
         // Executes a command
         run: function(command) {
 
@@ -700,8 +710,8 @@
                             var auth = {'kbase_sessionid' : sid, success : true};
 
                             this.terminal.empty();
-                            this.trigger( 'logout', false);
-                            this.trigger('loggedIn', auth);
+                            this.trigger(  'logout', false);
+                            this.trigger('loggedIn', auth );
 
                         },
                         this
@@ -709,7 +719,7 @@
                     jQuery.proxy(
                         function (err) {
                             this.out_to_div($commandDiv, "<i>Error on session_start:<br>" +
-                                err.message.replace("\n", "<br>\n") + "</i>");
+                                err.error.message.replace("\n", "<br>\n") + "</i>", 0, 1);
                         },
                         this
                     )
@@ -825,8 +835,9 @@
                         ),
                     jQuery.proxy(
                         function (err) {
-                            var m = err.message.replace("/\n", "<br>\n");
-                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.code + "<br>" + m + "</i>");
+                            var m = err.error.message.replace("/\n", "<br>\n");
+                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.error.code + "<br>" + m + "</i>", 0, 1);
+                            this.cleanUp($commandDiv);
                         },
                         this
                     )
@@ -844,6 +855,48 @@
                 this.aliases[m[1]] = m[2];
                 this.out_to_div($commandDiv, m[1] + ' set to ' + m[2]);
                 return;
+            }
+
+            if (m = command.match(/^upload\s*(\S+)?$/)) {
+                var file = m[1];
+                if (this.fileBrowsers.length) {
+                    var $fb = this.fileBrowsers[0];
+                    if (file) {
+                        $fb.data('override_filename', file);
+                    }
+                    $fb.data('active_directory', this.cwd);
+                    $fb.uploadFile();
+                }
+                return;
+            }
+
+            if (m = command.match(/^view\s+(\S+)$/)) {
+                var file = m[1];
+
+                this.client().get_file(
+                    this.sessionId(),
+                    file,
+                    this.cwd
+                )
+                .done($.proxy(function(res) {
+                    if (file.match(/\.(jpg|gif|png)$/)) {
+                        var $img = $.jqElem('img')
+                            .attr('src', 'data:image/jpeg;base64,' + btoa(res));
+                        $commandDiv.append($img);
+                    }
+                    else {
+                        $commandDiv.append(res);
+                    }
+                    this.scroll();
+                }, this))
+                .fail($.proxy(function(res) {
+                    $commandDiv.append($.jqElem('i').text('No such file'));
+                    this.cleanUp($commandDiv);
+                }, this));
+
+                return;
+
+
             }
 
             if (m = command.match(/^search\s+(\S+)\s+(\S+)(?:\s*(\S+)\s+(\S+)(?:\s*(\S+))?)?/)) {
@@ -933,7 +986,8 @@
                     jQuery.proxy(
                         function (err) {
                             var m = err.error.message.replace("\n", "<br>\n");
-                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.error.code + "<br>" + m + "</i>");
+                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.error.code + "<br>" + m + "</i>", 0, 1);
+                            this.cleanUp($commandDiv);
                         },
                         this
                     )
@@ -962,7 +1016,8 @@
                     jQuery.proxy(
                         function (err) {
                             var m = err.error.message.replace("\n", "<br>\n");
-                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.error.code + "<br>" + m + "</i>");
+                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.error.code + "<br>" + m + "</i>", 0, 1);
+                            this.cleanUp($commandDiv);
                         },
                         this
                     ));
@@ -987,8 +1042,9 @@
                     ),
                     jQuery.proxy(
                         function (err) {
-                            var m = err.message.replace("\n", "<br>\n");
-                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.code + "<br>" + m + "</i>");
+                            var m = err.error.message.replace("\n", "<br>\n");
+                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.error.code + "<br>" + m + "</i>", 0, 1);
+                            this.cleanUp($commandDiv);
                         },
                         this
                     )
@@ -1014,8 +1070,9 @@
                     ),
                     jQuery.proxy(
                         function (err) {
-                            var m = err.message.replace("\n", "<br>\n");
-                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.code + "<br>" + m + "</i>");
+                            var m = err.error.message.replace("\n", "<br>\n");
+                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.error.code + "<br>" + m + "</i>", 0, 1);
+                            this.cleanUp($commandDiv);
                         },
                         this
                     )
@@ -1025,27 +1082,32 @@
 
             if (m = command.match(/^rm\s*(.*)/)) {
                 var args = m[1].split(/\s+/)
-                if (args.length != 1) {
+                if (args.length < 1) {
                     this.out_to_div($commandDiv, "Invalid rm syntax.");
                     return;
                 }
-                file = args[0];
-                this.client().remove_files(
-                    this.sessionId(),
-                    this.cwd,
-                    file,
-                    $.proxy(
-                        function () {
-                            this.refreshFileBrowser();
-                        },this
-                    ),
-                    jQuery.proxy(
-                        function (err) {
-                            var m = err.message.replace("\n", "<br>\n");
-                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.code + "<br>" + m + "</i>");
-                        },
-                        this
-                    )
+                $.each(
+                    args,
+                    $.proxy(function (idx, file) {
+                        this.client().remove_files(
+                            this.sessionId(),
+                            this.cwd,
+                            file,
+                            $.proxy(
+                                function () {
+                                    this.refreshFileBrowser();
+                                },this
+                            ),
+                            jQuery.proxy(
+                                function (err) {
+                                    var m = err.error.message.replace("\n", "<br>\n");
+                                    this.out_to_div($commandDiv, "<i>Error received:<br>" + err.error.code + "<br>" + m + "</i>", 0, 1);
+                                    this.cleanUp($commandDiv);
+                                },
+                                this
+                            )
+                        );
+                    }, this)
                 );
                 return;
             }
@@ -1287,7 +1349,7 @@
 
 
                             jQuery.each(
-                                allFiles.sort(this.sortByKey('name')),
+                                allFiles.sort(this.sortByKey('name', 'insensitively')),
                                 jQuery.proxy(
                                     function (idx, val) {
                                         $tbl.append(
@@ -1317,8 +1379,9 @@
                      ),
                      function (err)
                      {
-                         var m = err.message.replace("\n", "<br>\n");
-                         obj.out_to_div($commandDiv, "<i>Error received:<br>" + err.code + "<br>" + m + "</i>");
+                         var m = err.error.message.replace("\n", "<br>\n");
+                         obj.out_to_div($commandDiv, "<i>Error received:<br>" + err.error.code + "<br>" + m + "</i>", 0, 1);
+                        obj.cleanUp($commandDiv);
                      }
                     );
                 return;
@@ -1431,6 +1494,9 @@
                                         this
                                     )
                                 );
+                                if (error.length != 1 || ! error[0].match(/^Output truncated/)) {
+                                    this.cleanUp($commandDiv);
+                                }
                             }
                             else {
                                 this.out_to_div($commandDiv, $('<i></i>').html("<br>Command completed."));
@@ -1438,6 +1504,7 @@
                         }
                         else {
                             this.out_to_div($commandDiv, "Error running command.");
+                            this.cleanUp($commandDiv);
                         }
                         this.scroll();
                     },
