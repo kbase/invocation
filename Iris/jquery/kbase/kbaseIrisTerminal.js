@@ -1026,56 +1026,64 @@
 
             if (m = command.match(/^mkdir\s*(.*)/)) {
                 var args = m[1].split(/\s+/)
-                if (args.length != 1){
+                if (args.length < 1){
                     this.out_to_div($commandDiv, "Invalid mkdir syntax.");
                     return;
                 }
-                dir = args[0];
-                this.client().make_directory(
-                    this.sessionId(),
-                    this.cwd,
-                    dir,
-                    $.proxy(
-                        function () {
-                            this.refreshFileBrowser();
-                        },this
-                    ),
-                    jQuery.proxy(
-                        function (err) {
-                            var m = err.error.message.replace("\n", "<br>\n");
-                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.error.code + "<br>" + m + "</i>", 0, 1);
-                            this.cleanUp($commandDiv);
-                        },
-                        this
-                    )
-                );
+                $.each(
+                    args,
+                    $.proxy(function (idx, dir) {
+                        this.client().make_directory(
+                            this.sessionId(),
+                            this.cwd,
+                            dir,
+                            $.proxy(
+                                function () {
+                                    this.refreshFileBrowser();
+                                },this
+                            ),
+                            jQuery.proxy(
+                                function (err) {
+                                    var m = err.error.message.replace("\n", "<br>\n");
+                                    this.out_to_div($commandDiv, "<i>Error received:<br>" + err.error.code + "<br>" + m + "</i>", 0, 1);
+                                    this.cleanUp($commandDiv);
+                                },
+                                this
+                            )
+                        );
+                    }, this)
+                )
                 return;
             }
 
             if (m = command.match(/^rmdir\s*(.*)/)) {
                 var args = m[1].split(/\s+/)
-                if (args.length != 1) {
+                if (args.length < 1) {
                     this.out_to_div($commandDiv, "Invalid rmdir syntax.");
                     return;
                 }
-                dir = args[0];
-                this.client().remove_directory(
-                    this.sessionId(),
-                    this.cwd,
-                    dir,
-                    $.proxy(
-                        function () {
-                            this.refreshFileBrowser();
-                        },this
-                    ),
-                    jQuery.proxy(
-                        function (err) {
-                            var m = err.error.message.replace("\n", "<br>\n");
-                            this.out_to_div($commandDiv, "<i>Error received:<br>" + err.error.code + "<br>" + m + "</i>", 0, 1);
-                            this.cleanUp($commandDiv);
-                        },
-                        this
-                    )
+                $.each(
+                    args,
+                    $.proxy( function(idx, dir) {
+                        this.client().remove_directory(
+                            this.sessionId(),
+                            this.cwd,
+                            dir,
+                            $.proxy(
+                                function () {
+                                    this.refreshFileBrowser();
+                                },this
+                            ),
+                            jQuery.proxy(
+                                function (err) {
+                                    var m = err.error.message.replace("\n", "<br>\n");
+                                    this.out_to_div($commandDiv, "<i>Error received:<br>" + err.error.code + "<br>" + m + "</i>", 0, 1);
+                                    this.cleanUp($commandDiv);
+                                },
+                                this
+                            )
+                        );
+                    }, this)
                 );
                 return;
             }
