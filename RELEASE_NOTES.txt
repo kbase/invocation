@@ -1,0 +1,25 @@
+OVERVIEW
+-----------------------------------------
+The invocation service allows access to command line scripts running on KBase hardware.
+
+It also deploys the Iris interface, which provides a web gui to do the the same.
+
+VERSION: 0.0.3 (Released 08/XX/2013)
+------------------------------------------
+NEW FEATURES:
+- Added help buttons to iris commands
+- Added support for uploading of massively large files
+- Added file editor
+- Added ability to view images
+- Iris Infrastructure improvements
+- Minor bug fixes
+
+VERSION: 0.0.2 (Released 02/30/2012)
+------------------------------------------
+NEW FEATURES:
+- New Iris UI
+
+VERSION: 0.0.1 (Released 07/01/2012)
+------------------------------------------
+NEW FEATURES:
+-Initial public release
