@@ -13,8 +13,8 @@
             stalledUploads : {},
             uploadDir : '.uploads',
             concurrentUploads : 4,
-            singleFileSize  : 3000000,
-            chunkSize       :  1000000,
+            singleFileSize  : 15000000,
+            chunkSize       :  5000000,
             title : 'File Browser',
             'root' : '/',
             types : {
@@ -120,17 +120,6 @@
             this.listDirectory(this.options.root, $.proxy(function (results) {
                 this.appendContent(results, this.data('ul-nav'))
             }, this));
-
-            this.client().make_directory(
-                this.sessionId(),
-                '/',
-                this.options.uploadDir
-            )
-            .always(
-                $.proxy( function(res) {
-                    this.checkStalledUploads();
-                }, this)
-            );
 
             return this;
 
@@ -719,6 +708,8 @@
 
                     var concatenatedFileSize = fileSizes['upload'] || 0;
                     var newDoneChunks = [];
+
+                    chunkMap.doneChunks = chunkMap.doneChunks.sort(this.sortByKey('name'));
 
                     $.each(
                         chunkMap.doneChunks,

@@ -772,42 +772,47 @@
             }
 
             if (command == 'history') {
-                var $tbl = $('<table></table>');
+
+                var data = {
+                    structure : {
+                        header      : [],
+                        rows        : [],
+                    },
+                    sortable    : true,
+                };
+
                 jQuery.each(
                     this.commandHistory,
                     jQuery.proxy(
                         function (idx, val) {
-                            $tbl.append(
-                                $('<tr></tr>')
-                                    .append(
-                                        $('<td></td>')
-                                            .text(idx)
-                                    )
-                                    .append(
-                                        $('<td></td>')
-                                            .css('padding-left', '10px')
-                                            .append(
-                                                $('<a></a>')
-                                                    .attr('href', '#')
-                                                    .text(val)
-                                                    .bind('click',
-                                                        jQuery.proxy(
-                                                            function (evt) {
-                                                                evt.preventDefault();
-                                                                this.appendInput(val + ' ');
-                                                            },
-                                                            this
-                                                        )
-                                                    )
-                                            )
-                                    )
-                                );
+                            data.structure.rows.push(
+                                [
+                                    idx,
+                                    {
+                                        value : $('<a></a>')
+                                            .attr('href', '#')
+                                            .text(val)
+                                            .bind('click',
+                                                jQuery.proxy(
+                                                    function (evt) {
+                                                        evt.preventDefault();
+                                                        this.appendInput(val + ' ');
+                                                    },
+                                                    this
+                                                )
+                                            ),
+                                        style : 'padding-left : 10px',
+                                    }
+                                ]
+                            );
                         },
                         this
                     )
                 );
 
-                this.out_to_div($commandDiv, $tbl);
+                var $tbl = $.jqElem('div').kbaseTable(data);
+
+                this.out_to_div($commandDiv, $tbl.$elem);
                 return;
             }
             else if (m = command.match(/^!(\d+)/)) {
@@ -1196,42 +1201,41 @@
             }
 
             if (command == 'commands') {
+
                 this.client().valid_commands(
                     jQuery.proxy(
                         function (cmds) {
-                            var $tbl = $('<table></table>');
+
+                            var data = {
+                                structure : {
+                                    header      : [],
+                                    rows        : [],
+                                },
+                                sortable    : true,
+                                hover       : false,
+                            };
+
                             jQuery.each(
                                 cmds,
                                 function (idx, group) {
-                                    $tbl.append(
-                                        $('<tr></tr>')
-                                            .append(
-                                                $('<th></th>')
-                                                    .attr('colspan', 2)
-                                                    .html(group.title)
-                                                )
-                                        );
+                                    data.structure.rows.push( [ { value : group.title, colspan : 2, style : 'font-weight : bold; text-align : center' } ] );
 
                                     for (var ri = 0; ri < group.items.length; ri += 2) {
-                                        $tbl.append(
-                                            $('<tr></tr>')
-                                                .append(
-                                                    $('<td></td>')
-                                                        .html(group.items[ri].cmd)
-                                                    )
-                                                .append(
-                                                    $('<td></td>')
-                                                        .html(
-                                                            group.items[ri + 1] != undefined
-                                                                ? group.items[ri + 1].cmd
-                                                                : ''
-                                                        )
-                                                    )
-                                            );
+                                        data.structure.rows.push(
+                                            [
+                                                group.items[ri].cmd,
+                                                group.items[ri + 1] != undefined
+                                                    ? group.items[ri + 1].cmd
+                                                    : ''
+                                            ]
+                                        );
                                     }
                                 }
                             );
-                            $commandDiv.append($tbl);
+
+                            var $tbl = $.jqElem('div').kbaseTable(data);
+
+                            $commandDiv.append($tbl.$elem);
                             this.scroll();
 
                         },
@@ -1244,34 +1248,45 @@
             if (m = command.match(/^questions\s*(\S+)?/)) {
 
                 var questions = this.options.grammar.allQuestions(m[1]);
-                var $tbl = $('<table></table>');
+
+                var data = {
+                    structure : {
+                        header      : [],
+                        rows        : [],
+                    },
+                    sortable    : true,
+                };
+
                 $.each(
                     questions,
-                    $.proxy(function (idx, question) {
-                        $tbl.append(
-                            $('<tr></tr>')
-                                .append(
-                                    $('<td></td>')
-                                        .append(
-                                            $('<a></a>')
-                                                .attr('href', '#')
-                                                .text(question)
-                                                .bind('click',
-                                                    jQuery.proxy(
-                                                        function (evt) {
-                                                            evt.preventDefault();
-                                                            this.input_box.val(question);
-                                                            this.selectNextInputVariable();
-                                                        },
-                                                        this
-                                                    )
-                                                )
+                    $.proxy( function (idx, question) {
+                        data.structure.rows.push(
+                            [
+                                {
+                                    value :
+                                        $.jqElem('a')
+                                        .attr('href', '#')
+                                        .text(question)
+                                        .bind('click',
+                                            jQuery.proxy(
+                                                function (evt) {
+                                                    evt.preventDefault();
+                                                    this.input_box.val(question);
+                                                    this.selectNextInputVariable();
+                                                },
+                                                this
+                                            )
                                         )
-                                    )
-                            );
+                                }
+                            ]
+                        );
+
                     }, this)
                 );
-                $commandDiv.append($tbl);
+
+                var $tbl = $.jqElem('div').kbaseTable(data);
+
+                $commandDiv.append($tbl.$elem);
                 this.scroll();
 
                 return;
@@ -1303,9 +1318,6 @@
                             var files = filelist[1];
 
                             var allFiles = [];
-
-                            var $tbl = $('<table></table>')
-                                //.attr('border', 1);
 
                             $.each(
                                 dirs,
@@ -1355,32 +1367,31 @@
                                 }, this)
                             );
 
+                            var data = {
+                                structure : {
+                                    header      : [],
+                                    rows        : [],
+                                },
+                                sortable    : true,
+                                bordered    : false
+                            };
 
-                            jQuery.each(
+                            $.each(
                                 allFiles.sort(this.sortByKey('name', 'insensitively')),
-                                jQuery.proxy(
-                                    function (idx, val) {
-                                        $tbl.append(
-                                            $('<tr></tr>')
-                                                .append(
-                                                    $('<td></td>')
-                                                        .text(val.size)
-                                                    )
-                                                .append(
-                                                    $('<td></td>')
-                                                        .html(val.mod_date)
-                                                    )
-                                                .append(
-                                                    $('<td></td>')
-                                                        .append(val.nameTD)
-                                                )
-                                        );
-                                    },
-                                    this
-                                )
+                                $.proxy( function (idx, val) {
+                                    data.structure.rows.push(
+                                        [
+                                            val.size,
+                                            val.mod_date,
+                                            { value : val.nameTD }
+                                        ]
+                                    );
+                                }, this)
                             );
 
-                            $commandDiv.append($tbl);
+                            var $tbl = $.jqElem('div').kbaseTable(data);
+
+                            $commandDiv.append($tbl.$elem);
                             this.scroll();
                          },
                          this
