@@ -281,10 +281,6 @@
             );
         },
 
-//        set_session: function(session) {
-//            this.sessionId() = session;
-//        },
-
         resize_contents: function($container) {
             //	var newx = window.getSize().y - document.id(footer).getSize().y - 35;
             //	container.style.height = newx;
