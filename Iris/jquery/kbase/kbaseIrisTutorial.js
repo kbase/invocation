@@ -23,18 +23,22 @@
             var output = [];
             for (key in this.repos) {
 
-                var url = this.format_tutorial_url(
-                    this.doc_format_string,
-                    key,
-                    this.repos[key].file
-                );
+                for (var idx = 0; idx < this.repos[key].length; idx++) {
+                    var tutorial = this.repos[key][idx];
 
-                output.push(
-                    {
-                        title : this.repos[key].title,
-                        url : url,
-                    }
-                );
+                    var url = this.format_tutorial_url(
+                        this.doc_format_string,
+                        key,
+                        tutorial.file
+                    );
+
+                    output.push(
+                        {
+                            title : tutorial.title,
+                            url : url,
+                        }
+                    );
+                }
             }
 
             return output.sort(this.sortByKey('title'));
@@ -71,7 +75,7 @@
             this.pages = [];
 
             var token = undefined;
-
+console.log("FETCHES : " +url);
             $.ajax(
                 {
     		        async : true,
