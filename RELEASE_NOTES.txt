@@ -9,9 +9,13 @@ VERSION: 0.0.3 (Released 08/XX/2013)
 NEW FEATURES:
 - Added help buttons to iris commands
 - Added support for uploading of massively large files
+- Added real download support
 - Added file editor
 - Added ability to view images
 - Iris Infrastructure improvements
+- Added support for variables in Iris
+- Added support for natural language questions in Iris
+- Improved Iris command search functionality
 - Minor bug fixes
 
 VERSION: 0.0.2 (Released 02/30/2012)

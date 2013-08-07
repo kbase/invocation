@@ -216,11 +216,12 @@
             this.terminal = this.data('terminal');
             this.input_box = this.data('input_box');
 
-            this.out("Welcome to the interactive KBase terminal!<br/>\n"
-                    +"Please click the 'Sign in' button in the upper right to get started.<br/>\n"
-                    +"Type <b>commands</b> for a list of commands.<br/>\n"
-                    +"For usage information about a specific command, type the command name with -h or --help after it.<br/>\n"
-                    +"Please visit <a href = 'http://kbase.us/for-users/tutorials/navigating-iris/' target = '_blank'>http://kbase.us/for-users/tutorials/navigating-iris/</a> or type <b>tutorial</b> for an IRIS tutorial.",
+            this.out("Welcome to the interactive KBase terminal!<br>\n"
+                    +"Please click the 'Sign in' button in the upper right to get started.<br>\n"
+                    +"Type <b>commands</b> for a list of commands.<br>\n"
+                    +"For usage information about a specific command, type the command name with -h or --help after it.<br>\n"
+                    +"Please visit <a href = 'http://kbase.us/for-users/tutorials/navigating-iris/' target = '_blank'>http://kbase.us/for-users/tutorials/navigating-iris/</a> or type <b>tutorial</b> for an IRIS tutorial.<br>\n"
+                    +"To find out what's new, type <b>whatsnew</b><br>\n",
                     0,1);
             this.out_line();
 
@@ -871,6 +872,30 @@
                 return;
             }
 
+            if (m = command.match(/^whatsnew/)) {
+            console.log("gets new");
+                $commandDiv.css('white-space', '');
+                $.ajax(
+                    {
+                        async : true,
+                        dataType: "text",
+                        url: "whatsnew.html",
+                        crossDomain : true,
+                        success: $.proxy(function (data, status, xhr) {
+                        console.log("GOT NEW");
+                            $commandDiv.append(data);
+                            this.scroll();
+                        }, this),
+                        error : $.proxy(function(xhr, textStatus, errorThrown) {
+                            $commandDiv.append(xhr.responseText);
+                            this.scroll();
+                        }, this),
+                        type: 'GET',
+                    }
+                );
+                return;
+            }
+
             if (m = command.match(/^view\s+(\S+)$/)) {
                 var file = m[1];
 
@@ -944,7 +969,7 @@
                                         .append($('<b></b>').html(data.found))
                                         .append(" records found.")
                                 );
-                                this.out_to_div($commandDiv, $('<br/>'));
+                                this.out_to_div($commandDiv, $('<br>'));
                                 this.out_to_div($commandDiv, this.search_json_to_table(data.body, filter));
                                 var res = this.search_json_to_table(data.body, filter);
 
@@ -1141,6 +1166,7 @@
 
                 if (list.length == 0) {
                     this.out_to_div($commandDiv, "Could not load tutorials");
+                    this.out_to_div($commandDiv, "Type <i>tutorial list</i> to see available tutorials.");
                     return;
                 }
 
