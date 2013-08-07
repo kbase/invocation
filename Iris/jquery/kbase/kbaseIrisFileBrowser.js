@@ -855,7 +855,7 @@
                                 controls : [
                                     {
                                         'icon' : 'icon-refresh',
-                                        'tooltip' : 'Resume',
+                                        //'tooltip' : 'Resume',
                                         callback : function(e, $fb) {
                                             $fb.data('resumed_chunkMap', chunkMap);
                                             $fb.data('fileInput').trigger('click');
@@ -864,7 +864,7 @@
                                     },
                                     {
                                         'icon' : 'icon-ban-circle',
-                                        'tooltip' : 'Cancel',
+                                        //'tooltip' : 'Cancel',
                                         callback : function(e, $fb) {
 
                                             $fb.client().remove_directory(

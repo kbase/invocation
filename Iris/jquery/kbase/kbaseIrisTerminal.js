@@ -585,7 +585,7 @@
                 {
                     controls : [
                         {
-                            icon : 'icon-download-alt',
+                            icon : 'icon-eye-open',
                             callback :
                                 function (e) {
                                     var win = window.open();
@@ -872,8 +872,13 @@
                 return;
             }
 
+            if (m = command.match(/^#\s*(.+)/)) {
+                $commandDiv.prev().remove();
+                this.out_to_div($commandDiv, $('<i></i>').text(m[1]));
+                return;
+            }
+
             if (m = command.match(/^whatsnew/)) {
-            console.log("gets new");
                 $commandDiv.css('white-space', '');
                 $.ajax(
                     {
@@ -882,7 +887,6 @@
                         url: "whatsnew.html",
                         crossDomain : true,
                         success: $.proxy(function (data, status, xhr) {
-                        console.log("GOT NEW");
                             $commandDiv.append(data);
                             this.scroll();
                         }, this),
@@ -1447,18 +1451,42 @@
                 }
             }
 
-            command = command.replace(/\\\n/g, " ");
-            command = command.replace(/\n/g, " ");
+            //command = command.replace(/\\\n/g, " ");
+            //command = command.replace(/\n/g, " ");
 
             var pid = this.uuid();
+
+            var $pe = $('<div></div>').text(command);
+            $pe.kbaseButtonControls(
+                {
+                    onMouseover : true,
+                    context : this,
+                    controls : [
+                        {
+                            'icon' : 'icon-ban-circle',
+                            //'tooltip' : 'Cancel',
+                            callback : function(e, $term) {
+                                $commandDiv.prev().remove();
+                                $commandDiv.next().remove();
+                                $commandDiv.remove();
+
+                                $term.trigger('removeIrisProcess', pid);
+                            }
+                        },
+                    ]
+
+                }
+            );
 
             this.trigger(
                 'updateIrisProcess',
                 {
                     pid : pid,
-                    msg : command
+                    content : $pe
                 }
             );
+
+            //var commands = command.split(/[;\r\n]/) {
 
             this.client().run_pipeline(
                 this.sessionId(),
