@@ -3,6 +3,8 @@ use Bio::KBase::InvocationService::InvocationServiceImpl;
 
 use Bio::KBase::InvocationService::Service;
 
+use Bio::KBase::AuthToken;
+
 use Data::Dumper;
 use File::Path qw(make_path);
 use Plack::Request;
@@ -34,6 +36,7 @@ my $server = Bio::KBase::InvocationService::Service->new(instance_dispatch => { 
 				allow_get => 0,
 			       );
 
+
 my $dispatch = URI::Dispatch->new();
 $dispatch->add('/', 'handle_service');
 $dispatch->add('/invoke', 'handle_invoke');
@@ -50,7 +53,19 @@ $dispatch->add('/download/#*', 'handle_download');
 	my($req, $args) = @_;
 	my $session = $req->param("session_id");
 
-	my $us = Bio::KBase::InvocationService::UserSession->new($obj, $session, undef);
+    my $token = $server->_plack_req->header("Authorization");
+	my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1);
+	my $valid = $auth_token->validate();
+
+    my $ctx = undef;
+    if ($valid) {
+        $ctx = Bio::KBase::InvocationService::ServiceContext->new(client_ip => $server->_plack_req->address);
+	    $ctx->authenticated(1);
+	    $ctx->user_id($auth_token->user_id);
+	    $ctx->token( $token);
+    }
+
+	my $us = Bio::KBase::InvocationService::UserSession->new($obj, $session, $ctx);
 
 	my $dir = $us->_session_dir();
 
@@ -68,7 +83,7 @@ $dispatch->add('/download/#*', 'handle_download');
 	{
 	    return [404, [], ["File not found\n"]];
 	}
-	
+
 	my $path = "$dir/$file";
 	my $fh;
 	if (!open($fh, "<", $path))
@@ -76,7 +91,17 @@ $dispatch->add('/download/#*', 'handle_download');
 	    return [404, [], ["File not found\n"]];
 	}
 
-	return [200, [], $fh];
+    (my $fileName = $file) =~ s!^(?:.*)/([^/]+)$!$1!g;
+
+	return [
+		200,
+		[
+			'Content-type' => 'application/force-download',
+			'Content-Disposition' => "attachment; filename=\"$fileName\")",
+			'Content-Length' => -s $path,
+		],
+		$fh
+	];
     }
 }
 
@@ -109,7 +134,7 @@ $dispatch->add('/download/#*', 'handle_download');
 	{
 	    return [404, \@origin_hdr, ["File not found\n"]];
 	}
-	
+
 	my $path = "$dir/$file";
 	my $fh;
 	if (!open($fh, ">", $path))
@@ -160,13 +185,13 @@ $dispatch->add('/download/#*', 'handle_download');
 	# The invoke REST interface expects to get a 3-line header:
 	#
 	#   session-id
-	#   pipeline   
+	#   pipeline
 	#   cwd
 	#
 	# followed by the pipeline input. It emits lines of output
 	# which may have stdout and stderr interleaved; the lines are
 	# prefixed by the characters 'O' for stdout and 'E' for stderr.
-	# 
+	#
     }
 }
 
@@ -178,6 +203,7 @@ $dispatch->add('/download/#*', 'handle_download');
     sub post
     {
 	my($req) = @_;
+
 	my $resp = $server->handle_input($req->env);
 	my($code, $hdrs, $body) = @$resp;
 #	if ($code =~ /^5/)
@@ -187,7 +213,6 @@ $dispatch->add('/download/#*', 'handle_download');
 		push(@$hdrs, 'Access-Control-Allow-Origin', $req->env->{HTTP_ORIGIN});
 	    }
 	}
-			print Dumper($resp);
 	return $resp;
     }
     sub options

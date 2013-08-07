@@ -31,7 +31,7 @@ use File::Path;
 use File::Basename;
 use File::Copy;
 
-my @valid_shell_commands = qw(sort grep cut cat head tail date echo wc diff join uniq);
+my @valid_shell_commands = qw(sort grep cut cat head tail date echo wc diff join uniq tr);
 my %valid_shell_commands = map { $_ => 1 } @valid_shell_commands;
 
 __PACKAGE__->mk_accessors(qw(impl session_id ctx));
@@ -122,7 +122,7 @@ sub _expand_filename
     {
 	return $self->validate_path($cwd);
     }
-    elsif ($file =~ m!^(/?)([\w.-]+)(\/[\w.-]+)*$!) 
+    elsif ($file =~ m!^(/?)([\w:.-]*)(\/[\w:.-]*)*$!) 
     {
 	if ($1)
 	{
@@ -398,7 +398,7 @@ sub put_file
     #
     # Filenames can't have any special characters or start with a /.
     #
-    if ($filename !~ /^([\w.-]+)(\/[\w.-]+)*$/) {
+    if ($filename !~ /^([\w:.-]*)(\/[\w:.-]*)*$/)
     {
 	die "Invalid filename";
     }
