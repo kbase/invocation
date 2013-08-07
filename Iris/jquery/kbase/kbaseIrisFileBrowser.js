@@ -27,7 +27,7 @@
                                 $fb.deleteFile($(this).data('id'), 'file');
                             },
                             id : 'removeButton',
-                            tooltip : 'delete this file',
+                            //tooltip : 'delete this file',
                         },
                         {
                             icon : 'icon-download-alt',
@@ -35,7 +35,7 @@
                                 $fb.openFile($(this).data('id'));
                             },
                             id : 'viewButton',
-                            'tooltip' : 'download this file',
+                            //'tooltip' : 'download this file',
                         },
                         {
                             icon : 'icon-pencil',
@@ -45,7 +45,7 @@
                                 }
                             },
                             id : 'editButton',
-                            tooltip : 'edit this file',
+                            //tooltip : 'edit this file',
                             condition : function (control, $fb) {
                                 var size = this.$elem.data('data').size;
                                 if (size > $fb.singleFileSize() ) {
@@ -66,7 +66,7 @@
                                 }
                             },
                             id : 'addButton',
-                            'tooltip' : 'add this file to terminal input',
+                            //'tooltip' : 'add this file to terminal input',
                         },
                     ],
                 },
@@ -80,7 +80,7 @@
                     controls : [
                         {
                             icon : 'icon-minus',
-                            'tooltip' : 'delete this folder',
+                            //'tooltip' : 'delete this folder',
                             callback : function(e, $fb) {
                                 $fb.deleteFile($(this).data('id'), 'folder');
                             },
@@ -88,7 +88,7 @@
                         },
                         {
                             icon : 'icon-plus',
-                            'tooltip' : 'add a subdirectory',
+                            //'tooltip' : 'add a subdirectory',
                             callback : function(e, $fb) {
                                 $fb.addDirectory($(this).data('id'));
                             },
@@ -96,7 +96,7 @@
                         },
                         {
                             icon : 'icon-arrow-up',
-                            'tooltip' : 'upload a file',
+                            //'tooltip' : 'upload a file',
                             callback : function(e, $fb) {
                                 $fb.data('active_directory', $(this).data('id'));
                                 $fb.data('fileInput').trigger('click');
@@ -209,7 +209,7 @@
                     controls : [
                         {
                             'icon' : 'icon-plus',
-                            'tooltip' : 'add directory',
+                            //'tooltip' : 'add directory',
                             callback : function(e, $fb) {
                                 $fb.addDirectory('/');
                             },
@@ -217,7 +217,7 @@
                         },
                         {
                             'icon' : 'icon-arrow-up',
-                            'tooltip' : 'upload a file',
+                            //'tooltip' : 'upload a file',
                             callback : function(e, $fb) {
                                 $fb.data('active_directory', $(this).data('id'));
                                 $fb.data('fileInput').trigger('click');
