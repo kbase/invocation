@@ -8,7 +8,7 @@
 
     $.kbWidget("kbaseIrisFileBrowser", 'kbaseDataBrowser', {
         version: "1.0.0",
-        _accessors : ['client', 'addFileCallback', 'editFileCallback', 'singleFileSize', 'chunkSize', 'stalledUploads'],
+        _accessors : ['invocationURL', 'client', 'addFileCallback', 'editFileCallback', 'singleFileSize', 'chunkSize', 'stalledUploads'],
         options: {
             stalledUploads : {},
             uploadDir : '.uploads',
@@ -30,12 +30,12 @@
                             tooltip : 'delete this file',
                         },
                         {
-                            icon : 'icon-eye-open',
+                            icon : 'icon-download-alt',
                             callback : function(e, $fb) {
                                 $fb.openFile($(this).data('id'));
                             },
                             id : 'viewButton',
-                            'tooltip' : 'view this file',
+                            'tooltip' : 'download this file',
                         },
                         {
                             icon : 'icon-pencil',
@@ -554,7 +554,6 @@
                             }
 
                             var callback = $.proxy(function (res) {
-
                                 $.each(
                                     chunkMap.chunks,
                                     function (idx, chunk) {
@@ -576,13 +575,13 @@
 
                             ).always(
                                 $.proxy(function() {
-
                                     this.client().put_file(
                                         this.sessionId(),
                                         'chunkMap',
                                         JSON.stringify(chunkMap, undefined, 2),
                                         '/' + chunkMap.fullUploadPath
                                     ).done(callback)
+                                    .fail($.proxy(function (res) {this.dbg(res)}, this))
                                 }, this)
                             );
 
@@ -993,41 +992,9 @@
 
         openFile : function(file) {
 
-            // can't open the window in trhe callback!
-            var win = window.open();
-            win.document.open();
+            var url = this.options.invocationURL + "/download/" + file + "?session_id=" + this.sessionId();
+            window.location.href = url;
 
-            this.client().get_file(
-                this.sessionId(),
-                file,
-                '/',
-                $.proxy(
-                    function (res) {
-
-                        try {
-                            var obj = JSON.parse(res);
-                            res = JSON.stringify(obj, undefined, 2);
-                        }
-                        catch(e) {
-                            this.dbg("FAILURE");
-                            this.dbg(e);
-                        }
-
-                        win.document.write(
-                            $('<div></div>').append(
-                                $('<div></div>')
-                                    .css('white-space', 'pre')
-                                    .append(res)
-                            )
-                            .html()
-                        );
-                        win.document.close();
-
-                    },
-                    this
-                ),
-                function (err) { this.dbg("FILE FAILURE"); this.dbg(err) }
-            );
         },
 
         deleteFile : function(file, type) {

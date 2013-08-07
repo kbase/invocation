@@ -1360,6 +1360,7 @@
                                             url     : this.options.invocationURL + "/download/" + val.full_path + "?session_id=" + this.sessionId()
                                         }
                                     );
+
                                 }, this)
                             );
 
