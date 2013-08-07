@@ -41,7 +41,7 @@
                 }
             }
 
-            return output.sort(this.sortByKey('title'));
+            return output.sort(this.sortByKey('title', 'insensitively'));
         },
 
         init : function (options) {
@@ -75,7 +75,7 @@
             this.pages = [];
 
             var token = undefined;
-console.log("FETCHES : " +url);
+
             $.ajax(
                 {
     		        async : true,
