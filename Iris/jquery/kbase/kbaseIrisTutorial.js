@@ -8,7 +8,7 @@
     $.kbWidget("kbaseIrisTutorial", 'kbaseWidget', {
         version: "1.0.0",
         options: {
-            configURL : 'http://www.prototypesite.net/kbase/tutorials.cfg',
+            configURL : 'http://www.kbase.us/docs/tutorials.cfg',
         },
 
         format_tutorial_url : function (doc_format_string, repo, filespec) {
