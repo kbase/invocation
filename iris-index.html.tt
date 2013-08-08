@@ -24,6 +24,7 @@
         <script src = './jquery/kbase/kbaseLogin.js'></script>
         <script src = './jquery/kbase/kbaseAccordion.js'></script>
         <script src = './jquery/kbase/kbaseTabs.js'></script>
+        <script src = './jquery/kbase/kbaseTable.js'></script>
         <script src = './jquery/kbase/kbaseIrisCommands.js'></script>
         <script src = './jquery/kbase/kbaseDataBrowser.js'></script>
         <script src = './jquery/kbase/kbaseIrisFileBrowser.js'></script>
@@ -84,6 +85,7 @@
                     $('#command-list').kbaseIrisCommands(
                         {
                             client          : $term.client(),
+                            terminal        : $term,
                             englishCommands : false,
                             overflow        : true,
                             link            : function (evt) {
@@ -100,6 +102,7 @@
                     var $fb = $('#file-browser').kbaseIrisFileBrowser (
                         {
                             client : $term.client(),
+                            invocationURL   : $term.options.invocationURL,
                             addFileCallback : function (file, $fb) {
                                 $term.appendInput(file + ' ');
                             },
@@ -137,22 +140,6 @@
                             },
                         }
                     );
-
-                    if (getParameterByName('ws') == 1) {
-                        var $wb = $('#ws-browser').kbaseWorkspaceBrowser (
-                            {
-                                client : $term.client,
-                                $loginbox : $term.$loginbox,
-                                externalControls : true,
-                                processList : $plist,
-                                addFileCallback : function (file) {
-                                    $('#terminal').kbaseIrisTerminal('appendInput', file + ' ');
-                                },
-                                wsClient : new workspaceService('http://bio-data-1.mcs.anl.gov/services/fba_gapfill')
-                            }
-                        );
-                        $term.addFileBrowser($wb);
-                    }
 
                     $term.addFileBrowser($fb);
                     $term.data('processList', $plist);
@@ -219,8 +206,9 @@
             </div>
         </div>
 
-        <br clear = 'all'/>
-
+        <br clear = 'all'>
+        <br clear = 'all'>
+        <br clear = 'all'>
 
         <div id="pgfooter">Copyright &copy; 2012-2013 DOE <a href = 'http://www.kbase.us/'>KBase</a></div>
 
