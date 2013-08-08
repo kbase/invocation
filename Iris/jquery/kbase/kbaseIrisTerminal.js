@@ -752,6 +752,27 @@
                 return;
             }
 
+            if (m = command.match(/^whatsnew/)) {
+                $commandDiv.css('white-space', '');
+                $.ajax(
+                    {
+                        async : true,
+                        dataType: "text",
+                        url: "whatsnew.html",
+                        crossDomain : true,
+                        success: $.proxy(function (data, status, xhr) {
+                            $commandDiv.append(data);
+                            this.scroll();
+                        }, this),
+                        error : $.proxy(function(xhr, textStatus, errorThrown) {
+                            $commandDiv.append(xhr.responseText);
+                            this.scroll();
+                        }, this),
+                        type: 'GET',
+                    }
+                );
+                return;
+            }
 
             if (! this.sessionId()) {
                 this.out_to_div($commandDiv, "You are not logged in.");
@@ -875,28 +896,6 @@
             if (m = command.match(/^#\s*(.+)/)) {
                 $commandDiv.prev().remove();
                 this.out_to_div($commandDiv, $('<i></i>').text(m[1]));
-                return;
-            }
-
-            if (m = command.match(/^whatsnew/)) {
-                $commandDiv.css('white-space', '');
-                $.ajax(
-                    {
-                        async : true,
-                        dataType: "text",
-                        url: "whatsnew.html",
-                        crossDomain : true,
-                        success: $.proxy(function (data, status, xhr) {
-                            $commandDiv.append(data);
-                            this.scroll();
-                        }, this),
-                        error : $.proxy(function(xhr, textStatus, errorThrown) {
-                            $commandDiv.append(xhr.responseText);
-                            this.scroll();
-                        }, this),
-                        type: 'GET',
-                    }
-                );
                 return;
             }
 
