@@ -375,7 +375,7 @@
 		            }, this),
             		error: $.proxy(function(xhr, textStatus, errorThrown) {
             		    this.dbg(textStatus);
-                        throw xhr;
+                        //throw xhr;
 		            }, this),
                     type: 'GET',
     	        }

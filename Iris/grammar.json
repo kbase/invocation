@@ -1,0 +1,1219 @@
+{
+   "_root" : {
+      "children" : {
+         "show" : {
+            "insensitive" : 1,
+            "children" : {
+               "the" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "dna" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "sequence" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "of" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "fid" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "thrb" : {
+                                                "execute" : "echo 'kb|g.0.peg.3016' | fids_to_dna_sequences -fasta=0",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "reactions" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "that" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "connect" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "to" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "compound" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "$compound" : {
+                                                "execute" : "echo '$compound' | get_relationship_ParticipatesAs -to id | get_relationship_IsInvolvedIn -to id,name  | cut -f 3,4 | sort -u",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         },
+         "what" : {
+            "insensitive" : 1,
+            "children" : {
+               "roles" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "relate" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "to" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "reaction" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "$reaction" : {
+                                          "execute" : "echo '$reaction' | get_relationship_IsStepOf -to id | get_relationship_IsTriggeredBy -to id",
+                                          "insensitive" : 1
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     },
+                     "occur" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "in" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "subsystem" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "$subsystem" : {
+                                          "execute" : "echo '$subsystem' | get_relationship_Includes -to id | cut -f 2",
+                                          "insensitive" : 1
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     },
+                     "are" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "in" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "subsystem" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "$subsystem" : {
+                                          "execute" : "echo '$subsystem' | get_relationship_Includes -to id | cut -f 2",
+                                          "insensitive" : 1
+                                       }
+                                    }
+                                 }
+                              }
+                           },
+                           "used" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "in" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "models" : {
+                                          "execute" : "echo 'models' | get_relationship_Includes -to id | cut -f 2",
+                                          "insensitive" : 1
+                                       },
+                                       "subsystem" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "$subsystem" : {
+                                                "execute" : "echo '$subsystem' | get_relationship_Includes -to id | cut -f 2",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "otus" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "exist" : {
+                        "execute" : "all_entities_OTU | sort -n | otus_to_representatives | get_entity_Genome -f 'scientific_name'",
+                        "insensitive" : 1
+                     }
+                  }
+               },
+               "features" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "in" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "$feature" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "implement" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "role" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "$role" : {
+                                                "execute" : "echo '$feature' | get_relationship_IsOwnerOf -to id,function | grep '$role' | cut -f2,3",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "subsystems" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "include" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "role" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "$role" : {
+                                    "execute" : "echo '$role' | get_relationship_IsIncludedIn -to id | sort -u",
+                                    "insensitive" : 1
+                                 }
+                              }
+                           }
+                        }
+                     },
+                     "are" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "in" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "genome" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "$genome" : {
+                                          "execute" : "echo '$genome' | genomes_to_subsystems",
+                                          "insensitive" : 1
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "genomes" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "are" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "in" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "taxonomic" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "group" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "$group" : {
+                                                "execute" : "all_entities_Genome | genomes_to_taxonomies 2> /dev/null | grep ' $group:'",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 },
+                                 "subsystem" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "$subsystem" : {
+                                          "execute" : "echo $subsystem | subsystems_to_genomes | get_entity_Genome -f scientific_name",
+                                          "insensitive" : 1
+                                       }
+                                    }
+                                 },
+                                 "otu" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "$otu" : {
+                                          "execute" : "echo '$otu' | get_relationship_IsCollectionOf -to 'id,scientific_name'",
+                                          "insensitive" : 1
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "compounds" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "are" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "considered" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "part" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "of" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "media" : {
+                                                "insensitive" : 1,
+                                                "children" : {
+                                                   "$media" : {
+                                                      "execute" : "echo '$media' | get_relationship_HasPresenceOf -to id,label",
+                                                      "insensitive" : 1
+                                                   }
+                                                }
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           },
+                           "connected" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "to" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "model" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "$model" : {
+                                                "execute" : "echo '$model' | get_relationship_IsDividedInto -to id  | get_relationship_IsInstanceOf -to id  | get_relationship_IsParticipatingAt -to id | get_relationship_IsParticipationOf -to id",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "fids" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "in" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "k12" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "have" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "attached" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "publications" : {
+                                                "execute" : "echo 'kb|g.0' | genomes_to_fids | fids_to_literature | cut -f2,3,4,5",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     },
+                     "are" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "in" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "family" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "$family" : {
+                                          "execute" : "echo '$family' | protein_families_to_fids | fids_to_functions",
+                                          "insensitive" : 1
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "is" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "the" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "taxonomic" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "group" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "id" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "of" : {
+                                                "insensitive" : 1,
+                                                "children" : {
+                                                   "$group_id" : {
+                                                      "execute" : "query_entity_TaxonomicGrouping -is 'scientific_name,$group_id' -f scientific_name",
+                                                      "insensitive" : 1
+                                                   }
+                                                }
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           },
+                           "source" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "of" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "genome" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "$genome" : {
+                                                "execute" : "echo '$genome' | get_relationship_WasSubmittedBy -from source_id -to id",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           },
+                           "location" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "of" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "feature" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "thrb" : {
+                                                "execute" : "echo 'kb|g.0.peg.3016' | fids_to_locations",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           },
+                           "function" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "of" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "feature" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "$feature_id" : {
+                                                "execute" : "echo '$feature_id' | get_entity_Feature -f function",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       },
+                                       "family" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "$family" : {
+                                                "execute" : "echo $family | get_entity_Family -f family_function",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           },
+                           "name" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "of" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "genome" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "$genome" : {
+                                                "execute" : "echo '$genome' | get_entity_Genome -f scientific_name",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           },
+                           "kbase" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "id" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "of" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "seed" : {
+                                                "insensitive" : 1,
+                                                "children" : {
+                                                   "feature" : {
+                                                      "insensitive" : 1,
+                                                      "children" : {
+                                                         "$feature" : {
+                                                            "execute" : "query_entity_Feature -is 'source_id,$feature' | get_relationship_IsOwnedBy -to id | get_relationship_WasSubmittedBy -to id | grep -i 'seed' | cut -f1",
+                                                            "insensitive" : 1
+                                                         }
+                                                      }
+                                                   },
+                                                   "genome" : {
+                                                      "insensitive" : 1,
+                                                      "children" : {
+                                                         "$genome" : {
+                                                            "execute" : "query_entity_Genome -is 'source_id,$genome' | get_relationship_WasSubmittedBy -to id | grep -i 'seed' | cut -f1",
+                                                            "insensitive" : 1
+                                                         }
+                                                      }
+                                                   }
+                                                }
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           },
+                           "taxonomy" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "of" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "genome" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "$genome" : {
+                                                "execute" : "echo '$genome' | genomes_to_taxonomies",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           },
+                           "size" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "of" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "genome" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "$genome" : {
+                                                "execute" : "echo '$genome' | get_entity_Genome -f dna_size",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "annotations" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "are" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "known" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "for" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "protein" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "sequence" : {
+                                                "insensitive" : 1,
+                                                "children" : {
+                                                   "$sequence" : {
+                                                      "execute" : "echo '$sequence' | get_relationship_HasAssertedFunctionFrom -to id -rel 'external_id,gi_number,function'",
+                                                      "insensitive" : 1
+                                                   }
+                                                }
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "reactions" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "does" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "complex" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "$complex" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "implement" : {
+                                          "execute" : "echo '$complex' | get_relationship_HasStep -to id",
+                                          "insensitive" : 1
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     },
+                     "connect" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "to" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "role" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "$role" : {
+                                          "execute" : "echo '$role' | get_relationship_Triggers -to id | get_relationship_HasStep -to id",
+                                          "insensitive" : 1
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "protein" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "sequence" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "corresponds" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "to" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "fid" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "$fid" : {
+                                                "execute" : "echo '$fid' | get_relationship_Produces -to id | fids_to_protein_sequences -c 1 -fasta 0",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "complexes" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "implement" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "reaction" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "$reaction" : {
+                                    "execute" : "echo '$reaction' | get_relationship_IsStepOf -to id",
+                                    "insensitive" : 1
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "media" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "are" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "known" : {
+                              "execute" : "all_entities_Media -f 'is_minimal,name,source_id,type'",
+                              "insensitive" : 1
+                           }
+                        }
+                     }
+                  }
+               },
+               "families" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "implement" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "role" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "$role" : {
+                                    "execute" : "echo '$role' | get_relationship_DeterminesFunctionOf -to id",
+                                    "insensitive" : 1
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "type" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "of" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "family" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "is" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "$family" : {
+                                          "execute" : "echo $family | get_entity_Family -f type",
+                                          "insensitive" : 1
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "publications" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "have" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "been" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "connected" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "to" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "gene" : {
+                                                "insensitive" : 1,
+                                                "children" : {
+                                                   "thrb" : {
+                                                      "execute" : "echo 'kb|g.0.peg.3016' | fids_to_literature",
+                                                      "insensitive" : 1
+                                                   }
+                                                }
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "otu" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "contains" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "$otu" : {
+                              "execute" : "echo '$otu' | get_relationship_IsCollectedInto -to id | otus_to_representatives | get_entity_Genome -f scientific_name",
+                              "insensitive" : 1
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         },
+         "how" : {
+            "insensitive" : 1,
+            "children" : {
+               "many" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "otus" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "exist" : {
+                              "execute" : "all_entities_OTU | wc -l",
+                              "insensitive" : 1
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         },
+         "which" : {
+            "insensitive" : 1,
+            "children" : {
+               "models" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "exist" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "for" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "genome" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "$genome" : {
+                                          "execute" : "echo '$genome' | get_relationship_IsModeledBy -from scientific_name -to id",
+                                          "insensitive" : 1
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "protein" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "families" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "contain" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "gene" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "$gene_id" : {
+                                          "execute" : "echo '$gene_id' | fids_to_protein_families | get_entity_Family -f family_function",
+                                          "insensitive" : 1
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "contigs" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "are" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "in" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "genome" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "$genome" : {
+                                          "execute" : "echo '$genome' | genomes_to_contigs",
+                                          "insensitive" : 1
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "genomes" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "have" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "models" : {
+                              "execute" : "echo 'models' | subsystems_to_genomes | get_entity_Genome -f scientific_name",
+                              "insensitive" : 1
+                           }
+                        }
+                     }
+                  }
+               },
+               "are" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "the" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "closest" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "genomes" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "to" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "$genome" : {
+                                                "execute" : "echo '$genome' | close_genomes -n 10",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "fids" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "appear" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "to" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "have" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "correlated" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "expression" : {
+                                                "insensitive" : 1,
+                                                "children" : {
+                                                   "with" : {
+                                                      "insensitive" : 1,
+                                                      "children" : {
+                                                         "gene" : {
+                                                            "insensitive" : 1,
+                                                            "children" : {
+                                                               "thrb" : {
+                                                                  "execute" : "echo 'kb|g.0.peg.3016' | fids_to_coexpressed_fids | fids_to_functions",
+                                                                  "insensitive" : 1
+                                                               }
+                                                            }
+                                                         }
+                                                      }
+                                                   }
+                                                }
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "reactions" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "are" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "in" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "model" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "$model" : {
+                                          "execute" : "echo '$model' | get_relationship_HasRequirementOf -to id | get_relationship_IsExecutionOf -to id",
+                                          "insensitive" : 1
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     },
+                     "exist" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "in" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "genome" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "$genome" : {
+                                          "execute" : "echo '$genome' | get_relationship_IsModeledBy -to id | get_relationship_HasRequirementOf -to id | get_relationship_IsExecutionOf -to id",
+                                          "insensitive" : 1
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         },
+         "describe" : {
+            "insensitive" : 1,
+            "children" : {
+               "the" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "biomass" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "reaction" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "for" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "model" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "kb|fm.0" : {
+                                                "execute" : null,
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         },
+         "is" : {
+            "insensitive" : 1,
+            "children" : {
+               "fid" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "thrb" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "in" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "an" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "atomic" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "regulon" : {
+                                                "execute" : "echo 'kb|g.0.peg.3016' | get_relationship_IsFormedInto -to id",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         },
+         "display" : {
+            "insensitive" : 1,
+            "children" : {
+               "the" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "protein" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "sequence" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "of" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "fid" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "thrb" : {
+                                                "execute" : "echo 'kb|g.0.peg.3016' | fids_to_protein_sequences -fasta=0",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     },
+                     "dna" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "sequence" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "of" : {
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "gene" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "$gene_id" : {
+                                                "execute" : "echo '$gene_id' | fids_to_dna_sequences -fasta=0",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       },
+                                       "contig" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "$contig_id" : {
+                                                "insensitive" : 1,
+                                                "children" : {
+                                                   "from" : {
+                                                      "insensitive" : 1,
+                                                      "children" : {
+                                                         "$max" : {
+                                                            "insensitive" : 1,
+                                                            "children" : {
+                                                               "to" : {
+                                                                  "insensitive" : 1,
+                                                                  "children" : {
+                                                                     "$min" : {
+                                                                        "execute" : "echo '$contig_id_$max-$min' | locations_to_dna_sequences",
+                                                                        "insensitive" : 1
+                                                                     }
+                                                                  }
+                                                               }
+                                                            }
+                                                         }
+                                                      }
+                                                   }
+                                                }
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               },
+               "sequences" : {
+                  "insensitive" : 1,
+                  "children" : {
+                     "in" : {
+                        "insensitive" : 1,
+                        "children" : {
+                           "family" : {
+                              "insensitive" : 1,
+                              "children" : {
+                                 "$family" : {
+                                    "execute" : "echo '$family' | protein_families_to_proteins | proteins_to_sequences -fasta=0",
+                                    "insensitive" : 1,
+                                    "children" : {
+                                       "as" : {
+                                          "insensitive" : 1,
+                                          "children" : {
+                                             "fasta" : {
+                                                "execute" : "echo '$family' | protein_families_to_proteins | proteins_to_sequences -fasta=1",
+                                                "insensitive" : 1
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
+}

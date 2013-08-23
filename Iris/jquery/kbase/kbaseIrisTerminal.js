@@ -774,6 +774,179 @@
                 return;
             }
 
+            if (command == "next") {
+                this.tutorial.goToNextPage();
+                command = "show_tutorial";
+            }
+
+            if (command == "back") {
+                this.tutorial.goToPrevPage();
+                command = "show_tutorial";
+            }
+
+            if (command == "tutorial") {
+                this.tutorial.currentPage = 0;
+                command = "show_tutorial";
+            }
+
+            if (command == 'tutorial list') {
+                var list = this.tutorial.list();
+
+                if (list.length == 0) {
+                    this.out_to_div($commandDiv, "Could not load tutorials.<br>\n",0,1);
+                    this.out_to_div($commandDiv, "Type <i>tutorial list</i> to see available tutorials.", 0, 1);
+                    return;
+                }
+
+                $.each(
+                    list,
+                    $.proxy( function (idx, val) {
+                        $commandDiv.append(
+                            $('<a></a>')
+                                .attr('href', '#')
+                                .append(val.title)
+                                .bind('click', $.proxy( function (e) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    this.out_to_div($commandDiv, 'Set tutorial to <i>' + val.title + '</i><br>', 0, 1);
+                                    this.tutorial.retrieveTutorial(val.url);
+                                    this.input_box.focus();
+                                }, this))
+                            .append('<br>')
+                        );
+
+                    }, this)
+                );
+                //this.out_to_div($commandDiv, output, 0, 1);
+                this.scroll();
+                return;
+            }
+
+            if (command == 'show_tutorial') {
+                var $page = this.tutorial.contentForCurrentPage();
+
+                if ($page == undefined) {
+                    this.out_to_div($commandDiv, "Could not load tutorial");
+                    return;
+                }
+
+                $page = $page.clone();
+
+                var headerCSS = { 'text-align' : 'left', 'font-size' : '100%' };
+                $page.find('h1').css( headerCSS );
+                $page.find('h2').css( headerCSS );
+                if (this.tutorial.currentPage > 0) {
+                    $page.append("<br>Type <i>back</i> to move to the previous step in the tutorial.");
+                }
+                if (this.tutorial.currentPage < this.tutorial.pages.length - 1) {
+                    $page.append("<br>Type <i>next</i> to move to the next step in the tutorial.");
+                }
+                $page.append("<br>Type <i>tutorial list</i> to see available tutorials.");
+
+                $commandDiv.css('white-space', '');
+                this.out_to_div($commandDiv, $page, 0, 1);
+                this.scroll();
+
+                return;
+            }
+
+            if (command == 'commands') {
+
+                this.client().valid_commands(
+                    jQuery.proxy(
+                        function (cmds) {
+
+                            var data = {
+                                structure : {
+                                    header      : [],
+                                    rows        : [],
+                                },
+                                sortable    : true,
+                                hover       : false,
+                            };
+
+                            jQuery.each(
+                                cmds,
+                                function (idx, group) {
+                                    data.structure.rows.push( [ { value : group.title, colspan : 2, style : 'font-weight : bold; text-align : center' } ] );
+
+                                    for (var ri = 0; ri < group.items.length; ri += 2) {
+                                        data.structure.rows.push(
+                                            [
+                                                group.items[ri].cmd,
+                                                group.items[ri + 1] != undefined
+                                                    ? group.items[ri + 1].cmd
+                                                    : ''
+                                            ]
+                                        );
+                                    }
+                                }
+                            );
+
+                            var $tbl = $.jqElem('div').kbaseTable(data);
+
+                            $commandDiv.append($tbl.$elem);
+                            this.scroll();
+
+                        },
+                       this
+                    )
+                );
+                return;
+            }
+
+            if (m = command.match(/^questions\s*(\S+)?/)) {
+
+                var questions = this.options.grammar.allQuestions(m[1]);
+
+                var data = {
+                    structure : {
+                        header      : [],
+                        rows        : [],
+                    },
+                    sortable    : true,
+                };
+
+                $.each(
+                    questions,
+                    $.proxy( function (idx, question) {
+                        data.structure.rows.push(
+                            [
+                                {
+                                    value :
+                                        $.jqElem('a')
+                                        .attr('href', '#')
+                                        .text(question)
+                                        .bind('click',
+                                            jQuery.proxy(
+                                                function (evt) {
+                                                    evt.preventDefault();
+                                                    this.input_box.val(question);
+                                                    this.selectNextInputVariable();
+                                                },
+                                                this
+                                            )
+                                        )
+                                }
+                            ]
+                        );
+
+                    }, this)
+                );
+
+                var $tbl = $.jqElem('div').kbaseTable(data);
+
+                $commandDiv.append($tbl.$elem);
+                this.scroll();
+
+                return;
+            }
+
+            if (command == 'clear') {
+                this.terminal.empty();
+                return;
+            }
+
             if (! this.sessionId()) {
                 this.out_to_div($commandDiv, "You are not logged in.");
                 this.scroll();
@@ -783,11 +956,6 @@
             this.commandHistory.push(command);
             this.saveCommandHistory();
             this.commandHistoryPosition = this.commandHistory.length;
-
-            if (command == 'clear') {
-                this.terminal.empty();
-                return;
-            }
 
             if (command == 'history') {
 
@@ -1117,8 +1285,8 @@
                 return;
             }
 
-            if (m = command.match(/^rm\s*(.*)/)) {
-                var args = m[1].split(/\s+/)
+            if (m = command.match(/^rm\s+(.*)/)) {
+                var args = m[1].split(/\s+/);
                 if (args.length < 1) {
                     this.out_to_div($commandDiv, "Invalid rm syntax.");
                     return;
@@ -1146,174 +1314,6 @@
                         );
                     }, this)
                 );
-                return;
-            }
-
-            if (command == "next") {
-                this.tutorial.goToNextPage();
-                command = "show_tutorial";
-            }
-
-            if (command == "back") {
-                this.tutorial.goToPrevPage();
-                command = "show_tutorial";
-            }
-
-            if (command == "tutorial") {
-                this.tutorial.currentPage = 0;
-                command = "show_tutorial";
-            }
-
-            if (command == 'tutorial list') {
-                var list = this.tutorial.list();
-
-                if (list.length == 0) {
-                    this.out_to_div($commandDiv, "Could not load tutorials");
-                    this.out_to_div($commandDiv, "Type <i>tutorial list</i> to see available tutorials.");
-                    return;
-                }
-
-                $.each(
-                    list,
-                    $.proxy( function (idx, val) {
-                        $commandDiv.append(
-                            $('<a></a>')
-                                .attr('href', '#')
-                                .append(val.title)
-                                .bind('click', $.proxy( function (e) {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    this.out_to_div($commandDiv, 'Set tutorial to <i>' + val.title + '</i><br>', 0, 1);
-                                    this.tutorial.retrieveTutorial(val.url);
-                                    this.input_box.focus();
-                                }, this))
-                            .append('<br>')
-                        );
-
-                    }, this)
-                );
-                //this.out_to_div($commandDiv, output, 0, 1);
-                this.scroll();
-                return;
-            }
-
-            if (command == 'show_tutorial') {
-                var $page = this.tutorial.contentForCurrentPage();
-
-                if ($page == undefined) {
-                    this.out_to_div($commandDiv, "Could not load tutorial");
-                    return;
-                }
-
-                $page = $page.clone();
-
-                var headerCSS = { 'text-align' : 'left', 'font-size' : '100%' };
-                $page.find('h1').css( headerCSS );
-                $page.find('h2').css( headerCSS );
-                if (this.tutorial.currentPage > 0) {
-                    $page.append("<br>Type <i>back</i> to move to the previous step in the tutorial.");
-                }
-                if (this.tutorial.currentPage < this.tutorial.pages.length - 1) {
-                    $page.append("<br>Type <i>next</i> to move to the next step in the tutorial.");
-                }
-                $page.append("<br>Type <i>tutorial list</i> to see available tutorials.");
-
-                $commandDiv.css('white-space', '');
-                this.out_to_div($commandDiv, $page, 0, 1);
-                this.scroll();
-
-                return;
-            }
-
-            if (command == 'commands') {
-
-                this.client().valid_commands(
-                    jQuery.proxy(
-                        function (cmds) {
-
-                            var data = {
-                                structure : {
-                                    header      : [],
-                                    rows        : [],
-                                },
-                                sortable    : true,
-                                hover       : false,
-                            };
-
-                            jQuery.each(
-                                cmds,
-                                function (idx, group) {
-                                    data.structure.rows.push( [ { value : group.title, colspan : 2, style : 'font-weight : bold; text-align : center' } ] );
-
-                                    for (var ri = 0; ri < group.items.length; ri += 2) {
-                                        data.structure.rows.push(
-                                            [
-                                                group.items[ri].cmd,
-                                                group.items[ri + 1] != undefined
-                                                    ? group.items[ri + 1].cmd
-                                                    : ''
-                                            ]
-                                        );
-                                    }
-                                }
-                            );
-
-                            var $tbl = $.jqElem('div').kbaseTable(data);
-
-                            $commandDiv.append($tbl.$elem);
-                            this.scroll();
-
-                        },
-                       this
-                    )
-                );
-                return;
-            }
-
-            if (m = command.match(/^questions\s*(\S+)?/)) {
-
-                var questions = this.options.grammar.allQuestions(m[1]);
-
-                var data = {
-                    structure : {
-                        header      : [],
-                        rows        : [],
-                    },
-                    sortable    : true,
-                };
-
-                $.each(
-                    questions,
-                    $.proxy( function (idx, question) {
-                        data.structure.rows.push(
-                            [
-                                {
-                                    value :
-                                        $.jqElem('a')
-                                        .attr('href', '#')
-                                        .text(question)
-                                        .bind('click',
-                                            jQuery.proxy(
-                                                function (evt) {
-                                                    evt.preventDefault();
-                                                    this.input_box.val(question);
-                                                    this.selectNextInputVariable();
-                                                },
-                                                this
-                                            )
-                                        )
-                                }
-                            ]
-                        );
-
-                    }, this)
-                );
-
-                var $tbl = $.jqElem('div').kbaseTable(data);
-
-                $commandDiv.append($tbl.$elem);
-                this.scroll();
-
                 return;
             }
 
