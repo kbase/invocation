@@ -8,7 +8,7 @@
     $.kbWidget("kbaseIrisGrammar", 'kbaseWidget', {
         version: "1.0.0",
         options: {
-            defaultGrammarURL : 'http://www.prototypesite.net/iris-dev/grammar.json',
+            defaultGrammarURL : 'http://www.kbase.us/services/docs/invocation/Iris/grammar.json',
         },
 
         init: function(options) {
