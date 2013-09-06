@@ -144,8 +144,6 @@
                     $term.addFileBrowser($fb);
                     $term.data('processList', $plist);
 
-                    $('#login').append($term.$loginbox.$elem);
-
                     var command = getParameterByName('command');
                     if (command.length) {
                         var login = getParameterByName('login');
