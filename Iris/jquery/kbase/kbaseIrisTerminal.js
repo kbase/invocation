@@ -109,6 +109,17 @@
                 )
             };
 
+            $(document).on(
+                'loggedInQuery.kbase',
+                $.proxy(function (e, callback) {
+
+                var auth = this.auth();
+                    if (callback && auth != undefined && auth.unauthenticated == true) {
+                        callback(auth);
+                    }
+                }, this)
+            );
+
             return this;
 
         },
@@ -152,6 +163,8 @@
             this.cwd = '/';
             this.commandHistory = undefined;
             this.terminal.empty();
+            this.variables = {};
+            this.trigger('clearIrisProcesses');
         },
 
         addFileBrowser : function ($fb) {
@@ -221,7 +234,7 @@
                     +"Type <b>commands</b> for a list of commands.<br>\n"
                     +"For usage information about a specific command, type the command name with -h or --help after it.<br>\n"
                     +"Please visit <a href = 'http://kbase.us/for-users/tutorials/navigating-iris/' target = '_blank'>http://kbase.us/for-users/tutorials/navigating-iris/</a> or type <b>tutorial</b> for an IRIS tutorial.<br>\n"
-                    +"To find out what's new, type <b>whatsnew</b><br>\n",
+                    +"To find out what's new, type <b>whatsnew</b> (v0.0.4 - 09/23/2013)<br>\n",
                     0,1);
             this.out_line();
 
@@ -318,6 +331,10 @@
                 var m;
                 if (m = cmd.match(/^\s*(\$\S+)/)) {
                     exception = m[1];
+                }
+
+                if (m = cmd.match(/^(\$\S+)\s*=\s*(\S+)/)) {
+                    delete this.variables[m[1]];
                 }
 
                 for (variable in this.variables) {
@@ -663,6 +680,7 @@
         },
 
         cleanUp : function ($commandDiv) {
+            return; // do nothing. Don't auto-cleanup.
             setTimeout(function() {
                 var cleanupTime = 5000;
                 setTimeout(function() {$commandDiv.prev().fadeOut(500, function() {$commandDiv.prev().remove()})}, cleanupTime);
@@ -704,10 +722,11 @@
                     sid,
                     jQuery.proxy(
                         function (newsid) {
-                            var auth = {'kbase_sessionid' : sid, success : true};
+                            var auth = {'kbase_sessionid' : sid, success : true, unauthenticated : true};
 
                             this.terminal.empty();
-                            this.trigger(  'logout', false);
+                            this.trigger('logout', false);
+                            this.trigger('loggedOut');
                             this.trigger('loggedIn', auth );
 
                         },
@@ -733,6 +752,7 @@
                 }
                 sid = args[0];
 
+                this.trigger('loggedOut');
                 this.trigger('promptForLogin', {user_id : sid});
 
                 return;
@@ -748,6 +768,7 @@
             if (m = command.match(/^logout/)) {
 
                 this.trigger('logout', false);
+                this.trigger('loggedOut', false);
                 this.scroll();
                 return;
             }
