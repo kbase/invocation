@@ -4,7 +4,7 @@ use HTTP::Request::Common qw(POST);
 use LWP::UserAgent;
 use JSON;
 use Data::Dumper;
-use Test::More tests=>26;
+use Test::More tests=>525;
 use lib "lib";
 use lib "t/client-tests";
 #use InvocationTestConfig qw(getHost getPort getURL);
@@ -12,7 +12,7 @@ use lib "t/client-tests";
 use strict;
 use warnings;
 
-use Bio::KBase::InvocationService::Client; 
+use Bio::KBase::InvocationService::Client;
 
 my $session_id = 'test_person1';
 my $cwd = "/";
@@ -39,7 +39,7 @@ ok(defined $obj, "Did object get made");
 isa_ok( $obj, 'Bio::KBase::InvocationService::Client', "Is it in the right class" );
 
 cleanup_session($obj,$session_id,$cwd,'before');
- 
+
 
 #
 # START_SESSION
@@ -53,16 +53,16 @@ is($ret_session_id,$session_id,"Session id is as expected");
 #
 # VALID SESSION -- no longer a valid METHOD
 #
-#print "Test 5:\n"; 
+#print "Test 5:\n";
 #my $val_session_id = $obj->valid_session($session_id);
 #isnt($val_session_id, '',"Has Non Null Valid Session_id");
-#print "Test 6 :\n"; 
+#print "Test 6 :\n";
 #ok($val_session_id>0,"Valid Session id is as expected");
 
-#print "Test 7:\n"; 
-#my $inval_session_id = $obj->valid_session('not real session'); 
-#isnt($inval_session_id, '',"Has Non Null Valid Session_id for bad session id"); 
-#print "Test 8 :\n"; 
+#print "Test 7:\n";
+#my $inval_session_id = $obj->valid_session('not real session');
+#isnt($inval_session_id, '',"Has Non Null Valid Session_id for bad session id");
+#print "Test 8 :\n";
 #ok(!defined($inval_session_id),"Invalid Session id is as expected");
 
 #
@@ -94,20 +94,20 @@ ok($ret_list_files2->[0]->{'name'} eq $file_name,"List file test");
 #print "Test 12 : \n";
 my $new_file_name = 'new_test_file_name';
 $obj->rename_file($session_id,$cwd,$file_name,$new_file_name);
-($ret_list_files1,$ret_list_files2) = $obj->list_files($session_id,$cwd,''); 
+($ret_list_files1,$ret_list_files2) = $obj->list_files($session_id,$cwd,'');
 ok($ret_list_files2->[0]->{'name'} eq $new_file_name,"RENAME FILE Test ");
-#print "file2 : ".Dumper($ret_list_files2)."\n"; 
+#print "file2 : ".Dumper($ret_list_files2)."\n";
 
-#                                                                                                 
-# copy_files                                                                                     
-#                                                                                                 
+#
+# copy_files
+#
 #print "Test 13 : \n";
 $obj->copy($session_id,$cwd,$new_file_name,$file_name);
-($ret_list_files1,$ret_list_files2) = $obj->list_files($session_id,$cwd,''); 
+($ret_list_files1,$ret_list_files2) = $obj->list_files($session_id,$cwd,'');
 my %file_name_hash;
 foreach my $file_element_hash (@{$ret_list_files2})
 {
-    $file_name_hash{$file_element_hash->{'name'}}=1;    
+    $file_name_hash{$file_element_hash->{'name'}}=1;
 }
 ok((defined($file_name_hash{$new_file_name})&& defined($file_name_hash{$file_name})),
    "Copy Files finding both $file_name and $new_file_name");
@@ -119,26 +119,26 @@ ok((defined($file_name_hash{$new_file_name})&& defined($file_name_hash{$file_nam
 #
 #print "Test 14 : \n";
 $obj->remove_files($session_id,$cwd,$file_name);
-($ret_list_files1,$ret_list_files2) = $obj->list_files($session_id,$cwd,''); 
+($ret_list_files1,$ret_list_files2) = $obj->list_files($session_id,$cwd,'');
 undef %file_name_hash;
 foreach my $file_element_hash (@{$ret_list_files2})
-{ 
-    $file_name_hash{$file_element_hash->{'name'}}=1; 
-} 
-ok((defined($file_name_hash{$new_file_name})&& (!defined($file_name_hash{$file_name}))), 
-   "Attempting Remove Single File $file_name "); 
-#print "file2 : ".Dumper($ret_list_files2)."\n"; 
+{
+    $file_name_hash{$file_element_hash->{'name'}}=1;
+}
+ok((defined($file_name_hash{$new_file_name})&& (!defined($file_name_hash{$file_name}))),
+   "Attempting Remove Single File $file_name ");
+#print "file2 : ".Dumper($ret_list_files2)."\n";
 
-my $directory = "new_dir"; 
+my $directory = "new_dir";
 
 #
 # make directory
 #
 #print "Test 15 : \n";
 $obj->make_directory($session_id, $cwd, $directory);
-$obj->put_file($session_id,$file_name,$contents,$cwd.$directory); 
-my $ret_contents2 = $obj->get_file($session_id, $file_name,$cwd.$directory); 
-ok($contents eq $ret_contents2,"New Directory made and file put there."); 
+$obj->put_file($session_id,$file_name,$contents,$cwd.$directory);
+my $ret_contents2 = $obj->get_file($session_id, $file_name,$cwd.$directory);
+ok($contents eq $ret_contents2,"New Directory made and file put there.");
 
 #
 # change directory
@@ -146,8 +146,8 @@ ok($contents eq $ret_contents2,"New Directory made and file put there.");
 # NO REAL VALID TEST TO DO THIS
 #my $changed_directory = $obj->change_directory($session_id, $cwd, $directory);
 #print "\nChanged Directory:$changed_directory:\n";
-#($ret_list_files1,$ret_list_files2) = $obj->list_files($session_id,$cwd.$directory,''); 
-#print "files of $directory : ".Dumper($ret_list_files2)."\n"; 
+#($ret_list_files1,$ret_list_files2) = $obj->list_files($session_id,$cwd.$directory,'');
+#print "files of $directory : ".Dumper($ret_list_files2)."\n";
 
 #
 # Valid Commands
@@ -186,16 +186,19 @@ foreach my $group_name (@top_level_commands_grouping_names)
 #
 # GET_TUTORIAL_TEXT
 #
+# REMOVED because tutorials are no longer accessed in this manner, and are not in fact available server side.
+# strictly callable from within iris.
+#
 #print "\nTest 17 : \n";
-my $step =  1 ;
-my ($text,$prev,$next) = $obj->get_tutorial_text($step);
-#print "\nTEXT: $text" if ($text);
-#print "\nPREV: $prev" if ($prev);
-#print "\nNEXT: $next" if ($next);
-ok(defined($text) ,"Get Tutorial TEXT working properly");
-ok( defined($prev) ,"Get Tutorial PREV working properly");
-ok( defined($next),"Get Tutorial NEXT working properly");
-#ok(defined($text) && defined($prev) && defined($next),"Get Tutorial working properly");
+#my $step =  1 ;
+#my ($text,$prev,$next) = $obj->get_tutorial_text($step);
+##print "\nTEXT: $text" if ($text);
+##print "\nPREV: $prev" if ($prev);
+##print "\nNEXT: $next" if ($next);
+#ok(defined($text) ,"Get Tutorial TEXT working properly");
+#ok( defined($prev) ,"Get Tutorial PREV working properly");
+#ok( defined($next),"Get Tutorial NEXT working properly");
+##ok(defined($text) && defined($prev) && defined($next),"Get Tutorial working properly");
 
 #
 # RUN PIPELINE
@@ -239,24 +242,24 @@ sub cleanup_session
 
    print "directories before clean up : ".Dumper($ret_list_files1)."\n";
     print "files before clean up: ".Dumper($ret_list_files2)."\n";
-    
-    foreach my $file_element_hash (@{$ret_list_files2}) 
-    { 
-	my $file_to_remove = $file_element_hash->{'name'}; 
+
+    foreach my $file_element_hash (@{$ret_list_files2})
+    {
+	my $file_to_remove = $file_element_hash->{'name'};
 	$obj->remove_files($session_id,$cwd,$file_to_remove);
-    } 
-    foreach my $directory_element_hash (@{$ret_list_files1}) 
-    { 
+    }
+    foreach my $directory_element_hash (@{$ret_list_files1})
+    {
         my $directory_to_remove = $directory_element_hash->{'name'};
         $obj->remove_directory($session_id,$cwd,$directory_to_remove);
     }
-    ($ret_list_files1,$ret_list_files2) = $obj->list_files($session_id,$cwd,''); 
+    ($ret_list_files1,$ret_list_files2) = $obj->list_files($session_id,$cwd,'');
     if ($time eq 'after')
     {
 	ok(scalar(@{$ret_list_files2}) == 0,"Remove files test.");
 	ok(scalar(@{$ret_list_files1}) == 0,"Remove directories test.");
     }
 
-    print "directories after clean up : ".Dumper($ret_list_files1); 
-    print "files after clean up: ".Dumper($ret_list_files2)."\n"; 
+    print "directories after clean up : ".Dumper($ret_list_files1);
+    print "files after clean up: ".Dumper($ret_list_files2)."\n";
 }

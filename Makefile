@@ -58,8 +58,8 @@ deploy-service: deploy-dir-service deploy-monit deploy-libs deploy-iris
 
 #
 # Deploy the Iris interface.
-# 
-deploy-iris: 
+#
+deploy-iris:
 	mkdir -p $(IRIS_WEBROOT)/Iris
 	rsync -arv Iris/. $(IRIS_WEBROOT)
 	cp lib/$(BASE_NAME).js $(IRIS_WEBROOT)/$(BASE_NAME).js
@@ -73,7 +73,7 @@ deploy-command-docs: deploy-docs
 	mkdir -p doc/command-docs
 	$(DEPLOY_RUNTIME)/bin/perl gen-command-docs.pl doc/command-docs
 	rsync -arv doc/. $(SERVICE_DIR)/webroot/.
-	
+
 deploy-docs:
 	mkdir -p doc
 	mkdir -p $(SERVICE_DIR)/webroot
@@ -81,13 +81,52 @@ deploy-docs:
 	$(DEPLOY_RUNTIME)/bin/perl $(DEPLOY_RUNTIME)/bin/pod2html -t "Invocation Service API" lib/Bio/KBase/$(BASE_NAME)/$(BASE_NAME)Impl.pm > doc/invocation_api.html
 	rsync -arv doc/. $(SERVICE_DIR)/webroot/.
 
-test: test-client test-scripts test-service
-	@echo "running client and script tests"
+CLIENT_TESTS = $(wildcard t/client-tests/*.t)
+PROD_TESTS = $(wildcard t/prod-tests/*.sh)
+SERVER_TESTS = $(wildcard t/server-tests/*.t)
+SERVICE_TESTS = $(wildcard t/service-tests/*.t)
+
+test: test-client test-production test-server test-service
+	@echo "running server, script and client tests"
 
 test-client:
+	for t in $(CLIENT_TESTS) ; do \
+		if [ -f $$t ] ; then \
+			$(DEPLOY_RUNTIME)/bin/prove $$t ; \
+			if [ $$? -ne 0 ] ; then \
+				exit 1 ; \
+			fi \
+		fi \
+	done
 
-test-scripts:
+test-production:
+	for t in $(PROD_TESTS) ; do \
+		if [ -f $$t ] ; then \
+			/bin/sh $$t ; \
+			if [ $$? -ne 0 ] ; then \
+				exit 1 ; \
+			fi \
+		fi \
+	done
+
+test-server:
+	for t in $(SERVER_TESTS) ; do \
+		if [ -f $$t ] ; then \
+			$(DEPLOY_RUNTIME)/bin/prove $$t ; \
+			if [ $$? -ne 0 ] ; then \
+				exit 1 ; \
+			fi \
+		fi \
+	done
 
 test-service:
+	for t in $(SERVICE_TESTS) ; do \
+		if [ -f $$t ] ; then \
+			$(DEPLOY_RUNTIME)/bin/prove $$t ; \
+			if [ $$? -ne 0 ] ; then \
+				exit 1 ; \
+			fi \
+		fi \
+	done
 
 include $(TOP_DIR)/tools/Makefile.common.rules
