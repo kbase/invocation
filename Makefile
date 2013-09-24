@@ -86,7 +86,7 @@ PROD_TESTS = $(wildcard t/prod-tests/*.sh)
 SERVER_TESTS = $(wildcard t/server-tests/*.t)
 SERVICE_TESTS = $(wildcard t/service-tests/*.t)
 
-test: test-client test-production test-server test-service
+test: test-client test-server test-service
 	@echo "running server, script and client tests"
 
 test-client:

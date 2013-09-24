@@ -9,7 +9,7 @@ use strict;
 use warnings;
 
 my $ua = LWP::UserAgent->new;
-my $url = 'http://bio-data-1.mcs.anl.gov/services/invocation';
+my $url = 'http://kbase.us/services/invocation';
 my $session_id = 'test_person';
 
 my $json = JSON->new->allow_nonref;
