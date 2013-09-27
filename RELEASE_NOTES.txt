@@ -4,7 +4,15 @@ The invocation service allows access to command line scripts running on KBase ha
 
 It also deploys the Iris interface, which provides a web gui to do the the same.
 
-VERSION: 0.0.3 (Released 08/XX/2013)
+VERSION: 0.0.4 (Released 09/23/2013)
+------------------------------------------
+Minor bug fixes
+- Files can now be downloaded
+- Variables can now be re-assigned
+- Variables are cleared from session upon logout
+- Error messages no longer auto clean up
+
+VERSION: 0.0.3 (Released 08/23/2013)
 ------------------------------------------
 NEW FEATURES:
 - Added help buttons to iris commands
