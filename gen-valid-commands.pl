@@ -106,48 +106,54 @@ sub process_cmd_file
     while (<F>)
     {
 	chomp;
-	my @fields = split(/\t/);
+	s/\s*$//;
+	s/^\s*//;
+	
+	my($cmd, $rest) = /^(\S+)\s+(.*)/;
 
-	if ($fields[0] eq '#group-name')
+	if ($cmd eq '#group-name')
 	{
-	    if (@fields != 3)
+	    my($group, $name) = $rest =~ /^(\S+)\s+(.*)$/;
+	    print STDERR "group'$group' name='$name'\n";
+	    if (!$group || !$name)
 	    {
 		die "Invalid #group-name line at line $.";
 	    }
-	    push(@$group_list, $fields[1]) if (!$groups_seen->{$fields[1]});
-	    $groups_seen->{$fields[1]} = 1;
-	    $group_names{$fields[1]} = $fields[2];
+	    push(@$group_list, $group) if (!$groups_seen->{$group});
+	    $groups_seen->{$group} = 1;
+	    $group_names{$group} = $name;
 	}
-	elsif ($fields[0] eq '#command-set')
+	elsif ($cmd eq '#command-set')
 	{
-	    if (@fields != 3)
+	    my($reg, $group) = $rest =~ /^(.*?)\s+(\S+)$/;
+	    print STDERR "CMDSET reg='$reg' group='$group'\n";
+	    if (!$reg || !$group)
 	    {
 		die "Invalid #command-set line at line $.";
 	    }
-	    my $reg = $fields[1];
 	    my $re = qr/^$reg/;
-	    my $group = $fields[2];
 	    push(@$group_list, $group) if (!$groups_seen->{$group});
 	    $groups_seen->{$group} = 1;
 	    push(@list, ['regexp', $re, $group]);
 	    $have_re++;
 	}
-	elsif ($fields[0] eq '#ignore')
+	elsif ($cmd eq '#ignore')
 	{
-	    if (@fields != 2)
-	    {
-		die "Invalid #ignore line at line $.";
-	    }
-	    my $reg = $fields[1];
+	    my $reg = $rest;
 	    my $re = qr/^$reg/;
 	    push(@ignore, $re);
 	    $have_re++;
 	}
-	elsif (@fields == 2)
+	elsif ($rest =~ /^\S+$/)
 	{
-	    push(@$group_list, $fields[1]) if (!$groups_seen->{$fields[1]});
-	    $groups_seen->{$fields[1]} = 1;
-	    push(@list, ['explicit', $fields[0], $fields[1]]);
+	    my $group = $rest;
+	    push(@$group_list, $group) if (!$groups_seen->{$group});
+	    $groups_seen->{$group} = 1;
+	    push(@list, ['explicit', $cmd, $group]);
+	}
+	else
+	{
+	    die "Unknown commands line at line $.";
 	}
     }
     close(F);
