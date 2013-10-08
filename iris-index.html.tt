@@ -37,7 +37,7 @@
         <script src = './jquery/kbase/kbaseIrisTutorial.js'></script>
 
 
-        <script src="../lib/InvocationService.js" type="text/javascript" charset="utf-8"></script>
+        <script src="./InvocationService.js" type="text/javascript" charset="utf-8"></script>
 
         <script type = 'text/javascript'>
             <!--
