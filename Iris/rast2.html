@@ -1,15 +1,15 @@
       <div id = 'tutorial'>
 
-<h1>Constructing RAST2 in the IRIS Environment</h1>
+<h1>Constructing RAST2 in the Iris Environment</h1>
 <div>
-<p><strong>Purpose: </strong> Using the KBase IRIS environment to
+<p><strong>Purpose: </strong> Using the KBase Iris environment to
 generate an automated annotation system. </p>
 <p><strong>Required Prerequisite Activities: </strong> <a href="http://www.kbase.us/developer-zone/tutorials/getting-started/getting-started-with-kbase/">Getting
 Started with KBase</a> </p>
 <p><strong>Suggested Prerequisite Activities: </strong> <a href="/developer-zone/tutorials/command-line-scripts/accessing-central-store-data/getting-what-you-need-from-the-cs-using-command-line-scripts/">Getting
 What You Need from the CS Using Command-Line Scripts</a></p>
 <p><strong>Related Tutorials: </strong><a href="http://www.kbase.us/developer-zone/tutorials/iris/some-basic-exercises-using-the-kbase-iris-interface/">Some
-Basic Exercises Using the KBase IRIS interface</a></p>
+Basic Exercises Using the KBase Iris interface</a></p>
 </div>
 <div>
 <div>
@@ -28,13 +28,13 @@ completely trivial for separate groups to construct custom pipelines,
 integrate new bioinformatic tools, and to make the developed pipelines
 easily accessible by a large user community. This work is being done
 within the DOE Knowledge Base (KBase), and initial versions are now
-available via the IRIS interface. </p>
-<p> To understand how the IRIS environment is used, we urge you to go
-to the <a href="http://kbase.us/developer-zone/tutorials/iris/some-basic-exercises-using-the-doe-kbase-iris-interface/" target="_blank_">IRIS site</a>, type </p>
+available via the Iris interface. </p>
+<p> To understand how the Iris environment is used, we urge you to go
+to the <a href="http://kbase.us/developer-zone/tutorials/iris/some-basic-exercises-using-the-doe-kbase-iris-interface/" target="_blank_">Iris site</a>, type </p>
 <pre>       login <i>name</i>  [ that is, use whatever name you wish.  No password is required, but<br>                        a workspace is maintained for you under this ID ]<br>       tutorial<br></pre>
 and just go through the initial tutorial. It is useful to have a small
 genome available on your machine. The tutorial will show you how to
-upload it to your IRIS workspace, annotate the genome, construct an
+upload it to your Iris workspace, annotate the genome, construct an
 initial <a name="metabolic37">metabolic</a> model for the genome,
 backfill the model, and run an initial flux-based analysis. This can
 all be done within 30 minutes for a small genome (we suggest trying a <i>Buchnera</i>
@@ -46,10 +46,10 @@ A <i>genomeTO</i> is just a perl data structure (a hash) that encodes
 the components of what is thought of as a <i>genome annotation</i>
 , along with the derived data supporting the annotation.
 <p> A genomeTO is stored as a JSON-encoded string in a file within the
-IRIS workspace. </p>
+Iris workspace. </p>
 <p> The RAST2 Toolkit is implemented as a set of tools that transform
 one genomeTO into another. That is, the typical tool takes as input a
-JSON-encoded string stored in a users IRIS workspace and outputs a new
+JSON-encoded string stored in a users Iris workspace and outputs a new
 JSON-encoded string that extends in some way the contents of the input
 genomeTO. </p>
 <p> Pipelines are composed from the tools in the toolkit. </p>
@@ -77,7 +77,7 @@ for <i>Mycoplasmas</i>).
 <div>
 <h2> Tools for Analysis </h2>
 The tools we list below represent a growing collection that can be
-invoked from within IRIS.
+invoked from within Iris.
 <h2>Annotating a Genome: a Package</h2>
 We provide a basic annotation package that can be invoked using
 something like

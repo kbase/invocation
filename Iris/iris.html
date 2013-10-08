@@ -4,40 +4,44 @@
 
     <head>
 
-        <link rel="stylesheet" href="iris.css" type="text/css" media="screen" title="main" charset="utf-8">
-
-        <script src="./jquery/external/jquery.min.js"></script>
-
-        <script src = './jquery/external/jquery.cookie.min.js'></script>
-
-        <script src="./jquery/external/bootstrap.min.js"></script>
-        <link href="./jquery/external/bootstrap-combined.no-icons.min.css" rel="stylesheet">
-        <link href="./jquery/external/font-awesome/css/font-awesome.min.css" rel="stylesheet">
-
-        <script src = './jquery/kbase/kbaseWidget.js'></script>
-        <script src = './jquery/kbase/kbaseAuthenticatedWidget.js'></script>
-        <script src = './jquery/kbase/kbaseButtonControls.js'></script>
-        <script src = './jquery/kbase/kbaseBox.js'></script>
-        <script src = './jquery/kbase/kbasePrompt.js'></script>
-        <script src = './jquery/kbase/kbaseDeletePrompt.js'></script>
-        <script src = './jquery/kbase/kbaseErrorPrompt.js'></script>
-        <script src = './jquery/kbase/kbaseLogin.js'></script>
-        <script src = './jquery/kbase/kbaseAccordion.js'></script>
-        <script src = './jquery/kbase/kbaseTabs.js'></script>
-        <script src = './jquery/kbase/kbaseTable.js'></script>
-        <script src = './jquery/kbase/kbaseIrisCommands.js'></script>
-        <script src = './jquery/kbase/kbaseDataBrowser.js'></script>
-        <script src = './jquery/kbase/kbaseIrisFileBrowser.js'></script>
-        <script src = './jquery/kbase/kbaseIrisProcessList.js'></script>
-        <script src = './jquery/kbase/kbaseIrisTerminal.js'></script>
-        <script src = './jquery/kbase/kbaseIrisGrammar.js'></script>
-        <script src = './jquery/kbase/kbaseIrisFileEditor.js'></script>
+        <script src="./jquery/ext/jquery/jquery-1.10.2.min.js"></script>
 
 
-        <script src = './jquery/kbase/kbaseIrisTutorial.js'></script>
+        <script src="./jquery/ext/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+        <link href="./jquery/ext/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
+        <link href="./jquery/ext/font-awesome/3.2.1/css/font-awesome.min.css" rel="stylesheet">
+
+        <script src = './jquery/kbase/kbwidget.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseAuthenticatedWidget.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseButtonControls.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseBox.js'></script>
+        <script src = './jquery/kbase/widgets/kbasePrompt.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseDeletePrompt.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseErrorPrompt.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseLogin.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseAccordion.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseTabs.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseTable.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseIrisCommands.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseDataBrowser.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseIrisFileBrowser.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseIrisProcessList.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseIrisTerminal.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseIrisGrammar.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseIrisFileEditor.js'></script>
+
+        <script src = './jquery/kbase/widgets/kbaseIrisWidget.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseIrisTerminalWidget.js'></script>
+        <script src = './jquery/kbase/widgets/kbaseIrisTextWidget.js'></script>
+
+
+
+        <script src = './jquery/kbase/widgets/kbaseIrisTutorial.js'></script>
 
 
         <script src="../lib/InvocationService.js" type="text/javascript" charset="utf-8"></script>
+
+        <link rel="stylesheet" href="iris.css" type="text/css" media="screen" title="main" charset="utf-8">
 
         <script type = 'text/javascript'>
             <!--
@@ -62,7 +66,7 @@
                     var $term = $.jqElem('div').kbaseIrisTerminal({
                         'promptIfUnauthenticated'   : 0,
                         'invocationURL'             : 'http://kbase.us/services/invocation',
-                        //'invocationURL'             : 'http://140.221.85.107:7049',//'http://kbase.us/services/invocation',
+                        //'invocationURL'             : 'http://140.221.84.191/services/invocation',//'http://kbase.us/services/invocation',
                         'commandsElement'           : $('#command-list'),
                         'grammar'                   : $('<div></div>').kbaseIrisGrammar(),
                         autocreateFileBrowser       : false,
@@ -74,7 +78,7 @@
                             canDelete : true,
                             tabs : [
                                 {
-                                    tab : 'IRIS Terminal',
+                                    tab : 'Iris Terminal',
                                     content : $term.$elem,
                                     canDelete : false
                                 },
@@ -164,7 +168,7 @@
             //-->
         </script>
 
-        <title>KBase IRIS Terminal</title>
+        <title>KBase Iris Terminal</title>
         <link rel="icon" href="img/KBase_favicon.ico" type="image/x-icon">
         <link href="css/identity.css" rel="stylesheet">
         <link href="css/kbase-common.css" rel="stylesheet">
@@ -181,24 +185,25 @@
 
     <body>
 
-        <div class="navbar navbar-fixed-top">
-          <div class="navbar-inner">
-            <a href="http://www.kbase.us/labs/"><img class="logo" src="img/labs_icon.png" width="46"></a>
-            <a class="brand">IRIS</a>
-            <ul class="nav" style="float:right;">
-              <li id = 'login'></li>
-            </ul>
-          </div>
+        <div class="navbar navbar-default navbar-fixed-top">
+            <div class = 'navbar-header'>
+                <a href="http://www.kbase.us/labs/"><img class="logo" src="img/labs_icon.png" width="46"></a>
+                    <a class="navbar-brand">Iris</a>
+                </div>
+                <ul class="nav navbar-nav" style="float:right;">
+                  <li id = 'login'></li>
+                </ul>
+            </div>
         </div>
 
-        <div class = 'row-fluid'>
-            <div class = 'span3'>
+        <div class = 'row'>
+            <div class = 'col-md-3'>
                 <!--<img src = './img/kbase_logo.png'/ width = '220'><br/><br/>-->
                 <div id = 'command-list'></div>
                 <div id = 'process-list'></div>
                 <div id = 'file-browser'></div>
             </div>
-            <div class = 'span9'>
+            <div class = 'col-md-9'>
                 <!--<div id = 'terminal'></div>-->
                 <div id = 'tabs'></div>
             </div>
