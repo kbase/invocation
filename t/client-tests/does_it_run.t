@@ -4,10 +4,12 @@ use HTTP::Request::Common qw(POST);
 use LWP::UserAgent;
 use JSON;
 use Data::Dumper;
-use Test::More tests=>525;
+use Test::More;
 use lib "lib";
 use lib "t/client-tests";
 #use InvocationTestConfig qw(getHost getPort getURL);
+
+my $num_tests = 16; #static count + however many are in the loop
 
 use strict;
 use warnings;
@@ -168,6 +170,7 @@ foreach my $grouping_hash_ref (@{$valid_commands})
             my $RC;
             eval { $RC = `which $cmd`; };
             isnt($RC, '', "Call which $cmd  return ");
+            $num_tests++;
     }
 }
 my $number_found = 0;
@@ -227,7 +230,7 @@ ok($@ eq '', 'Exit session');
 
 Server::stop($pid);
 
-done_testing();
+done_testing($num_tests);
 
 
 sub cleanup_session
