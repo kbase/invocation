@@ -161,7 +161,8 @@
         loggedOutCallback : function(e) {
 
             this.cwd = '/';
-            this.commandHistory = undefined;
+            this.commandHistory = [];
+            this.commandHistoryPosition = 0;
             this.terminal.empty();
             this.variables = {};
             this.trigger('clearIrisProcesses');
