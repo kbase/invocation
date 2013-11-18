@@ -8,4 +8,4 @@ export KB_DEPLOYMENT_CONFIG=$KB_TOP/deployment.cfg
 
 pid_file=$KB_SERVICE_DIR/service.pid
 
-exec $KB_RUNTIME/bin/perl $KB_RUNTIME/bin/starman --max-workers 40 --max-requests 20 --listen :[% kb_service_port %] --pid $pid_file $KB_TOP/lib/InvocationService.psgi
+exec $KB_RUNTIME/bin/perl $KB_RUNTIME/bin/starman --workers 40 --max-requests 20 --listen :[% kb_service_port %] --pid $pid_file $KB_TOP/lib/InvocationService.psgi
