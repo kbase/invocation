@@ -7,6 +7,7 @@ use Data::Dumper;
 use Test::More tests=>18;
 use lib "lib";
 use lib "t/server-tests";
+use lib "t/client-tests";
 use InvocationTestConfig qw(getHost getPort getURL);
 
 use strict;
@@ -17,9 +18,10 @@ use Bio::KBase::InvocationService::Client;
 my $session_id = 'test_person1';
 my $cwd = '/';
 
-# MAKE A CONNECTION (DETERMINE THE URL TO USE BASED ON THE CONFIG MODULE)
-my $host=getHost(); my $port=getPort();  my $url=getURL();
-print "-> attempting to connect to:'".$url."'\n";
+#NEW VERSION WITH AUTO START / STOP SERVICE
+use Server;
+my ($pid, $url) = Server::start('InvocationService');
+print "-> attempting to connect to:'".$url."' with PID=$pid\n";
 
 # Created by Jason Baumohl for Novemeber 2012 Build 11-29-2012
 # Updated By: ?
@@ -226,6 +228,8 @@ cleanup_session($obj,$session_id,$cwd,'after');
 #print "\nTest 26 : \n";
 eval {$obj->exit_session($session_id)};
 ok($@ eq '', 'Exit session');
+
+Server::stop($pid);
 
 done_testing();
 
