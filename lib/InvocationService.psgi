@@ -97,7 +97,7 @@ $dispatch->add('/download/#*', 'handle_download');
 		200,
 		[
 			'Content-type' => 'application/force-download',
-			'Content-Disposition' => "attachment; filename=\"$fileName\")",
+			'Content-Disposition' => "attachment; filename=\"$fileName\"",
 			'Content-Length' => -s $path,
 		],
 		$fh
