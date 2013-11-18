@@ -134,6 +134,31 @@
                 $.proxy(
                     function (res) {
 
+                        //This is a hack. It really should be handed back via the valid_commands call.
+                        res.push(
+                            {
+                                name    : 'shell',
+                                title   : 'Shell commands',
+                                items   : [
+                                    {cmd : 'sort'},
+                                    {cmd : 'grep'},
+                                    {cmd : 'cut'},
+                                    {cmd : 'cat'},
+                                    {cmd : 'head'},
+                                    {cmd : 'tail'},
+                                    {cmd : 'date'},
+                                    {cmd : 'echo'},
+                                    {cmd : 'wc'},
+                                    {cmd : 'diff'},
+                                    {cmd : 'join'},
+                                    {cmd : 'uniq'},
+                                    {cmd : 'tr'},
+                                ],
+                            }
+                        );
+
+                        res = res.sort(this.sortByKey('name'));
+
                         var commands = [];
                         $.each(
                             res,
@@ -210,6 +235,7 @@
                                         )
                             }
                         );*/
+
                         this.commandCategories['Widgets'] = [];
                         this.commandCategories['Widgets'].push('Network');
 
