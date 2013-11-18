@@ -862,6 +862,7 @@
                                     e.stopPropagation();
                                     $widget.setError($.jqElem('span').append('Set tutorial to <b>' + val.title + '</b><br>'));
                                     this.tutorial.retrieveTutorial(val.url);
+                                    this.scroll();
                                     this.input_box.focus();
                                 }, this))
                             .append('<br>')

@@ -45,17 +45,7 @@
 
         <link rel="stylesheet" href="iris.css" type="text/css" media="screen" title="main" charset="utf-8">
 
-        <script src = './jquery/kbase/kbaseIrisTutorial.js'></script>
-
         <script src="./InvocationService.js" type="text/javascript" charset="utf-8"></script>
-
-<!-- pulls in the force directed network graph for whizbang demo purposes -->
-    <link rel="stylesheet" href="ui-css/datavis.css" type="text/css" media="screen" charset="utf-8">
-
-    <script src="./jquery/ui-js/kbase-api.js"></script>
-    <script src="./jquery/kbase/widgets/networks/force-directed.js"></script>
-    <script src="./jquery/kbase/datavis.js"></script>
-<!-- done whizbang network widget -->
 
         <script type = 'text/javascript'>
             <!--
@@ -84,14 +74,10 @@
                         'grammar'                   : $('<div></div>').kbaseIrisGrammar(),
                         autocreateFileBrowser       : false,
                         widgets : {
-                            network : function() { return $.jqElem("div").ForceDirectedNetwork({
-                                //workspaceID: "",
-                                minHeight: "600px",
-                            })},
                             echo : function() { return $.jqElem('div').kbaseIrisEchoWidget()},
                         }
                     });
-$term.gui = true;
+
                     var $tabs = $('#tabs').kbaseIrisWorkspace(
                         {
                             tabPosition : 'bottom', //or left or right or top. Defaults to 'top'
@@ -142,7 +128,6 @@ $term.gui = true;
                                     }
                                     $term.appendInput(append);
                                 }
-                                $term.appendInput(append);
                             },
                         }
                     );

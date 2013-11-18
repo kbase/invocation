@@ -69,9 +69,11 @@
                                 icon : 'icon-remove',
                                 callback :
                                     function (e) {
-                                        $(this).parent().parent().next().remove();
-                                        $(this).parent().parent().next().remove();
-                                        $(this).parent().parent().remove();
+                                        var $next = $elem.next();
+                                        if ($next.prop('tagName') == 'HR') {
+                                            $next.remove();
+                                        }
+                                        $elem.remove();
                                     }
                             },
 
