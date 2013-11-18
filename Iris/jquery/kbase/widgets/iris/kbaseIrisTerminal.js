@@ -1105,11 +1105,52 @@
             }
 
             if (m = command.match(/^(\$\S+)\s*=\s*(\S+)/)) {
-                this.variables[m[1]] = m[2];
-                $widget.setOutput(m[1] + ' set to ' + m[2]);
+                if (m[2] == 'undefined') {
+                    delete this.variables[m[1]];
+                    $widget.setOutput('Deleted ' + m[1]);
+                }
+                else {
+                    this.variables[m[1]] = m[2];
+                    $widget.setOutput(m[1] + ' set to ' + m[2]);
+                }
                 $deferred.resolve();
                 return;
             }
+
+            if (command == 'variables') {
+
+                var keyedVars = [];
+                $.each(
+                    Object.keys(this.variables).sort(),
+                    $.proxy( function (idx, key) {
+                        keyedVars.push(
+                            {
+                                variable : key,
+                                value : this.variables[key]
+                            }
+                        );
+                    }, this)
+                );
+
+                var data = {
+                    structure : {
+                        header      : ['variable', 'value'],
+                        rows        : keyedVars,
+                    },
+                    sortable    : true,
+                    hover       : false,
+                };
+
+                var $tbl = $.jqElem('div').kbaseTable(data);
+                $widget.setOutput($tbl.$elem);
+                $widget.setValue(keyedVars);
+                $deferred.resolve();
+                this.scroll();
+                return;
+
+            }
+
+
 
             if (m = command.match(/^alias\s+(\S+)\s*=\s*(\S+)/)) {
                 this.aliases[m[1]] = m[2];
