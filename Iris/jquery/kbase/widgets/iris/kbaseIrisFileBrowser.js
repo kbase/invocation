@@ -91,6 +91,14 @@
                             id : 'removeDirectoryButton'
                         },
                         {
+                            icon : 'icon-file',
+                            //'tooltip' : 'add a subdirectory',
+                            callback : function(e, $fb) {
+                                $fb.addNewFile($(this).data('id'));
+                            },
+                            id : 'addFileButton'
+                        },
+                        {
                             icon : 'icon-plus',
                             //'tooltip' : 'add a subdirectory',
                             callback : function(e, $fb) {
@@ -103,7 +111,7 @@
                             //'tooltip' : 'upload a file',
                             callback : function(e, $fb) {
                                 $fb.data('active_directory', $(this).data('id'));
-                                $fb.data('fileInput').trigger('click');
+                                $fb.uploadFile();
                             },
                             id : 'uploadFileButton'
                         },
@@ -212,6 +220,14 @@
                     context : this,
                     controls : [
                         {
+                            icon : 'icon-file',
+                            //'tooltip' : 'add a subdirectory',
+                            callback : function(e, $fb) {
+                                $fb.addNewFile('/');
+                            },
+                            id : 'addFileButton'
+                        },
+                        {
                             'icon' : 'icon-plus',
                             //'tooltip' : 'add directory',
                             callback : function(e, $fb) {
@@ -224,7 +240,7 @@
                             //'tooltip' : 'upload a file',
                             callback : function(e, $fb) {
                                 $fb.data('active_directory', $(this).data('id'));
-                                $fb.data('fileInput').trigger('click');
+                                $fb.uploadFile();
                             }
                         },
                     ]
@@ -1084,8 +1100,76 @@
 
             $addDirectoryModal.openPrompt();
 
+        },
+
+        addNewFile : function(parentDir) {
+            var that = this;
+
+            var displayDir = parentDir.replace(this.options.root, '/');
+
+            var $addDirectoryModal = $.jqElem('div').kbasePrompt(
+                {
+                    title : 'Create a new file',
+                    body : $.jqElem('p')
+                            .append('Create a new file ')
+                            .append(
+                                $.jqElem('span')
+                                    .css('font-weight', 'bold')
+                                    .text(displayDir)
+                            )
+                            .append(' ')
+                            .append(
+                                $.jqElem('input')
+                                    .attr('type', 'text')
+                                    .attr('name', 'file_name')
+                                    .attr('size', '20')
+                            )
+                    ,
+                    controls : [
+                        'cancelButton',
+                        {
+                            name : 'Add and edit file',
+                            callback : $.proxy(function (e, $prompt) {
+                                $prompt.closePrompt();
+                                this.addNewFileCallback($addDirectoryModal.dialogModal().find('input').val(), parentDir, true)
+                            }, this)
+                        },
+                        {
+                            name : 'Add file',
+                            type : 'primary',
+                            callback : $.proxy(function (e, $prompt) {
+                                $prompt.closePrompt();
+                                this.addNewFileCallback($addDirectoryModal.dialogModal().find('input').val(), parentDir, false)
+                            }, this)
+                        },
+                    ]
+                }
+            );
+
+            $addDirectoryModal.openPrompt();
 
         },
+
+        addNewFileCallback : function (file, parentDir, edit) {
+
+            var fileName = parentDir + '/' + file;
+            fileName = fileName.replace(/\/\//, '/');
+
+            this.client().run_pipeline(
+                this.sessionId(),
+                "echo '' > " + file,
+                [],
+                0,
+                parentDir,
+                $.proxy( function (res) {
+                    this.refreshDirectory(parentDir);
+                    if (edit) {
+                        this.editFileCallback()(fileName, this);
+                    }
+                }, this),
+                function() {}
+                );
+        }
 
     });
 

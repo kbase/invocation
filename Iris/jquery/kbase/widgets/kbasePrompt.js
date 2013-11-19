@@ -144,13 +144,13 @@
                                                     .addClass('form-horizontal')
                                                     .append(
                                                         $('<div></div>')
-                                                        .addClass('col-md-6')
+                                                        .addClass('col-sm-5')
                                                         .addClass('text-left')
                                                         .attr('id', 'footer')
                                                     )
                                                     .append(
                                                         $('<div></div>')
-                                                            .addClass('col-md-6')
+                                                            .addClass('col-sm-7')
                                                             .attr('id', 'controls')
                                                             .css('white-space', 'nowrap')
                                                     )

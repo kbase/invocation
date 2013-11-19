@@ -482,7 +482,7 @@
                             : formInput.name.charAt(0).toUpperCase() + formInput.name.slice(1);
 
                         var $label = $.jqElem('label')
-                            .addClass('control-label col-lg-2')
+                            .addClass('control-label col-sm-4')
                             .append(
                                 $.jqElem('span')
                                     .attr('title', labelText)
@@ -513,6 +513,10 @@
                             $field = this.buildTextField(formInput);
                         }
 
+                        if (formInput.kb_bind) {
+                            $field.kb_bind(formInput.kb_bind[0], formInput.kb_bind[1]);
+                        }
+
                         if (formInput.validate) {
 
                             if (typeof(formInput.validate) != 'function') {
@@ -533,7 +537,7 @@
                         };
 
                         var $container = $.jqElem('div')
-                            .addClass('col-lg-10');
+                            .addClass('col-sm-8');
                             ;//.addClass('input-group-addon');
 
                         var $description;

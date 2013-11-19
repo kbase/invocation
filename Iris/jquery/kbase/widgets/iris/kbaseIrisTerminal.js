@@ -1174,6 +1174,17 @@
                 return;
             }
 
+            if (m = command.match(/^download\s*(\S+)?$/)) {
+                var file = m[1];
+                if (this.fileBrowsers.length) {
+                    var $fb = this.fileBrowsers[0];
+                    $fb.data('active_directory', this.cwd);
+                    $fb.openFile(file);
+                    $deferred.resolve();
+                }
+                return;
+            }
+
             if (m = command.match(/^#\s*(.+)/)) {
                 //$widget.$elem.remove();
                 $widget.setInput('');
