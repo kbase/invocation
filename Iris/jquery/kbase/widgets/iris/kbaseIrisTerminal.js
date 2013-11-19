@@ -1571,6 +1571,14 @@
                     }
                 }
 
+                //okay, add in regex support
+                var regex = undefined;
+                if (d.match(/[*+?]/)) {
+                    d = d.replace(/([*+?])/g, '.$1');
+                    regex = new RegExp('^' + d + '$');
+                    d = '.';
+                }
+
                 this.client().list_files(
                     this.sessionId(),
                     this.cwd,
@@ -1585,6 +1593,11 @@
                             $.each(
                                 dirs,
                                 function (idx, val) {
+
+                                    if (regex != undefined && ! val.name.match(regex)) {
+                                        return;
+                                    }
+
                                     allFiles.push(
                                         {
                                             size    : '(directory)',
@@ -1599,6 +1612,11 @@
                             $.each(
                                 files,
                                 $.proxy( function (idx, val) {
+
+                                    if (regex != undefined && ! val.name.match(regex)) {
+                                        return;
+                                    }
+
                                     allFiles.push(
                                         {
                                             size    : val.size,
@@ -1656,8 +1674,13 @@
 
                             var $tbl = $.jqElem('div').kbaseTable(data);
 
-                            $widget.setOutput($tbl.$elem);
-                            $widget.setValue(filelist);
+                            if (data.structure.rows.length) {
+                                $widget.setOutput($tbl.$elem);
+                                $widget.setValue(filelist);
+                            }
+                            else {
+                                $widget.setError("no matching files found");
+                            }
                             $deferred.resolve();
                             this.scroll();
                          },
