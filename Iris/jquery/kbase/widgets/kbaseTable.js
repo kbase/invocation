@@ -93,7 +93,7 @@
                 return cell.label;
             }
             else {
-                value = typeof cell == 'string'
+                value = typeof cell != 'object'
                     ? cell
                     : cell.value;
 
@@ -334,7 +334,7 @@
                 for (var idx = 0; idx < this.options.structure.keys.length; idx++) {
                     var key = this.options.structure.keys[idx];
 
-                    if (typeof key == 'string') {
+                    if (typeof key != 'object') {
                         key = { value : key };
                     }
 

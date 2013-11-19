@@ -27,6 +27,11 @@
             terminalHeight : '450px',
             promptIfUnauthenticated : 1,
             autocreateFileBrowser: true,
+            environment : ['maxOutput', 'scrollSpeed'],
+        },
+
+        setenv : function (variable, value) {
+
         },
 
         init: function(options) {
@@ -67,6 +72,16 @@
 
                 return input.selectionEnd;
             }
+
+            //set up available environment as environment keys.
+            this.envKeys = {};
+            $.each(
+                this.options.environment,
+                $.proxy( function (idx, key) {
+                    this.envKeys[key] = 1;
+                }, this)
+            );
+
 
             //end embedded plugin
 
@@ -592,7 +607,7 @@
 
         scroll: function(speed) {
             if (speed == undefined) {
-                speed = this.options.scrollSpeed;
+                speed = parseInt(this.options.scrollSpeed);
             }
 
             this.terminal.animate({scrollTop: this.terminal.prop('scrollHeight') - this.terminal.height()}, speed);
@@ -1148,6 +1163,57 @@
                 this.scroll();
                 return;
 
+            }
+
+            if (command == 'environment') {
+
+                var keyedVars = [];
+                $.each(
+                    Object.keys(this.envKeys).sort(),
+                    $.proxy( function (idx, key) {
+                        keyedVars.push(
+                            {
+                                variable : key,
+                                value : this.options[key] == undefined
+                                    ? '<i>undefined</i>'
+                                    : this.options[key]
+                            }
+                        );
+                    }, this)
+                );
+
+                var data = {
+                    structure : {
+                        header      : ['variable', 'value'],
+                        rows        : keyedVars,
+                    },
+                    sortable    : true,
+                    hover       : false,
+                };
+
+                var $tbl = $.jqElem('div').kbaseTable(data);
+                $widget.setOutput($tbl.$elem);
+                $widget.setValue(keyedVars);
+                $deferred.resolve();
+                this.scroll();
+                return;
+
+            }
+
+            if (m = command.match(/^setenv\s+(\S+)\s*=\s*(\S+)/)) {
+                if (this.envKeys[m[1]]) {
+                    this.options[m[1]] = m[2] == 'undefined'
+                        ? undefined
+                        : m[2];
+                    $widget.setOutput(m[1] + ' set to ' + m[2]);
+                    $widget.setValue(m[2]);
+                }
+                else {
+                    $widget.setError("Cannot set environment variable <i>" + m[1] + "</i>: Unknown");
+                }
+                $deferred.resolve();
+                this.scroll();
+                return;
             }
 
 
