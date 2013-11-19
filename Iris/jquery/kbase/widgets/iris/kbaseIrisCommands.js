@@ -135,25 +135,24 @@
                     function (res) {
 
                         //This is a hack. It really should be handed back via the valid_commands call.
+
+                        var shell_commands = ['sort', 'grep', 'cut', 'cat', 'head', 'tail',
+                            'date', 'echo', 'wc', 'diff', 'join', 'uniq', 'tr'].sort();
+                        var shell_tokens = [];
+                        $.each(
+                            shell_commands,
+                            function (idx, command) {
+                                shell_tokens.push(
+                                    { cmd : command, helpFlag : '--help' }
+                                )
+                            }
+                        );
+
                         res.push(
                             {
                                 name    : 'shell',
                                 title   : 'Shell commands',
-                                items   : [
-                                    {cmd : 'sort'},
-                                    {cmd : 'grep'},
-                                    {cmd : 'cut'},
-                                    {cmd : 'cat'},
-                                    {cmd : 'head'},
-                                    {cmd : 'tail'},
-                                    {cmd : 'date'},
-                                    {cmd : 'echo'},
-                                    {cmd : 'wc'},
-                                    {cmd : 'diff'},
-                                    {cmd : 'join'},
-                                    {cmd : 'uniq'},
-                                    {cmd : 'tr'},
-                                ],
+                                items   : shell_tokens,
                             }
                         );
 
@@ -275,7 +274,7 @@
                             icon : 'icon-question',
                             callback : function(e, $ic) {
                                 if ($ic.options.terminal != undefined) {
-                                    $ic.options.terminal.run(cmd + ' -h');
+                                    $ic.options.terminal.run(cmd + ' --help');
                                 }
                             },
                             id : 'helpButton',
