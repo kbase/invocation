@@ -1251,6 +1251,17 @@
                 return;
             }
 
+            if (m = command.match(/^edit\s*(\S+)?$/)) {
+                var file = m[1];
+                if (this.fileBrowsers.length) {
+                    var $fb = this.fileBrowsers[0];
+                    $fb.data('active_directory', this.cwd);
+                    $fb.editFileCallback()(file, $fb);
+                    $deferred.resolve();
+                }
+                return;
+            }
+
             if (m = command.match(/^#\s*(.+)/)) {
                 //$widget.$elem.remove();
                 $widget.setInput('');
