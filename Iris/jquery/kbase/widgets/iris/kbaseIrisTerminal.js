@@ -841,7 +841,7 @@
                     function (idx, wstoken_string) {
 
                         var workspaceToken = {
-                            type : 'string'
+                            type : 'Unspecified'
                         };
 
                         if (m = wstoken_string.match(/((?:<|>>?)\s*)?@W#([^#\s]+)#?([io])?/)) {
