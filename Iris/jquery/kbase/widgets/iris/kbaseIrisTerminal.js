@@ -333,6 +333,23 @@
             );
         },
 
+        addCommandHistory : function(history) {
+            if (this.commandHistory == undefined) {
+                this.commandHistory = [];
+            }
+
+            this.commandHistory.push(history);
+            this.saveCommandHistory();
+            this.commandHistoryPosition = this.commandHistory.length;
+
+            if (this.recording) {
+                if (this.record == undefined) {
+                    this.record = [];
+                }
+                this.record.push(history);
+            }
+        },
+
         loadCommandHistory : function() {
             this.client().get_file(
                 this.sessionId(),
@@ -776,10 +793,9 @@
 
                 if (! subCommand) {
                     if (! viaInvoke) {
-                        this.commandHistory.push(historyLabel);
+                        this.addCommandHistory(command);
                     }
-                    this.saveCommandHistory();
-                    this.commandHistoryPosition = this.commandHistory.length;
+
                     var $scriptWidget = $.jqElem('div').kbaseIrisTerminalWidget();
 
                     if ($containerWidget) {
@@ -902,8 +918,7 @@
                 if (! validTokens) {
 
                     $widget.setInput(rawCmd);
-                    this.commandHistory.push(rawCmd);
-                    this.saveCommandHistory();
+                    this.addCommandHistory(rawCmd);
                     $widget.setError("Error - invalid format for workspace token - " + m[0]);
 
                     if ($containerWidget) {
@@ -1321,10 +1336,47 @@
                 return $deferred.promise();
             }
 
+            if (m = command.match(/^save\s*(.*)/)) {
+                var args = m[1].split(/\s+/);
+                if (args.length != 1) {
+                    $widget.setError("Invalid save syntax. Please specify a file name.");
+                    $deferred.reject();
+                    return $deferred.promise();
+                }
+                file = args[0];
+
+                this.client().put_file(
+                    this.sessionId(),
+                    file,
+                    //JSON.stringify(this.record),
+                    this.record.join('\n'),
+                    this.cwd,
+                    $.proxy(function() {
+                        $widget.setOutput('Recording saved as ' + file);
+                        this.recording = false;
+                        this.record = undefined;
+                        $deferred.resolve();
+                    }, this),
+                    $.proxy( function() {
+                        $widget.setError("Error received:<br>" + err.error.code + "<br>" + m, 'html');
+                        $deferred.reject();
+                    }, this)
+                );
+
+                return $deferred.promise();
+
+            }
+
             if (! subCommand && this.commandHistory != undefined && ! viaInvoke && ! isHidden) {
-                this.commandHistory.push(command);
-                this.saveCommandHistory();
-                this.commandHistoryPosition = this.commandHistory.length;
+                this.addCommandHistory(command);
+            }
+
+            if (command == 'record') {
+                $widget.setError("recording actions");
+                this.recording = true;
+                this.scroll();
+                $deferred.resolve();
+                return $deferred.promise();
             }
 
             if (command == 'history') {

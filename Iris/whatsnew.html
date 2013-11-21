@@ -12,10 +12,12 @@
     <li>Added <b>edit</b> <i>filename</i> command to launch the file editor from the command line</li>
     <li>Added <b>environment</b> and <b>setenv</b> <i>key=value</i> syntax to customize Iris behavior</li>
     <li>Added <b>end</b> command to jump to end of terminal input</li>
+    <li>Added <b>record</b> command. Save all your actions from that point on as an executable script. Save it with <b>save</b> <i>nameofscript</i>.
+    It can then be executed with <b>execute</b> <i>nameofscript</i></li>
     <li>Added new file button (<i class = 'icon-file'></i>) to file browser to add and optionally immediately edit a file</li>
     <li>Added automatic communication with the workspace. Pass around "files" with <b>@W#<i>workpaceid::type::objectid</i></b>,
     such as: <b>all_entities_Genome &gt; @W#genome_obj_in_workspace</b>, will create an object with id 'genome_obj_in_workspace
-    in your current workspace. The workspace id and type are optional (and must be colon delimited). If this is an ID through
+    in your current workspace. The workspace id and type are optional (and must be :: delimited). If this is an ID through
     standard script redirects (&lt; or &gt;), you don't need to specify IO. If it's a switch (<b>some_script -i <i>name_of_file</i></b>)
     then append the io flag - @W#objid#i to read from the workspace or @W#objid#o to write to it.</li>
     <li>Much nicer selection of variables with the right arrow key</li>
