@@ -1145,7 +1145,7 @@
             }
 
             if (command == 'end') {
-                this.terminal.css({scrollTop: this.terminal.prop('scrollHeight') - this.terminal.height()});
+                this.terminal.animate({scrollTop: this.terminal.prop('scrollHeight') - this.terminal.height()}, 0);
                 $deferred.resolve();
                 return $deferred.promise();
             }
