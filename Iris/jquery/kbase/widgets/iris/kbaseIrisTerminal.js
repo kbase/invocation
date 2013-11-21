@@ -25,7 +25,7 @@
             maxOutput : 100,
             scrollSpeed : 750,
             terminalHeight : '450px',
-            promptIfUnauthenticated : 1,
+            promptIfUnauthenticated : false,
             autocreateFileBrowser: true,
             environment : ['maxOutput', 'scrollSpeed'],
         },
@@ -124,6 +124,7 @@
                         {
                             client              : this.client(),
                             externalControls    : false,
+                            invocationURL       : this.options.invocationURL,
                         }
                     )
                 )
@@ -138,6 +139,35 @@
                         callback(auth);
                     }
                 }, this)
+            );
+
+            if (this.options.commandsElement == undefined) {
+                this.options.commandsElement = $.jqElem('div');
+                this.options.commandsElement.kbaseIrisCommands(
+                    {
+                        client      : this.client(),
+                        terminal    : this,
+                    }
+                )
+            }
+
+            if (this.options.grammar == undefined) {
+                this.options.grammar = $.jqElem('div').kbaseIrisGrammar();
+            }
+
+            var lastScrollTop = 0;
+            this.terminal.on(
+                'scroll',
+                function (e) {
+
+                    var st = $(this).scrollTop();
+                    if (st < lastScrollTop){
+                        $(this).stop(true);
+                    }
+
+                    lastScrollTop = st;
+                }
+
             );
 
             return this;
@@ -350,8 +380,6 @@
                     return;
                 }
 
-
-
                 this.run(cmd);
                 this.scroll();
                 this.input_box.val('');
@@ -359,6 +387,11 @@
         },
 
         keydown: function(event) {
+
+            if (event.metaKey || event.altKey || event.ctrlKey) {
+                return;
+            }
+
 
             if (event.which == 38) {
                 event.preventDefault();
@@ -381,8 +414,10 @@
                     var cursorPosition = this.input_box.getCursorPosition();
 
                     if (cursorPosition != undefined && cursorPosition < input_box_length) {
-                        this.selectNextInputVariable(event);
-                        return;
+                    var ret;
+                        if (ret = this.selectNextInputVariable(event)) {
+                            return;
+                        }
                     }
 
                     event.preventDefault();
@@ -464,7 +499,10 @@
 
             var pos = this.input_box.getCursorPosition();
 
-            if (match = this.input_box.val().match(/(\$\S+)/)) {
+            var posRegex = new RegExp('.{' + pos + ',}?(\\$\\S+)');
+
+            if (match = this.input_box.val().match(posRegex)) {
+
                 if (e != undefined) {
                     e.preventDefault();
                 }
@@ -472,12 +510,24 @@
                 var start = this.input_box.val().indexOf(match[1]);
                 var end = this.input_box.val().indexOf(match[1]) + match[1].length;
                 //this.input_box.focusEnd();
-                this.input_box.setSelection(
-                    start,
-                    end
-                );
-                this.input_box.setSelection(start, end);
+                if (pos < start || pos == 0) {
+                    this.input_box.setSelection(
+                        start,
+                        end
+                    );
+                    this.input_box.setSelection(start, end);
+                    return true;
+                }
+                else if (pos == start) {
+                    this.input_box.setCursorPosition(pos + 1);
+                }
             }
+            else {
+                this.input_box.setCursorPosition(pos + 1);
+            }
+
+
+            return false;
         },
 
         search_json_to_table : function(json, filter) {
@@ -599,13 +649,21 @@
         },
 
         // Outputs an hr
-        out_line: function(text) {
+        out_line: function($container) {
+
+            if ($container == undefined) {
+                $container = this.terminal;
+            }
+
             var $hr = $('<hr>');
-            this.terminal.append($hr);
+            $container.append($hr);
             this.scroll(0);
         },
 
         scroll: function(speed) {
+
+            this.terminal.stop(true);
+
             if (speed == undefined) {
                 speed = parseInt(this.options.scrollSpeed);
             }
@@ -655,8 +713,42 @@
             this.live_widgets.push($widget);
         },
 
+        evaluateScript : function($terminal, $widget, script, $deferred) {
+            var res;
+            try {
+
+                if (script.match(/^(['"]).*\1$/)) {
+                    script = eval(script);
+                }
+
+                if ($widget.output() == undefined) {
+                    $widget.setOutput($.jqElem('div'));
+                }
+
+                script = script.replace(/\$terminal.invoke\(/, '$terminal.invoke($widget,');
+                res = eval(script);
+                if ($widget.output() == undefined) {
+                    $widget.setOutput(res);
+                };
+                $deferred.resolve();
+
+                return true;
+            }
+            catch (e) {
+                $widget.setError(e);
+                $deferred.reject();
+
+                return false;
+            }
+
+        },
+
+        invoke : function($containerWidget, rawCmd) {
+            this.run(rawCmd, undefined, false, $containerWidget, true);
+        },
+
         // Executes a command
-        run: function(rawCmd, $widget, subCommand) {
+        run: function(rawCmd, $widget, subCommand, $containerWidget, viaInvoke) {
 
             if ($widget == undefined) {
                 $widget = $.jqElem('div').kbaseIrisTerminalWidget();
@@ -665,10 +757,10 @@
             var $deferred = $.Deferred();
 
             var tokens = this.options.grammar.tokenize(rawCmd);
-
             // no tokens? No command. Bail out.
             if (tokens.length == 0) {
-                return;
+                $deferred.resolve();
+                return $deferred.promise();
             }
 
             // okay. We've tokenized the command. If the first element is an array, then it's a set of commands
@@ -677,14 +769,26 @@
             if ($.isArray(tokens[0])) {
 
                 if (! subCommand) {
-                    this.commandHistory.push(rawCmd);
+                    if (! viaInvoke) {
+                        this.commandHistory.push(rawCmd);
+                    }
                     this.saveCommandHistory();
                     this.commandHistoryPosition = this.commandHistory.length;
                     var $scriptWidget = $.jqElem('div').kbaseIrisTerminalWidget();
-                    this.terminal.append($scriptWidget.$elem);
+
+                    if ($containerWidget) {
+                        $containerWidget.output().append($scriptWidget.$elem);
+                        $scriptWidget.setSubCommand(true, true);
+                    }
+                    else {
+                        this.terminal.append($scriptWidget.$elem);
+                    }
+
                     $scriptWidget.setCwd(this.cwd);
                     $scriptWidget.setInput(rawCmd);
+                    $scriptWidget.setOutput($.jqElem('div'));
                     subCommand = true;
+                    $containerWidget = $scriptWidget;
                 }
 
                 rawCmd = this.options.grammar.detokenize(tokens.shift());
@@ -694,7 +798,9 @@
                         this.run(
                             this.options.grammar.detokenize(tokens),
                             undefined,
-                            true
+                            true,
+                            $containerWidget,
+                            viaInvoke
                         );
                     }, this)
                 );
@@ -711,7 +817,13 @@
             $widget.setCwd(this.cwd);
             $widget.setInput(command);
             $widget.setSubCommand(subCommand);
-            this.terminal.append($widget.$elem);
+
+            if ($containerWidget) {
+                $containerWidget.output().append($widget.$elem);
+            }
+            else {
+                this.terminal.append($widget.$elem);
+            }
 
             this.dbg("Run (" + command + ')');
 
@@ -722,10 +834,15 @@
                     )
                 );
                 $deferred.resolve();
-                return;
+                return $deferred.promise();
             }
 
-            this.out_line();
+            //if ($containerWidget) {
+            //    this.out_line($containerWidget.output());
+            //}
+            //else {
+            //    this.out_line();
+            //}
 
             var m;
 
@@ -736,7 +853,7 @@
                 if (! args[0].match(/^\w/)) {
                     $widget.setError('Invalid login syntax');
                     $deferred.reject();
-                    return;
+                    return $deferred.promise();
                 }
                 sid = args[0];
 
@@ -770,21 +887,23 @@
                     )
                 );
                 this.scroll();
-                return;
+                return $deferred.promise();
             }
 
             if (m = command.match(/^authenticate\s*(.*)/)) {
                 var args = m[1].split(/\s+/)
                 if (args.length != 1) {
                     $widget.setError("Invalid login syntax.");
-                    return;
+                    $deferred.resolve();
+                    return $deferred.promise();
                 }
                 sid = args[0];
 
                 this.trigger('loggedOut');
                 this.trigger('promptForLogin', {user_id : sid});
 
-                //XXX no promise resolution here.
+                //XXX no promise resolution here, so we will not return the promise.
+                //this is the ONLY exception
 
                 return;
             }
@@ -796,7 +915,7 @@
 
                 $deferred.resolve();
 
-                return;
+                return $deferred.promise();
             }
 
             if (m = command.match(/^logout/)) {
@@ -807,7 +926,7 @@
 
                 $deferred.resolve();
 
-                return;
+                return $deferred.promise();
             }
 
             if (m = command.match(/^whatsnew/)) {
@@ -830,7 +949,7 @@
                         type: 'GET',
                     }
                 );
-                return;
+                return $deferred.promise();
             }
 
             if (command == "next") {
@@ -858,7 +977,7 @@
                         'html'
                     );
                     $deferred.reject();
-                    return;
+                    return $deferred.promise();
                 }
 
                 var $output = $widget.data('output');
@@ -889,7 +1008,7 @@
                 $deferred.resolve();
 
                 this.scroll();
-                return;
+                return $deferred.promise();
             }
 
             if (command == 'show_tutorial') {
@@ -898,7 +1017,8 @@
 
                 if ($page == undefined) {
                     $widget.setError("Could not load tutorial");
-                    return;
+                    $deferred.reject();
+                    return $deferred.promise();
                 }
 
                 $page = $page.clone();
@@ -918,7 +1038,7 @@
                 $deferred.resolve();
                 this.scroll();
 
-                return;
+                return $deferred.promise();
             }
 
             if (command == 'commands') {
@@ -965,7 +1085,7 @@
                        this
                     )
                 );
-                return;
+                return $deferred.promise();
             }
 
             if (m = command.match(/^questions\s*(\S+)?/)) {
@@ -1014,23 +1134,30 @@
                 $deferred.resolve();
                 this.scroll();
 
-                return;
+                return $deferred.promise();
             }
 
             if (command == 'clear') {
                 this.terminal.empty();
+                this.trigger('clearIrisProcesses');
                 $deferred.resolve();
-                return;
+                return $deferred.promise();
+            }
+
+            if (command == 'end') {
+                this.terminal.css({scrollTop: this.terminal.prop('scrollHeight') - this.terminal.height()});
+                $deferred.resolve();
+                return $deferred.promise();
             }
 
             if (! this.sessionId()) {
                 $widget.setError("You are not logged in.");
                 this.scroll();
                 $deferred.resolve();
-                return;
+                return $deferred.promise();
             }
 
-            if (! subCommand && this.commandHistory != undefined) {
+            if (! subCommand && this.commandHistory != undefined && ! viaInvoke) {
                 this.commandHistory.push(command);
                 this.saveCommandHistory();
                 this.commandHistoryPosition = this.commandHistory.length;
@@ -1080,7 +1207,7 @@
                 $widget.setOutput($tbl.$elem);
                 $widget.setValue(this.commandHistory);
                 $deferred.resolve();
-                return;
+                return $deferred.promise();
             }
             else if (m = command.match(/^!(\d+)/)) {
                 command = this.commandHistory[m[1]];
@@ -1092,7 +1219,7 @@
                 if (args.length != 1) {
                     $widget.setError("Invalid cd syntax.");
                     $deferred.reject();
-                    return;
+                    return $deferred.promise();
                 }
                 dir = args[0];
 
@@ -1116,7 +1243,7 @@
                         this
                     )
                 );
-                return;
+                return $deferred.promise();
             }
 
             if (m = command.match(/^(\$\S+)\s*=\s*(\S+)/)) {
@@ -1129,7 +1256,7 @@
                     $widget.setOutput(m[1] + ' set to ' + m[2]);
                 }
                 $deferred.resolve();
-                return;
+                return $deferred.promise();
             }
 
             if (command == 'variables') {
@@ -1161,7 +1288,7 @@
                 $widget.setValue(keyedVars);
                 $deferred.resolve();
                 this.scroll();
-                return;
+                return $deferred.promise();
 
             }
 
@@ -1196,7 +1323,7 @@
                 $widget.setValue(keyedVars);
                 $deferred.resolve();
                 this.scroll();
-                return;
+                return $deferred.promise();
 
             }
 
@@ -1213,7 +1340,7 @@
                 }
                 $deferred.resolve();
                 this.scroll();
-                return;
+                return $deferred.promise();
             }
 
 
@@ -1222,7 +1349,7 @@
                 this.aliases[m[1]] = m[2];
                 $widget.setOutput(m[1] + ' set to ' + m[2]);
                 $deferred.resolve();
-                return;
+                return $deferred.promise();
             }
 
             if (m = command.match(/^upload\s*(\S+)?$/)) {
@@ -1237,7 +1364,7 @@
                     //XXX NOT QUITE ACCURATE...NEEDS TO WAIT FOR UPLOADFILE TO FINISH
                     $deferred.resolve();
                 }
-                return;
+                return $deferred.promise();
             }
 
             if (m = command.match(/^download\s*(\S+)?$/)) {
@@ -1248,7 +1375,7 @@
                     $fb.openFile(file);
                     $deferred.resolve();
                 }
-                return;
+                return $deferred.promise();
             }
 
             if (m = command.match(/^edit\s*(\S+)?$/)) {
@@ -1256,10 +1383,16 @@
                 if (this.fileBrowsers.length) {
                     var $fb = this.fileBrowsers[0];
                     $fb.data('active_directory', this.cwd);
-                    $fb.editFileCallback()(file, $fb);
+                    if ($fb.editFileCallback()) {
+                        $fb.editFileCallback()(file, $fb);
+                    }
+                    else {
+                        $widget.setError("Cannot edit : no editor");
+                    }
+
                     $deferred.resolve();
                 }
-                return;
+                return $deferred.promise();
             }
 
             if (m = command.match(/^#\s*(.+)/)) {
@@ -1268,7 +1401,7 @@
                 $widget.setOutput($.jqElem('i').text(m[1]));
                 $widget.setValue(m[1]);
                 $deferred.resolve();
-                return;
+                return $deferred.promise();
             }
 
             if (m = command.match(/^view\s+(\S+)$/)) {
@@ -1296,7 +1429,7 @@
                     $deferred.reject();
                 }, this));
 
-                return;
+                return $deferred.promise();
 
 
             }
@@ -1372,7 +1505,7 @@
                    }
                 );
 
-                return;
+                return $deferred.promise();
             }
 
             if (m = command.match(/^cp\s*(.*)/)) {
@@ -1380,7 +1513,7 @@
                 if (args.length != 2) {
                     $widget.setError("Invalid cp syntax.");
                     $deferred.reject();
-                    return;
+                    return $deferred.promise();
                 }
                 from = args[0];
                 to   = args[1];
@@ -1404,14 +1537,14 @@
                         this
                     )
                 );
-                return;
+                return $deferred.promise();
             }
             if (m = command.match(/^mv\s*(.*)/)) {
                 var args = m[1].split(/\s+/)
                 if (args.length != 2) {
                     $widget.setError("Invalid mv syntax.");
                     $deferred.reject();
-                    return;
+                    return $deferred.promise();
                 }
 
                 from = args[0];
@@ -1435,7 +1568,7 @@
                         },
                         this
                     ));
-                return;
+                return $deferred.promise();
             }
 
             if (m = command.match(/^mkdir\s*(.*)/)) {
@@ -1443,7 +1576,7 @@
                 if (args[0].length < 1){
                     $widget.setError("Invalid mkdir syntax.");
                     $deferred.reject();
-                    return;
+                    return $deferred.promise();
                 }
                 $.each(
                     args,
@@ -1469,7 +1602,7 @@
                         );
                     }, this)
                 )
-                return;
+                return $deferred.promise();
             }
 
             if (m = command.match(/^rmdir\s*(.*)/)) {
@@ -1477,7 +1610,7 @@
                 if (args[0].length < 1) {
                     $widget.setError("Invalid rmdir syntax.");
                     $deferred.reject();
-                    return;
+                    return $deferred.promise();
                 }
                 $.each(
                     args,
@@ -1503,7 +1636,7 @@
                         );
                     }, this)
                 );
-                return;
+                return $deferred.promise();
             }
 
             if (m = command.match(/^rm\s+(.*)/)) {
@@ -1511,7 +1644,7 @@
                 if (args[0].length < 1) {
                     $widget.setError("Invalid rm syntax.");
                     $deferred.reject();
-                    return;
+                    return $deferred.promise();
                 }
                 $.each(
                     args,
@@ -1537,23 +1670,45 @@
                         );
                     }, this)
                 );
-                return;
+                return $deferred.promise();
             }
 
             if (m = command.match(/^execute\s+(.*)/)) {
                 var args = m[1].split(/\s+/);
-                if (args[0].length < 1) {
-                    $widget.setError("Invalid rm syntax.");
+                if (args.length != 1) {
+                    $widget.setError("Invalid execute syntax.");
                     $deferred.reject();
-                    return;
+                    return $deferred.promise();
                 }
                 this.client().get_file(
                     this.sessionId(),
                     args[0], this.cwd,
                     jQuery.proxy(
                         function (script) {
+                            //XXX promise resolution here is...sketchy at best.
+                            //we obviously haven't finished running anything, so we shouldn't
+                            //necessarily resolve, but it would be resolved by the next call through
+                            //the run loop anyway. So bugger all if I know. I'll have to revisit.
                             $deferred.resolve();
-                            this.run(script, undefined, true);
+
+                            //Sigh. Freakin' special case. This is the time that a run commmand
+                            //can spawn a new run, but NOT via tokenization. So we explicitly
+                            //toss the <hr> into the output, and nuke the following hr in the terminal
+                            $widget.setOutput($.jqElem('div'));
+                            //this.out_line($widget.output());
+                            if ($widget.$elem.next().prop('tagName') == 'HR') {
+                                $widget.$elem.next().remove();
+                            }
+
+
+                            this.run(
+                                script,
+                                undefined,
+                                true,
+                                $widget,
+                                $containerWidget,
+                                viaInvoke
+                            );
                         },
                         this
                     ),
@@ -1562,7 +1717,36 @@
                         $deferred.reject();
                     }, this)
                 );
-                return;
+                return $deferred.promise();
+            }
+
+            if (m = command.match(/^evaluate\s+(.*)/)) {
+
+                var script = m[1];
+                if (script.length < 1) {
+                    $widget.setError("Invalid evalute syntax.");
+                    $deferred.reject();
+                    return $deferred.promise();
+                }
+
+                this.client().get_file(
+                    this.sessionId(),
+                    script, this.cwd,
+                    jQuery.proxy(
+                        function (script) {
+                            this.evaluateScript(this, $widget, script, $deferred, $widget);
+                        },
+                        this
+                    ),
+                    jQuery.proxy(function (e) {
+
+                        //dammit. No such script. see if we can evalute it.
+                        this.evaluateScript(this, $widget, script, $deferred, $widget);
+
+                    }, this)
+                );
+
+                return $deferred.promise();
             }
 
             if (d = command.match(/^ls\s*(.*)/)) {
@@ -1572,21 +1756,16 @@
                     d = ".";
                 }
                 else {
-                    if (args.length != 1) {
-                        $widget.setError("Invalid ls syntax.");
-                        $deferred.reject();
-                        return;
-                    }
-                    else {
-                        d = args[0];
-                    }
+                    d = d[1];
                 }
 
                 //okay, add in regex support
                 var regex = undefined;
-                if (d.match(/[*+?]/)) {
+                if (d.match(/[*+?\s.]/)) {
+                    d = d.replace(/\s+/g, '|');
+                    d = d.replace(/\./g, '\.');
                     d = d.replace(/([*+?])/g, '.$1');
-                    regex = new RegExp('^' + d + '$');
+                    regex = new RegExp('^(' + d + ')$');
                     d = '.';
                 }
 
@@ -1704,7 +1883,7 @@
                          $deferred.reject();
                      }
                     );
-                return;
+                return $deferred.promise();
             }
 
             if (w = command.match(/^widget\s+(.*)/)) {
@@ -1714,13 +1893,13 @@
                 if (args.length != 1 || ! args[0].length) {
                     $widget.setError("incorrect add widget syntax");
                     $deferred.reject();
-                    return;
+                    return $deferred.promise();
                 }
 
                 this.addWidget(args[0]);
 
                 $deferred.resolve();
-                return;
+                return $deferred.promise();
             }
 
 
@@ -1733,14 +1912,14 @@
                     if (parsed.explain) {
                         $widget.setOutput(parsed.execute);
                         $deferred.resolve();
-                        return;
+                        return $deferred.promise();
                     }
 
                 }
                 else if (parsed.parsed.length && parsed.fail) {
                     $widget.setError(parsed.error);
                     $deferred.reject();
-                    return;
+                    return $deferred.promise();
                 }
             }
 
@@ -1748,6 +1927,7 @@
             //command = command.replace(/\n/g, " ");
 
             var pid = this.uuid();
+            $widget.setPid(pid);
 
             var $pe = $.jqElem('div').text(command);
             $pe.kbaseButtonControls(

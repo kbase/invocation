@@ -1,6 +1,10 @@
 <h3>v0.0.5 - 11/18/2013</h3>
 <ul>
     <li>Scriptability - save your commands to a file (one command per line), then run it later with <b>execute</b> <i>nameofscript</i></li>
+    <li>Scriptability - Write a javascript program and run it later with <b>evaluate</b> <i>text of program</i> or
+        <b>evaluate</b> <i>name of program file</i>. The terminal object is accessible via $terminal, the current widget
+        via $widget. Run further iris commands via $terminal.invoke('....');
+    </li>
     <li>Multiple commands can be run at once - delimited commands with semicolons. <b>echo a </b><u>;</u><b> echo b</b></li>
     <li><b>ls</b> command can now accept standard shell wildcard syntax <b>ls</b> <i>*.txt</i>, or <b>ls</b> <i>sequences.*</i>, etc.</li>
     <li>Added <b>variables</b> command to list user defined session variables</li>
@@ -8,7 +12,9 @@
     <li>Added <b>edit</b> <i>filename</i> command to launch the file editor from the command line</li>
     <li>Added <b>environment</b> and <b>setenv</b> <i>key=value</i> syntax to customize Iris behavior</li>
     <li>Added new file button (<i class = 'icon-file'></i>) to file browser to add and optionally immediately edit a file</li>
+    <li>Much nicer selection of variables with the right arrow key</li>
     <li>Alphabetically sorted the groups of commands</li>
+    <li>Scrolling up while the UI is automatically scrolling down will now halt the scroll</li>
     <li>Moved the interface to bootstrap v3.0</li>
 </ul>
 <h3>v0.0.4 - 09/23/2013</h3>

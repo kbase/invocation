@@ -68,11 +68,9 @@
                     var $plist = $('#process-list').kbaseIrisProcessList();
 
                     var $term = $.jqElem('div').kbaseIrisTerminal({
-                        'promptIfUnauthenticated'   : 0,
                         'invocationURL'             : 'http://kbase.us/services/invocation',
                         //'invocationURL'             : 'http://140.221.85.107:7049',//'http://kbase.us/services/invocation',
                         'commandsElement'           : $('#command-list'),
-                        'grammar'                   : $('<div></div>').kbaseIrisGrammar(),
                         autocreateFileBrowser       : false,
                         widgets : {
                             echo : function() { return $.jqElem('div').kbaseIrisEchoWidget()},

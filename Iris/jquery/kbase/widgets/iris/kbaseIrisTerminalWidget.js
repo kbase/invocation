@@ -22,6 +22,37 @@
                 subCommand : false,
             },
 
+            init : function(options) {
+                this._super(options);
+
+                $(document).on(
+                    'updateIrisProcess.kbaseIris',
+                    $.proxy(function (e, params) {
+                        if (params.pid == this.pid()) {
+                            this.startThinking();
+                        }
+                    }, this)
+                );
+
+                $(document).on(
+                    'removeIrisProcess.kbaseIris',
+                    $.proxy(function (e, pid) {
+                        if (pid == this.pid()) {
+                            this.stopThinking();
+                        }
+                    }, this)
+                );
+
+                $(document).on(
+                    'clearIrisProcesses.kbaseIris',
+                    $.proxy(function (e) {
+                        this.stopThinking();
+                    }, this)
+                );
+
+                return this;
+            },
+
             appendUI : function($elem) {
 
                 var $inputDiv = $.jqElem('div')
@@ -60,6 +91,7 @@
                         controls : [
                             {
                                 icon : 'icon-eye-open',
+                                //tooltip : 'view output',
                                 callback :
                                     function (e, $it) {
                                         $it.viewOutput();
@@ -67,6 +99,7 @@
                             },
                             {
                                 icon : 'icon-remove',
+                                //tooltip : 'remove command',
                                 callback :
                                     function (e) {
                                         var $next = $elem.next();
@@ -76,6 +109,16 @@
                                         $elem.remove();
                                     }
                             },
+                            {
+                                icon : 'icon-caret-up',
+                                'icon-alt' : 'icon-caret-down',
+                                //tooltip : {title : 'collapse / expand', placement : 'bottom'},
+                                callback : $.proxy(function(e) {
+                                    this.data('output').toggle();
+                                    this.data('error').toggle();
+                                    this.data('line').toggle();
+                                }, this)
+                            },
 
                         ]
                     }
@@ -83,8 +126,22 @@
 
                 $elem
                     .append(
+                        $.jqElem('div')
+                            .attr('id', 'thoughtBox')
+                            .addClass('pull-left')
+                            .append( $.jqElem('i').addClass('icon-spinner icon-spin') )
+                            .css('display', 'none')
+                    )
+                    .append(
                         $inputDiv
                             .attr('id', 'inputContainer')
+                            .on('click',
+                                $.proxy(function(e) {
+                                    this.data('output').toggle();
+                                    this.data('error').toggle();
+                                    this.data('line').toggle();
+                                }, this)
+                            )
                     )
                     .append(
                         $.jqElem('div')
@@ -97,6 +154,7 @@
                             .css('font-style', 'italic')
                             .kb_bind(this, 'error')
                     )
+                    .append($.jqElem('hr').attr('id', 'line'))
                 ;
 
                 this._rewireIds($elem, this);
@@ -105,7 +163,15 @@
 
             },
 
-            setSubCommand : function(subCommand) {
+            startThinking : function() {
+                this.data('thoughtBox').show();
+            },
+
+            stopThinking : function() {
+                this.data('thoughtBox').hide();
+            },
+
+            setSubCommand : function(subCommand, open) {
 
                 if (this.data('inputContainer') == undefined) {
                     return;
@@ -113,6 +179,11 @@
 
                 if (subCommand) {
                     this.data('inputContainer').css('color', 'gray');
+                    if (! open) {
+                        this.data('output').hide();
+                        this.data('error').hide();
+                        this.data('line').hide();
+                    }
                 }
                 else {
                     this.data('inputContainer').css('color', 'black');

@@ -15,6 +15,7 @@
             version: "1.0.0",
             _accessors : [
                 'promise',
+                {name : 'pid', setter : 'setPid'},
                 {name : 'input', setter : 'setInput'},
                 {name : 'output', setter : 'setOutput'},
                 {name : 'error', setter : 'setError'},
@@ -38,6 +39,10 @@
 
             setSubCommand : function(subCommand) {
                 this.setValueForKey('subCommand', subCommand);
+            },
+
+            setPid : function(newVal) {
+                this.setValueForKey('pid', newVal);
             },
 
             setValue : function(newVal) {

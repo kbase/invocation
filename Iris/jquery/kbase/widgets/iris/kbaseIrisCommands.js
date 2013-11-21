@@ -34,7 +34,7 @@
             link : function (evt) {
                 alert("clicked on " + $(evt.target).text());
             },
-            englishCommands : 0,
+            englishCommands : false,
             fontSize : '90%',
             overflow : true,
             sectionHeight : '300px',

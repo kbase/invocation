@@ -48,7 +48,7 @@
                     detokenized += this.detokenize(token) + ';';
                 }
                 else {
-                    if (token.match(/\s/)) {
+                    if (token.match(/[\s;]/)) {
                         if (token.match(/"/) && ! token.match(/\\"/)) {
                             detokenized += " '" + token + "'";
                         }
@@ -87,6 +87,7 @@
             var escaped = false;
             var tokensList = [];
             var lastRedirectChar = false;
+            var lastChr = '';
 
             for (var idx = 0; idx < string.length; idx++) {
                 var chr = string.charAt(idx);
@@ -103,6 +104,7 @@
                             tokensList.push(tokens);
                             tokens = [];
                         }
+                        lastChr = chr;
                         continue;
                     }
                 }
@@ -136,6 +138,7 @@
                         tokens.push(partial);
                         partial = '';
                     }
+                    lastChr = chr;
                     continue;
                 }
 
@@ -146,12 +149,13 @@
                         tokens.push(partial);
                         partial = '';
                         quote = undefined;
+                        lastChr = chr;
                         continue;
                     }
 
                 }
 
-                if (quote == undefined) {
+                if (quote == undefined && lastChr.match(/\s/) ) {
                     if (chr == '"' || chr == "'") {
                         quote = chr;
                     }
@@ -163,6 +167,8 @@
                 else {
                     escaped = false;
                 }
+
+                lastChr = chr;
 
             }
 

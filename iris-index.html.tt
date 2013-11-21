@@ -68,10 +68,8 @@
                     var $plist = $('#process-list').kbaseIrisProcessList();
 
                     var $term = $.jqElem('div').kbaseIrisTerminal({
-                        'promptIfUnauthenticated'   : 0,
                         'invocationURL'             : '[% kb_service_url %]',
                         'commandsElement'           : $('#command-list'),
-                        'grammar'                   : $('<div></div>').kbaseIrisGrammar(),
                         autocreateFileBrowser       : false,
                         widgets : {
                             echo : function() { return $.jqElem('div').kbaseIrisEchoWidget()},
