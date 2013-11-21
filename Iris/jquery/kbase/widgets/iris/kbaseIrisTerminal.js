@@ -750,6 +750,12 @@
         // Executes a command
         run: function(rawCmd, $widget, subCommand, $containerWidget, viaInvoke) {
 
+            var historyLabel = rawCmd;
+            if ($.isArray(rawCmd)) {
+                historyLabel = rawCmd[1];
+                rawCmd = rawCmd[0];
+            }
+
             if ($widget == undefined) {
                 $widget = $.jqElem('div').kbaseIrisTerminalWidget();
             }
@@ -770,7 +776,7 @@
 
                 if (! subCommand) {
                     if (! viaInvoke) {
-                        this.commandHistory.push(rawCmd);
+                        this.commandHistory.push(historyLabel);
                     }
                     this.saveCommandHistory();
                     this.commandHistoryPosition = this.commandHistory.length;
@@ -785,7 +791,7 @@
                     }
 
                     $scriptWidget.setCwd(this.cwd);
-                    $scriptWidget.setInput(rawCmd);
+                    $scriptWidget.setInput(historyLabel);
                     $scriptWidget.setOutput($.jqElem('div'));
                     subCommand = true;
                     $containerWidget = $scriptWidget;
@@ -814,15 +820,174 @@
             //now replaceVariables on the rawCmd and away we go.
             var command = this.replaceVariables(rawCmd);
 
+            var isHidden = false;
+            if ( m = command.match(/^\(\((.+)\)\)$/) ) {
+                isHidden = true;
+                command = m[1];
+                command = command.replace(/^\s+/, '');
+                command = command.replace(/\s+$/, '');
+            }
+
+            var workspaceTokens = [];
+            //okay. The very very first thing we want to do is check for a magic workspace token.
+            if (wstokens = command.match(/((?:<|>>?)\s*)?@W#([^#\s]+)(#[io])?/g)) {
+            //if (wstokens = command.match(/@W#([^#]+)#([io])/g)) {
+
+                var cmdCopy = command;
+                var validTokens = true;
+
+                $.each(
+                    wstokens,
+                    function (idx, wstoken_string) {
+
+                        var workspaceToken = {
+                            type : 'string'
+                        };
+
+                        if (m = wstoken_string.match(/((?:<|>>?)\s*)?@W#([^#\s]+)#?([io])?/)) {
+                        //if (m = wstoken_string.match(/@W#([^#]+)#([io])/)) {
+
+
+                            var id;
+                            var io = '';
+
+                            if (m[1] != undefined && m[1].match(/([<>])/)) {
+                                var str = m.shift();  //toss out the string;
+                                io  = m.shift();  //the io redirection;
+                                m.unshift(str);          //toss the string back on
+                            }
+                            else {
+                                var str = m.shift();     //toss out the string;
+                                m.shift();               //toss out the io redirection;
+                                m.unshift(str);          //toss the string back on
+                            }
+
+                            id = m[1];
+                            workspaceToken.io = m[2];
+
+                            if (io.match(/</)) {
+                                workspaceToken.io = 'i';
+                            }
+                            else if (io.match(/>/)) {
+                                workspaceToken.io = 'o';
+                            }
+
+                            id = id.split('::');
+                            if (id.length == 3) {
+                                workspaceToken.workspace    = id[0];
+                                workspaceToken.type         = id[1];
+                                workspaceToken.id           = id[2];
+                            }
+                            else if (id.length == 2) {
+                                workspaceToken.type         = id[0];
+                                workspaceToken.id           = id[1];
+                            }
+                            else if (id.length == 1) {
+                                workspaceToken.id           = id[0];
+                            }
+
+                            if (workspaceToken.io == undefined) {
+                                validTokens = false;
+//                                return;
+                            }
+
+                            workspaceTokens.push(workspaceToken);
+
+                            cmdCopy = cmdCopy.replace(wstoken_string, io + workspaceToken.id);
+
+                        }
+                    }
+                );
+
+                if (! validTokens) {
+
+                    $widget.setInput(rawCmd);
+                    $widget.setError("Invalid format for workspace token - " + m[0]);
+
+                    if ($containerWidget) {
+                        $containerWidget.output().append($widget.$elem);
+                    }
+                    else {
+                        this.terminal.append($widget.$elem);
+                    }
+
+                    $deferred.reject();
+                    return $deferred.promise();
+                }
+
+                var newCommands = [];
+
+                $.each(
+                    workspaceTokens,
+                    function (idx, token) {
+                        if (token.io == 'i') {
+                            var workspaceId = '';
+                            if (token.workspace != undefined) {
+                                workspaceId = ' -w ' + token.workspace + ' ';
+                            }
+                            newCommands.push(
+                                '((kbws-get ' + token.type + ' ' + token.id + workspaceId + ' > ' + token.id + '))'
+                                //'kbws-get ' + token.type + ' ' + token.id + workspaceId + ' > ' + token.id + ''
+                            )
+                        }
+                    }
+                );
+
+                newCommands.push(cmdCopy);
+
+                $.each(
+                    workspaceTokens,
+                    function (idx, token) {
+                        if (token.io == 'o') {
+                            var workspaceId = '';
+                            if (token.workspace != undefined) {
+                                workspaceId = ' -w ' + token.workspace + ' ';
+                            }
+                            newCommands.push(
+                                '((kbws-load ' + token.type + ' ' + token.id + ' ' + token.id + ' -s ' + workspaceId + '));(( rm ' + token.id + '))'
+                                //'kbws-load ' + token.type + ' ' + token.id + ' ' + token.id + ' -s ' + workspaceId + ';rm ' + token.id
+                            )
+                        }
+                        else if (token.io == 'i') {
+                            newCommands.push(
+                                '(( rm ' + token.id + '))'
+                            )
+                        }
+                    }
+                );
+
+                $deferred.resolve();
+                this.run(
+                    [newCommands.join(';'), rawCmd],
+                    $widget,
+                    subCommand,
+                    $containerWidget,
+                    viaInvoke
+                );
+                return $deferred.promise();
+
+            }
+            else {
+                //this.dbg("no magic workspace token");
+            }
+
+//                my @commands =
+//
+//((kbws-get string agresults > @W##agresults#i));
+//genomes_to_contigs < @W##agresults#i > @W##g2cres#o;
+//((kbws-load string g2cres @W##g2cres#o -s; rm @W##g2cres#o))
+
             $widget.setCwd(this.cwd);
             $widget.setInput(command);
             $widget.setSubCommand(subCommand);
 
-            if ($containerWidget) {
-                $containerWidget.output().append($widget.$elem);
-            }
-            else {
-                this.terminal.append($widget.$elem);
+            if (! isHidden) {
+                if ($containerWidget) {
+                    $containerWidget.output().append($widget.$elem);
+                }
+                else {
+                    this.terminal.append($widget.$elem);
+                }
             }
 
             this.dbg("Run (" + command + ')');
@@ -1157,7 +1322,7 @@
                 return $deferred.promise();
             }
 
-            if (! subCommand && this.commandHistory != undefined && ! viaInvoke) {
+            if (! subCommand && this.commandHistory != undefined && ! viaInvoke && ! isHidden) {
                 this.commandHistory.push(command);
                 this.saveCommandHistory();
                 this.commandHistoryPosition = this.commandHistory.length;
@@ -1948,13 +2113,15 @@
                 }
             );
 
-            this.trigger(
-                'updateIrisProcess',
-                {
-                    pid : pid,
-                    content : $pe
-                }
-            );
+            if (! isHidden) {
+                this.trigger(
+                    'updateIrisProcess',
+                    {
+                        pid : pid,
+                        content : $pe
+                    }
+                );
+            }
 
             //var commands = command.split(/[;\r\n]/) {
 

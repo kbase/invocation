@@ -93,9 +93,9 @@
                 var win = window.open();
                 win.document.open();
                 var output =
-                    $('<div></div>')
+                    $.jqElem('div')
                         .append(
-                            $('<div></div>')
+                            $.jqElem('div')
                                 .css('white-space', 'pre')
                                 .css('font-family' , 'monospace')
                                 .append(
@@ -125,6 +125,9 @@
                     }
                 );
             },
+
+            startThinking : function() {},
+            stopThinking : function() {},
 
         }
 
