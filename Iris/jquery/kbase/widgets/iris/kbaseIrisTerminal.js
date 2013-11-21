@@ -902,7 +902,9 @@
                 if (! validTokens) {
 
                     $widget.setInput(rawCmd);
-                    $widget.setError("Invalid format for workspace token - " + m[0]);
+                    this.commandHistory.push(rawCmd);
+                    this.saveCommandHistory();
+                    $widget.setError("Error - invalid format for workspace token - " + m[0]);
 
                     if ($containerWidget) {
                         $containerWidget.output().append($widget.$elem);
@@ -922,12 +924,11 @@
                     function (idx, token) {
                         if (token.io == 'i') {
                             var workspaceId = '';
-                            if (token.workspace != undefined) {
+                            if (token.workspace.length) {
                                 workspaceId = ' -w ' + token.workspace + ' ';
                             }
                             newCommands.push(
-                                '((kbws-get ' + token.type + ' ' + token.id + workspaceId + ' > ' + token.id + '))'
-                                //'kbws-get ' + token.type + ' ' + token.id + workspaceId + ' > ' + token.id + ''
+                                '((kbws-get -e ' + token.type + ' ' + token.id + workspaceId + ' > ' + token.id + '))'
                             )
                         }
                     }
@@ -940,12 +941,11 @@
                     function (idx, token) {
                         if (token.io == 'o') {
                             var workspaceId = '';
-                            if (token.workspace != undefined) {
+                            if (token.workspace.length) {
                                 workspaceId = ' -w ' + token.workspace + ' ';
                             }
                             newCommands.push(
-                                '((kbws-load ' + token.type + ' ' + token.id + ' ' + token.id + ' -s ' + workspaceId + '));(( rm ' + token.id + '))'
-                                //'kbws-load ' + token.type + ' ' + token.id + ' ' + token.id + ' -s ' + workspaceId + ';rm ' + token.id
+                                '((kbws-load -e ' + token.type + ' ' + token.id + ' ' + token.id + ' -s ' + workspaceId + '));(( rm ' + token.id + '))'
                             )
                         }
                         else if (token.io == 'i') {
@@ -980,14 +980,13 @@
             $widget.setCwd(this.cwd);
             $widget.setInput(command);
             $widget.setSubCommand(subCommand);
+            $widget.setIsHidden(isHidden);
 
-            if (! isHidden) {
-                if ($containerWidget) {
-                    $containerWidget.output().append($widget.$elem);
-                }
-                else {
-                    this.terminal.append($widget.$elem);
-                }
+            if ($containerWidget) {
+                $containerWidget.output().append($widget.$elem);
+            }
+            else {
+                this.terminal.append($widget.$elem);
             }
 
             this.dbg("Run (" + command + ')');
@@ -1107,7 +1106,7 @@
                             this.scroll();
                         }, this),
                         error : $.proxy(function(xhr, textStatus, errorThrown) {
-                            $widget.setOutput($.jqElem('div').html(xhr.responseText));
+                            $widget.setError($.jqElem('div').html(xhr.responseText));
                             $deferred.reject();
                             this.scroll();
                         }, this),

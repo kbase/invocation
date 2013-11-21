@@ -137,9 +137,9 @@
                             .attr('id', 'inputContainer')
                             .on('click',
                                 $.proxy(function(e) {
-                                    this.data('output').toggle();
-                                    this.data('error').toggle();
-                                    this.data('line').toggle();
+                                    this.data('output').show();
+                                    this.data('error').show();
+                                    this.data('line').show();
                                 }, this)
                             )
                     )
@@ -169,6 +169,15 @@
 
             stopThinking : function() {
                 this.data('thoughtBox').hide();
+            },
+
+            setError : function (newVal) {
+                this._super(newVal);
+
+                if ( newVal.match(/error/i) ) {
+                    this.data('inputContainer').css('color', 'red');
+                }
+
             },
 
             setSubCommand : function(subCommand, open) {

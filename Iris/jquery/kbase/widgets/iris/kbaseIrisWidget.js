@@ -16,6 +16,7 @@
             _accessors : [
                 'promise',
                 {name : 'pid', setter : 'setPid'},
+                {name : 'isHidden', setter : 'setIsHidden'},
                 {name : 'input', setter : 'setInput'},
                 {name : 'output', setter : 'setOutput'},
                 {name : 'error', setter : 'setError'},
@@ -45,6 +46,16 @@
                 this.setValueForKey('pid', newVal);
             },
 
+            setIsHidden : function(newVal) {
+                this.setValueForKey('isHidden', newVal);
+                if (newVal) {
+                    this.$elem.css('display', 'none');
+                }
+                else {
+                    this.$elem.css('display', '');
+                }
+            },
+
             setValue : function(newVal) {
                 this.setValueForKey('value', newVal);
             },
@@ -59,6 +70,9 @@
 
             setError : function (newVal) {
                 this.setEscapedText('error', newVal);
+                if ( newVal.match(/error/i) ) {
+                    this.$elem.css('display', '');
+                }
             },
 
             setCwd : function (newVal) {
