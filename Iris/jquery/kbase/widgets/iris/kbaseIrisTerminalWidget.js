@@ -145,8 +145,50 @@
                     )
                     .append(
                         $.jqElem('div')
-                            .attr('id', 'output')
-                            .kb_bind(this, 'output')
+                            .attr('id', 'outputWrapper')
+                            .css('position', 'relative')
+                            .append(
+                                $.jqElem('div')
+                                    .attr('id', 'output')
+                                    .kb_bind(this, 'output')
+                            )
+                            .append(
+                                $.jqElem('div')
+                                    .addClass('btn-group')
+                                    .attr('id', 'motion-buttons')
+                                    .css('right', '0px')
+                                    .css('bottom', '0px')
+                                    .css('position', 'absolute')
+                                    .css('margin-right', '3px')
+                                    .append(
+                                        $.jqElem('button')
+                                            .addClass('btn btn-default btn-xs')
+                                            .append(
+                                                $.jqElem('i')
+                                                    .addClass('icon-double-angle-up')
+                                            )
+                                            .on('click',
+                                                $.proxy( function (e) {
+                                                    this.$elem.parent().animate(
+                                                        {
+                                                            scrollTop: this.$elem.prop('offsetTop') - 85
+                                                        },
+                                                        0
+                                                    );
+                                                }, this)
+                                            )
+                                    )
+                            )
+                            .mouseover(
+                                $.proxy(function(e) {
+                                    this.data('motion-buttons').show();
+                                }, this)
+                            )
+                            .mouseout(
+                                $.proxy(function(e) {
+                                    this.data('motion-buttons').hide();
+                                }, this)
+                            )
                     )
                     .append(
                         $.jqElem('div')
