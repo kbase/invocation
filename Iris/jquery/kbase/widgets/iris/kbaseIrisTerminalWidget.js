@@ -101,13 +101,9 @@
                                 icon : 'icon-remove',
                                 //tooltip : 'remove command',
                                 callback :
-                                    function (e) {
-                                        var $next = $elem.next();
-                                        if ($next.prop('tagName') == 'HR') {
-                                            $next.remove();
-                                        }
-                                        $elem.remove();
-                                    }
+                                    $.proxy( function (e) {
+                                        this.removeWidgetPrompt();
+                                    }, this)
                             },
                             {
                                 icon : 'icon-caret-up',
@@ -160,6 +156,7 @@
                                     .css('bottom', '0px')
                                     .css('position', 'absolute')
                                     .css('margin-right', '3px')
+                                    .css('display', 'none')
                                     .append(
                                         $.jqElem('button')
                                             .addClass('btn btn-default btn-xs')
@@ -175,6 +172,19 @@
                                                         },
                                                         0
                                                     );
+                                                }, this)
+                                            )
+                                    )
+                                    .append(
+                                        $.jqElem('button')
+                                            .addClass('btn btn-default btn-xs')
+                                            .append(
+                                                $.jqElem('i')
+                                                    .addClass('icon-remove')
+                                            )
+                                            .on('click',
+                                                $.proxy( function (e) {
+                                                    this.removeWidgetPrompt();
                                                 }, this)
                                             )
                                     )
@@ -205,12 +215,39 @@
 
             },
 
+            removeWidgetPrompt : function() {
+                var $deletePrompt = $.jqElem('div').kbaseDeletePrompt(
+                    {
+                        name     : 'this widget',
+                        callback : $.proxy( function(e, $prompt) {
+                            $prompt.closePrompt();
+                            var $next = this.$elem.next();
+                            if ($next.prop('tagName') == 'HR') {
+                                $next.remove();
+                            }
+                            this.$elem.remove();
+                        }, this)
+                    }
+                );
+
+                $deletePrompt.openPrompt();
+            },
+
             startThinking : function() {
                 this.data('thoughtBox').show();
             },
 
             stopThinking : function() {
                 this.data('thoughtBox').hide();
+            },
+
+            setInput : function(newVal) {
+                this._super(newVal);
+
+                if (newVal == undefined || ! newVal.length) {
+                    this.data('inputContainer').css('display', 'none');
+                }
+
             },
 
             setError : function (newVal) {
