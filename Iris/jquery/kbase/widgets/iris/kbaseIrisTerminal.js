@@ -28,6 +28,7 @@
             promptIfUnauthenticated : false,
             autocreateFileBrowser: true,
             environment : ['maxOutput', 'scrollSpeed'],
+            defaultFileType : 'IrisFile',
         },
 
         setenv : function (variable, value) {
@@ -188,6 +189,8 @@
                         else {
                             this.out_text("Unauthenticated logged in as " + args.kbase_sessionid);
                         }
+                        //make sure that we always have the IrisFile type available.
+                        this.run('((kbws-addtype ' + this.options.defaultFileType + '))');
                         this.out_line();
                         this.scroll();
                     }, this ),
@@ -857,7 +860,7 @@
                     function (idx, wstoken_string) {
 
                         var workspaceToken = {
-                            type : 'Unspecified'
+                            type : this.options.defaultFileType
                         };
 
                         if (m = wstoken_string.match(/((?:<|>>?)\s*)?@W#([^#\s]+)#?([io])?/)) {
