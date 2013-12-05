@@ -42,13 +42,20 @@
 
             var detokenized = '';
 
+            //comments are a special case. Parse out nothing.
+            if (tokens.length && tokens[0].match(/^\s*#/)) {
+                return tokens[0];
+            }
+
+
             for (var idx = 0; idx < tokens.length; idx++) {
                 var token = tokens[idx];
                 if ($.isArray(token)) {
                     detokenized += this.detokenize(token) + ';';
                 }
                 else {
-                    if (token.match(/[\s;]/)) {
+                    //pipes are a frustrating special case. Quote the string if it has a pipe, as long as it is not a pipe.
+                    if (token.match(/[\s;|]/) && token != '|') {
                         if (token.match(/"/) && ! token.match(/\\"/)) {
                             detokenized += " '" + token + "'";
                         }
@@ -88,6 +95,12 @@
             var tokensList = [];
             var lastRedirectChar = false;
             var lastChr = '';
+
+            //comments are a special case. Parse out nothing.
+            if (string.match(/^\s*#/)) {
+                tokens.push(string);
+                return tokens;
+            }
 
             for (var idx = 0; idx < string.length; idx++) {
                 var chr = string.charAt(idx);

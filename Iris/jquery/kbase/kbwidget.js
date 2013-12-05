@@ -740,7 +740,6 @@
             },
 
             _rewireIds : function($elem, $target) {
-
                 if ($target == undefined) {
                     $target = $elem;
                 }

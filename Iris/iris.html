@@ -68,7 +68,8 @@
                     var $plist = $('#process-list').kbaseIrisProcessList();
 
                     var $term = $.jqElem('div').kbaseIrisTerminal({
-                        'invocationURL'             : 'http://kbase.us/services/invocation',
+                        'invocationURL'             : 'http://localhost:1978/services/invocation',
+                        //'invocationURL'             : 'http://kbase.us/services/invocation',
                         //'invocationURL'             : 'http://140.221.85.107:7049',//'http://kbase.us/services/invocation',
                         'commandsElement'           : $('#command-list'),
                         autocreateFileBrowser       : false,

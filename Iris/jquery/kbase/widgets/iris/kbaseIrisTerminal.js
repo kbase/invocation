@@ -12,7 +12,7 @@
 		parent: 'kbaseAuthenticatedWidget',
 
         version: "1.0.0",
-        _accessors : ['terminalHeight', 'client'],
+        _accessors : ['terminalHeight', 'client', 'subWidgets'],
         options: {
             invocationURL : 'http://localhost:5000',
             searchURL : 'https://kbase.us/services/search-api/search/$category/$keyword?start=$start&count=$count&format=json',
@@ -28,6 +28,8 @@
             promptIfUnauthenticated : false,
             autocreateFileBrowser: true,
             environment : ['maxOutput', 'scrollSpeed'],
+            subWidgets : [],
+            defaultFileType : 'IrisFile',
         },
 
         setenv : function (variable, value) {
@@ -141,6 +143,57 @@
                 }, this)
             );
 
+            this.selectedWidgets = [];
+            this.$elem.on(
+                'toggleWidgetSelection.kbaseIris',
+                $.proxy(function (e, $widget) {
+                    e.stopPropagation();e.preventDefault();
+                    console.log('selected');console.log($widget);
+                    if ($widget.isSelected()) {
+                        this.deselectWidget($widget);
+                    }
+                    else {
+                        this.selectWidget($widget);
+                    }
+                }, this)
+            );
+
+            this.$elem.on(
+                'removeWidget.kbaseIris',
+                $.proxy(function (e, params) {
+                    this.removeWidget(params.$widget);
+                }, this)
+            );
+
+            this.$elem.on(
+                'scrollTo.kbaseIris',
+                $.proxy(function (e, pos) {
+                    this.terminal.animate(
+                        {
+                            scrollTop: this.terminal.prop('offsetTop') - 85
+                        },
+                        0
+                    );
+                }, this)
+            );
+
+            this.$elem.on(
+                'runWidget.kbaseIris',
+                $.proxy(function (e, params) {
+                    if (params.$widget.isComment()) {
+                        params.command = '#' + params.command;
+                    }
+                    this.run(
+                        params.command,
+                        {
+                            $widget : params.$widget
+                        }
+                    );
+                }, this)
+            );
+
+
+
             if (this.options.commandsElement == undefined) {
                 this.options.commandsElement = $.jqElem('div');
                 this.options.commandsElement.kbaseIrisCommands(
@@ -188,6 +241,8 @@
                         else {
                             this.out_text("Unauthenticated logged in as " + args.kbase_sessionid);
                         }
+                        //make sure that we always have the IrisFile type available.
+                        this.run('((kbws-addtype ' + this.options.defaultFileType + '))');
                         this.out_line();
                         this.scroll();
                     }, this ),
@@ -644,7 +699,7 @@
                 )
             );
             var $widget = $.jqElem('div').kbaseIrisTerminalWidget();
-            this.terminal.append($widget.$elem);
+            this.appendWidget($widget);
             $widget.setOutput($tbl);
             $widget.setValue(
                 {
@@ -659,7 +714,7 @@
         out_text: function(text, type) {
 
             var $text = $.jqElem('div').kbaseIrisTextWidget();
-            this.terminal.append( $text.$elem );
+            this.appendWidget( $text );
 
             $text.setText(text, type);
 
@@ -720,7 +775,7 @@
                     widget : this.options.widgets[widgetName]()
                 }
             );
-            this.terminal.append( $widget.$elem);
+            this.appendWidget( $widget );
             $widget.render();
             if (this.live_widgets.length) {
                 $widget.acceptInput(this.live_widgets[this.live_widgets.length - 1]);
@@ -728,6 +783,58 @@
             }
 
             this.live_widgets.push($widget);
+            this.subWidgets().push($widget);
+        },
+
+        appendWidget: function($widget) {
+
+            var isSubWidget = false;
+
+            $.each(
+                this.subWidgets(),
+                $.proxy(function (idx, $wdgt) {
+                    if ($wdgt === $widget) {
+                        isSubWidget = true;
+                        return;
+                    }
+                }, this)
+            );
+
+            if (! isSubWidget) {
+                this.terminal.append($widget.$elem);
+                this.subWidgets().push($widget);
+            }
+        },
+
+        removeWidget : function($widget) {
+console.log("TRIES RW CALL!");
+console.log(this.subWidgets());
+            for (var idx = 0; idx < this.subWidgets().length; idx++) {
+                if (this.subWidgets()[idx] === $widget) {
+                    this.deselectWidget($widget);
+                    console.log("IN AT IDX " + idx);
+                    this.subWidgets().splice(idx,1);
+                    $widget.$elem.remove();
+                    break;
+                }
+            }
+
+        },
+
+        selectWidget : function($widget) {
+            this.selectedWidgets.push($widget);
+            $widget.setIsSelected(true);
+            console.log(this.selectedWidgets);
+        },
+
+        deselectWidget : function ($widget) {
+            for (var idx = 0; idx < this.selectedWidgets.length; idx++) {
+                if (this.selectedWidgets[idx] === $widget) {
+                    this.selectedWidgets.splice(idx,1);
+                    $widget.setIsSelected(false);
+                    break;
+                }
+            };
         },
 
         evaluateScript : function($terminal, $widget, script, $deferred) {
@@ -761,11 +868,24 @@
         },
 
         invoke : function($containerWidget, rawCmd) {
-            this.run(rawCmd, undefined, false, $containerWidget, true);
+            this.run(
+                rawCmd,
+                {
+                    subCommand : false,
+                    $containerWidget : $containerWidget,
+                    viaInvoke : true
+                }
+            );
         },
 
         // Executes a command
-        run: function(rawCmd, $widget, subCommand, $containerWidget, viaInvoke) {
+        //run: function(rawCmd, /*$widget*/, /*subCommand*/, $containerWidget, /*viaInvoke*/) {
+
+        run: function (rawCmd, opts) {
+console.log("RUNS RAW " + rawCmd);
+            if (opts == undefined) {
+                opts = {};
+            }
 
             var historyLabel = rawCmd;
             if ($.isArray(rawCmd)) {
@@ -773,13 +893,14 @@
                 rawCmd = rawCmd[0];
             }
 
-            if ($widget == undefined) {
-                $widget = $.jqElem('div').kbaseIrisTerminalWidget();
-            }
+            var $widget             = opts.$widget || $.jqElem('div').kbaseIrisTerminalWidget();
+            var $containerWidget    = opts.$containerWidget;
 
             var $deferred = $.Deferred();
 
             var tokens = this.options.grammar.tokenize(rawCmd);
+            console.log("TOKENIZED");
+            console.log(tokens);
             // no tokens? No command. Bail out.
             if (tokens.length == 0) {
                 $deferred.resolve();
@@ -791,25 +912,25 @@
             // next token when it comes up.
             if ($.isArray(tokens[0])) {
 
-                if (! subCommand) {
-                    if (! viaInvoke) {
-                        this.addCommandHistory(command);
+                if (! opts.subCommand) {
+                    if (! opts.viaInvoke && ! opts.historyLess) {
+                        this.addCommandHistory(rawCmd);
                     }
 
                     var $scriptWidget = $.jqElem('div').kbaseIrisTerminalWidget();
 
                     if ($containerWidget) {
-                        $containerWidget.output().append($scriptWidget.$elem);
+                        $containerWidget.appendWidget($scriptWidget);
                         $scriptWidget.setSubCommand(true, true);
                     }
                     else {
-                        this.terminal.append($scriptWidget.$elem);
+                        this.appendWidget($scriptWidget);
                     }
 
                     $scriptWidget.setCwd(this.cwd);
                     $scriptWidget.setInput(historyLabel);
                     $scriptWidget.setOutput($.jqElem('div'));
-                    subCommand = true;
+                    opts.subCommand = true;
                     $containerWidget = $scriptWidget;
                 }
 
@@ -819,10 +940,11 @@
                         //$widget.remove();
                         this.run(
                             this.options.grammar.detokenize(tokens),
-                            undefined,
-                            true,
-                            $containerWidget,
-                            viaInvoke
+                            {
+                                subCommand : true,
+                                $containerWidget : $containerWidget,
+                                viaInvoke : opts.viaInvoke
+                            }
                         );
                     }, this)
                 );
@@ -835,6 +957,7 @@
 
             //now replaceVariables on the rawCmd and away we go.
             var command = this.replaceVariables(rawCmd);
+console.log("COMMAND NOW " + command);
 
             var isHidden = false;
             if ( m = command.match(/^\(\((.+)\)\)$/) ) {
@@ -846,7 +969,7 @@
 
             var workspaceTokens = [];
             //okay. The very very first thing we want to do is check for a magic workspace token.
-            if (wstokens = command.match(/((?:<|>>?)\s*)?@W#([^#\s]+)(#[io])?/g)) {
+            if (wstokens = command.match(/((?:<|>>?)\s*)?@W#([^\-#\s]+)(?:-(?:\d+))?(#[io])?/g)) {
             //if (wstokens = command.match(/@W#([^#]+)#([io])/g)) {
 
                 var cmdCopy = command;
@@ -854,13 +977,13 @@
 
                 $.each(
                     wstokens,
-                    function (idx, wstoken_string) {
+                    $.proxy(function (idx, wstoken_string) {
 
                         var workspaceToken = {
-                            type : 'Unspecified'
+                            type : this.options.defaultFileType
                         };
 
-                        if (m = wstoken_string.match(/((?:<|>>?)\s*)?@W#([^#\s]+)#?([io])?/)) {
+                        if (m = wstoken_string.match(/((?:<|>>?)\s*)?@W#([^\-#\s]+)(?:-(\d+))?#?([io])?/)) {
                         //if (m = wstoken_string.match(/@W#([^#]+)#([io])/)) {
 
 
@@ -879,7 +1002,9 @@
                             }
 
                             id = m[1];
-                            workspaceToken.io = m[2];
+                            workspaceToken.io = m[3];
+                            workspaceToken.instance = m[2];
+console.log("FULL MATCH IS ");console.log(m);
 
                             if (io.match(/</)) {
                                 workspaceToken.io = 'i';
@@ -888,7 +1013,7 @@
                                 workspaceToken.io = 'o';
                             }
 
-                            id = id.split('::');
+                            id = id.split(':');
                             if (id.length == 3) {
                                 workspaceToken.workspace    = id[0];
                                 workspaceToken.type         = id[1];
@@ -912,7 +1037,7 @@
                             cmdCopy = cmdCopy.replace(wstoken_string, io + workspaceToken.id);
 
                         }
-                    }
+                    }, this)
                 );
 
                 if (! validTokens) {
@@ -922,10 +1047,10 @@
                     $widget.setError("Error - invalid format for workspace token - " + m[0]);
 
                     if ($containerWidget) {
-                        $containerWidget.output().append($widget.$elem);
+                        $containerWidget.appendWidget($widget);
                     }
                     else {
-                        this.terminal.append($widget.$elem);
+                        this.appendWidget($widget);
                     }
 
                     $deferred.reject();
@@ -939,11 +1064,15 @@
                     function (idx, token) {
                         if (token.io == 'i') {
                             var workspaceId = '';
-                            if (token.workspace.length) {
+                            var instance = '';
+                            if (token.workspace != undefined) {
                                 workspaceId = ' -w ' + token.workspace + ' ';
                             }
+                            if (token.instance != undefined) {
+                                instance = ' -i ' + token.instance + ' ';
+                            }
                             newCommands.push(
-                                '((kbws-get -e ' + token.type + ' ' + token.id + workspaceId + ' > ' + token.id + '))'
+                                '((kbws-get -e ' + token.type + ' ' + token.id + workspaceId + instance + ' > ' + token.id + '))'
                             )
                         }
                     }
@@ -956,7 +1085,7 @@
                     function (idx, token) {
                         if (token.io == 'o') {
                             var workspaceId = '';
-                            if (token.workspace.length) {
+                            if (token.workspace != undefined) {
                                 workspaceId = ' -w ' + token.workspace + ' ';
                             }
                             newCommands.push(
@@ -971,14 +1100,20 @@
                     }
                 );
 
+                this.addCommandHistory(command);
+
                 $deferred.resolve();
                 this.run(
                     [newCommands.join(';'), rawCmd],
-                    $widget,
-                    subCommand,
-                    $containerWidget,
-                    viaInvoke
+                    {
+                        $widget : $widget,
+                        subCommand : opts.subCommand,
+                        $containerWidget : $containerWidget,
+                        viaInvoke : opts.viaInvoke,
+                        historyLess : true,
+                    }
                 );
+
                 return $deferred.promise();
 
             }
@@ -994,14 +1129,14 @@
 
             $widget.setCwd(this.cwd);
             $widget.setInput(command);
-            $widget.setSubCommand(subCommand);
+            $widget.setSubCommand(opts.subCommand);
             $widget.setIsHidden(isHidden);
 
             if ($containerWidget) {
-                $containerWidget.output().append($widget.$elem);
+                $containerWidget.appendWidget($widget);
             }
             else {
-                this.terminal.append($widget.$elem);
+                this.appendWidget($widget);
             }
 
             this.dbg("Run (" + command + ')');
@@ -1151,9 +1286,8 @@
 
                 if (list.length == 0) {
                     $widget.setError(
-                        "Could not load tutorials.<br>\n"
-                        + "Type <i>tutorial list</i> to see available tutorials.",
-                        'html'
+                        $.jqElem('span').append("Could not load tutorials.<br>\n"
+                        + "Type <i>tutorial list</i> to see available tutorials.")
                     );
                     $deferred.reject();
                     return $deferred.promise();
@@ -1317,9 +1451,16 @@
             }
 
             if (command == 'clear') {
-                this.terminal.empty();
+                console.log(this.subWidgets());
+                while (this.subWidgets().length) {
+                    this.removeWidget(this.subWidgets()[0]);
+                }
+
                 this.trigger('clearIrisProcesses');
+                this.terminal.empty();
                 $deferred.resolve();
+                console.log("CL");
+                console.log(this.subWidgets());
                 return $deferred.promise();
             }
 
@@ -1336,7 +1477,7 @@
                 return $deferred.promise();
             }
 
-            if (m = command.match(/^save\s*(.*)/)) {
+            if (m = command.match(/^save\s*(.+)/)) {
                 var args = m[1].split(/\s+/);
                 if (args.length != 1) {
                     $widget.setError("Invalid save syntax. Please specify a file name.");
@@ -1357,8 +1498,8 @@
                         this.record = undefined;
                         $deferred.resolve();
                     }, this),
-                    $.proxy( function() {
-                        $widget.setError("Error received:<br>" + err.error.code + "<br>" + m, 'html');
+                    $.proxy( function(err) {
+                        $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
                         $deferred.reject();
                     }, this)
                 );
@@ -1367,7 +1508,7 @@
 
             }
 
-            if (! subCommand && this.commandHistory != undefined && ! viaInvoke && ! isHidden) {
+            if (! opts.subCommand && this.commandHistory != undefined && ! opts.viaInvoke && ! isHidden) {
                 this.addCommandHistory(command);
             }
 
@@ -1377,6 +1518,131 @@
                 this.scroll();
                 $deferred.resolve();
                 return $deferred.promise();
+            }
+
+            if (m = command.match(/^snapshot\s*(.+)/)) {
+                var args = m[1].split(/\s+/);
+                if (args.length != 1) {
+                    $widget.setError("Invalid snapshot syntax. Please specify a file name.");
+                    $deferred.reject();
+                    return $deferred.promise();
+                }
+                file = args[0];
+
+                if (! this.selectedWidgets.length) {
+                    $widget.setError('No widgets selected for snapshot');
+                    $deferred.reject();
+                    return $deferred.promise();
+                }
+
+                var snappedWidgets = [];
+                $.each(
+                    this.selectedWidgets,
+                    function (idx, $widget) {
+                        snappedWidgets.push($widget.freeze());
+                    }
+                );
+
+                var snappedFiles = [];
+
+                $.each(
+                    this.fileBrowsers,
+                    function (idx, $fb) {
+                    console.log("SELECTED");console.log($fb.selectedFiles());
+                        $.each(
+                            $fb.selectedFiles(),
+                            function (file, isSelected) {
+                                if (isSelected) {
+                                    snappedFiles.push(file);
+                                }
+                            }
+                        )
+                    }
+                );
+
+                snapshot = {
+                    widgets : snappedWidgets,
+                    files : snappedFiles,
+                };
+
+                this.client().put_file(
+                    this.sessionId(),
+                    file,
+                    JSON.stringify(snapshot),
+                    this.cwd,
+                    $.proxy(function() {
+                        $widget.setOutput('Snapshot saved as ' + file);
+                        var selectedWidgets = this.selectedWidgets;
+                        $.each(
+                            selectedWidgets,
+                            function (idx, $widget) {
+                            console.log($widget);
+                                $widget.setIsSelected(false);
+                            }
+                        );
+                        $.each(
+                            this.fileBrowsers,
+                            function (idx, $fb) {
+                            console.log("SELECTED");console.log($fb.selectedFiles());
+                                var selectedFiles = $fb.selectedFiles();
+                                $.each(
+                                    selectedFiles,
+                                    function (file, isSelected) {
+                                        if (isSelected) {
+                                            $fb.toggleSelection(file);
+                                        }
+                                    }
+                                )
+                            }
+                        );
+                        $deferred.resolve();
+                    }, this),
+                    $.proxy( function(err) {
+                        $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
+                        $deferred.reject();
+                    }, this)
+                );
+
+                return $deferred.promise();
+
+            }
+
+            if (m = command.match(/^thaw\s*(.+)/)) {
+                var args = m[1].split(/\s+/);
+                if (args.length != 1) {
+                    $widget.setError("Invalid that syntax. Please specify a file name.");
+                    $deferred.reject();
+                    return $deferred.promise();
+                }
+                file = args[0];
+
+                $widget.$elem.css('background-color', '#DDDDDD');
+
+                this.client().get_file(
+                    this.sessionId(),
+                    file,
+                    this.cwd,
+                    $.proxy(function(res) {
+                        var snapshot = JSON.parse(res);
+                        $.each(
+                            snapshot.widgets,
+                            $.proxy(function (idx, wdgt) {
+                                //re-use the previously created widget for the thaw factory.
+                                var $thawedWidget = $widget.thaw(wdgt);
+                                $widget.appendWidget($thawedWidget);
+                            }, this)
+                        );
+
+                        $deferred.resolve();
+                    }, this),
+                    $.proxy( function(err) {
+                        $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
+                        $deferred.reject();
+                    }, this)
+                );
+
+                return $deferred.promise();
+
             }
 
             if (command == 'history') {
@@ -1453,7 +1719,7 @@
                     jQuery.proxy(
                         function (err) {
                             var m = err.error.message.replace("/\n", "<br>\n");
-                            $widget.setError("Error received:<br>" + err.error.code + "<br>" + m, 'html');
+                            $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
                             $deferred.reject();
                         },
                         this
@@ -1611,11 +1877,16 @@
                 return $deferred.promise();
             }
 
-            if (m = command.match(/^#\s*(.+)/)) {
+            if (m = command.match(/^#\s*((?:.|\n)+)/)) {
                 //$widget.$elem.remove();
-                $widget.setInput('');
-                $widget.setOutput($.jqElem('i').text(m[1]));
-                $widget.setValue(m[1]);
+                $widget.setIsComment(true);
+                $widget.setInput(m[1]);
+                console.log("SETS INPUT TO : " + m[1]);
+                $widget.setOutput('');
+                $widget.setError('');
+                $widget.subWidgets([]);
+                //$widget.setOutput($.jqElem('i').text(m[1]));
+                //$widget.setValue(m[1]);
                 $deferred.resolve();
                 return $deferred.promise();
             }
@@ -1747,7 +2018,7 @@
                     jQuery.proxy(
                         function (err) {
                             var m = err.error.message.replace("\n", "<br>\n");
-                            $widget.setError("Error received:<br>" + err.error.code + "<br>" + m, 'html');
+                            $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
                             $deferred.reject();
                         },
                         this
@@ -1779,7 +2050,7 @@
                     jQuery.proxy(
                         function (err) {
                             var m = err.error.message.replace("\n", "<br>\n");
-                            $widget.setError("Error received:<br>" + err.error.code + "<br>" + m, 'html');
+                            $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
                             $deferred.reject();
                         },
                         this
@@ -1810,7 +2081,7 @@
                             jQuery.proxy(
                                 function (err) {
                                     var m = err.error.message.replace("\n", "<br>\n");
-                                    $widget.setError("Error received:<br>" + err.error.code + "<br>" + m, 'html');
+                                    $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
                                     $deferred.reject();
                                 },
                                 this
@@ -1844,7 +2115,7 @@
                             jQuery.proxy(
                                 function (err) {
                                     var m = err.error.message.replace("\n", "<br>\n");
-                                    $widget.setError("Error received:<br>" + err.error.code + "<br>" + m, 'html');
+                                    $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
                                     $deferred.reject();
                                 },
                                 this
@@ -1878,7 +2149,7 @@
                             jQuery.proxy(
                                 function (err) {
                                     var m = err.error.message.replace("\n", "<br>\n");
-                                    $widget.setError("Error received:<br>" + err.error.code + "<br>" + m, 'html');
+                                    $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
                                     $deferred.reject();
                                 },
                                 this
@@ -1919,11 +2190,12 @@
 
                             this.run(
                                 script,
-                                undefined,
-                                true,
-                                $widget,
-                                $containerWidget,
-                                viaInvoke
+                                {
+                                    subCommand : true,
+                                    $widget : $widget,
+                                    $containerWidget : $containerWidget,
+                                    viaInvoke : opts.viaInvoke
+                                }
                             );
                         },
                         this
@@ -2095,7 +2367,7 @@
                      function (err)
                      {
                          var m = err.error.message.replace("\n", "<br>\n");
-                         $widget.setError("Error received:<br>" + err.error.code + "<br>" + m, 'html')
+                         $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m))
                          $deferred.reject();
                      }
                     );
@@ -2175,7 +2447,7 @@
             }
 
             //var commands = command.split(/[;\r\n]/) {
-
+console.log("RUNNING COMMAND " + command);
             var promise = this.client().run_pipeline(
                 this.sessionId(),
                 command,
@@ -2232,6 +2504,7 @@
                                 $widget.setValue(output);
                             }
                             else {
+                            console.log("SETTING OUTPUT HERE TO " + output);
                                 $widget.setOutput(output.join(''));
                                 $widget.setValue(output);
                             }

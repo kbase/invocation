@@ -12,7 +12,7 @@
 		parent: 'kbaseDataBrowser',
 
         version: "1.0.0",
-        _accessors : ['invocationURL', 'client', 'addFileCallback', 'editFileCallback', 'singleFileSize', 'chunkSize', 'stalledUploads'],
+        _accessors : ['selectedFiles', 'invocationURL', 'client', 'addFileCallback', 'editFileCallback', 'singleFileSize', 'chunkSize', 'stalledUploads'],
         options: {
             stalledUploads : {},
             uploadDir : '.uploads',
@@ -20,11 +20,21 @@
             singleFileSize  : 15000000,
             chunkSize       :  5000000,
             title : 'File Browser',
+            selectedFiles : {},
+
             'root' : '/',
             types : {
                 file : {
                     controls :
                     [
+                        {
+                            icon : 'icon-link',
+                            //tooltip : 'select widget',
+                            callback :
+                                function (e, $fb) {
+                                    $fb.toggleSelection($(this).data('id'));
+                                },
+                        },
                         {
                             icon : 'icon-minus',
                             callback : function(e, $fb) {
@@ -77,9 +87,11 @@
                 folder : {
                     childrenCallback : function (path, callback) {
 
-                        this.listDirectory(path, function (results) {
+                        this.listDirectory(path, $.proxy(function (results) {
                             callback(results);
-                        });
+                            console.log("SF HERE!");
+                            this.selectFiles();
+                        }, this));
                     },
                     controls : [
                         {
@@ -121,13 +133,37 @@
             },
         },
 
+        toggleSelection : function(file) {
+
+            this.selectedFiles()[file] = ! this.selectedFiles()[file];
+
+            if (this.selectedFiles()[file]) {
+                this.targets[file].css('border', '1px solid green');
+            }
+            else {
+                this.targets[file].css('border', '');
+            }
+
+        },
+
+        selectFiles : function() {
+            $.each(
+                this.selectedFiles(),
+                $.proxy(function (file, selected) {
+                    if (selected) {
+                        this.targets[file].css('border', '1px solid green');
+                    }
+                }, this)
+            )
+        },
+
         uploadFile : function() {
             this.data('fileInput').trigger('click');
         },
 
         init: function (options) {
 
-            this._super(options);
+            this._super(options)
 
             this.listDirectory(this.options.root, $.proxy(function (results) {
                 this.appendContent(results, this.data('ul-nav'))
@@ -297,7 +333,8 @@
             if (! $target.is(':hidden')) {
                 this.listDirectory(path, $.proxy(function (results) {
                     $target.empty();
-                    this.appendContent(results, $target)
+                    this.appendContent(results, $target);
+                    this.selectFiles();
                 }, this), openTargets);
             }
 
@@ -308,7 +345,8 @@
 
                     this.listDirectory(subPath, $.proxy(function (results) {
                         $target.empty();
-                        this.appendContent(results, $target)
+                        this.appendContent(results, $target);
+                        this.selectFiles();
                         $target.show();
                     }, this));
                 }, this)

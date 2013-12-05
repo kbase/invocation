@@ -41,14 +41,14 @@
                     newVal = $.jqElem('span').html(newVal);
                 }
 
-                this.setEscapedText('text', newVal);
+                this.setValueForKey('text', newVal);
             },
 
             appendUI : function($elem) {
 
                 var $textDiv = $.jqElem('div')
                     .attr('id', 'text')
-                    .kb_bind(this, 'text')
+                    .kb_bind(this, 'text', {transformedValue : $.proxy(function (val) {return this.escapeText(val)}, this)} )
                 ;
 
                 $elem.append($textDiv);

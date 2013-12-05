@@ -15,6 +15,8 @@
             version: "1.0.0",
             _accessors : [
                 'promise',
+                'subWidgets',
+                {name : 'isSelected', setter : 'setIsSelected'},
                 {name : 'pid', setter : 'setPid'},
                 {name : 'isHidden', setter : 'setIsHidden'},
                 {name : 'input', setter : 'setInput'},
@@ -25,17 +27,49 @@
                 {name : 'subCommand', setter : 'setSubCommand'},
             ],
             options: {
-
+                subWidgets : [],
             },
 
             init: function(options) {
 
                 this._super(options);
 
+                this.$elem.on(
+                    'removeWidget.kbaseIris',
+                    $.proxy(function (e, params) {
+                        this.removeWidget(params.$widget);
+                    }, this)
+                );
+
+                this.$elem.on(
+                    'toggleWidgetSelection.kbaseIris',
+                    $.proxy(function (e, $widget) {
+                    console.log("INTERCEPTS SW");
+                        e.stopPropagation();e.preventDefault();
+                        this.$elem.parent().trigger('toggleWidgetSelection', this);
+                        //this.toggleSelection();
+                    }, this)
+                );
+
                 this.appendUI( $( this.$elem ) );
 
                 return this;
 
+            },
+
+            toggleSelection : function() {
+                this.trigger('toggleWidgetSelection', this);
+            },
+
+            setIsSelected : function(newIsSelected) {
+                this.setValueForKey('isSelected', newIsSelected);
+                console.log("SETS SELEC " + newIsSelected);
+                if (this.isSelected()) {
+                    this.$elem.css('border', '1px solid green');
+                }
+                else {
+                    this.$elem.css('border', '')
+                }
             },
 
             setSubCommand : function(subCommand) {
@@ -61,26 +95,29 @@
             },
 
             setInput : function (newVal) {
-                this.setEscapedText('input', newVal);
+                this.setValueForKey('input', newVal);
             },
 
             setOutput : function (newVal) {
-                this.setEscapedText('output', newVal);
+                this.setValueForKey('output', newVal);
             },
 
             setError : function (newVal) {
-                this.setEscapedText('error', newVal);
-                if ( newVal.match(/error/i) ) {
+                this.setValueForKey('error', newVal);
+                if ( typeof newVal == 'string' && newVal.match(/error/i) ) {
                     this.$elem.css('display', '');
                 }
             },
 
             setCwd : function (newVal) {
-                this.setEscapedText('cwd', newVal);
+                this.setValueForKey('cwd', newVal);
             },
 
             escapeText : function (newVal) {
+            console.log("ESCAPES");
+            console.log(newVal);
                 if (typeof newVal == 'string') {
+                    newVal = newVal.replace(/&/g, '&amp;');
                     newVal = newVal.replace(/</g, '&lt;');
                     newVal = newVal.replace(/>/g, '&gt;');
                     newVal = $.jqElem('span')
@@ -95,11 +132,6 @@
                 }
 
                 return newVal;
-            },
-
-            setEscapedText : function (key, newVal) {
-                newVal = this.escapeText(newVal);
-                this.setValueForKey(key, newVal);
             },
 
             viewOutput : function() {
@@ -142,6 +174,116 @@
 
             startThinking : function() {},
             stopThinking : function() {},
+            freeze : function() {
+                return {
+                    error : 'this widget could not be frozen!'
+                }
+            },
+
+            thaw : function () {
+                this.setError("This widget could not be unfrozen!");
+            },
+
+            freeze : function () {
+                console.log("INPUT");console.log(this.input());
+                console.log(this.error());
+                console.log(this.output());
+                console.log(this.value());
+                var json = {
+                    type        : this.name,
+                    input       : typeof this.input() == 'object' ? $.jqElem('div').append(this.input().clone()).html() : this.input(),
+                    output      : typeof this.output() == 'object' ? $.jqElem('div').append(this.output().clone()).html() : this.output(),
+                    error       : typeof this.error() == 'object' ? $.jqElem('div').append(this.error().clone()).html() : this.error(),
+                    value       : this.value(),
+                    pid         : this.pid(),
+                    isHidden    : this.isHidden(),
+                    cwd         : this.cwd(),
+                    subCommand  : this.subCommand(),
+                    subWidgets  : [],
+                    inputObj : typeof this.input()  == 'object',
+                    outputObj : typeof this.output() == 'object',
+                    errorObj : typeof this.error()  == 'object',
+                };
+
+                $.each(
+                    this.subWidgets(),
+                    function (idx, $sub) {
+                        json.subWidgets.push($sub.freeze());
+                    }
+                );
+
+                return json;
+            },
+
+            thaw : function (json) {
+
+                var $widget = $.jqElem('div')[json.type]();
+
+                $widget.setSubCommand(json.subCommand);
+                $widget.setCwd(json.cwd);
+                $widget.setIsHidden(json.isHidden);
+                $widget.setPid(json.pid);
+                $widget.setValue(json.value);
+                $widget.setInput(
+                    json.inputObj
+                        ? $.jqElem('div').append(json.input)
+                        : json.input
+                );
+                $widget.setOutput(
+                    json.outputObj
+                        ? $.jqElem('div').append(json.output)
+                        : json.output
+                );
+                $widget.setError(
+                    json.errorObj
+                        ? $.jqElem('div').append(json.error)
+                        : json.error
+                );
+
+                $.each(
+                    json.subWidgets,
+                    $.proxy(function (idx, wdgt) {
+                        $widget.appendWidget(this.thaw(wdgt));
+                    }, this)
+                );
+
+                return $widget;
+            },
+
+            appendWidget: function($widget) {
+                if (this.output() == undefined) {
+                    this.setOutput($.jqElem('div'));
+                }
+
+                var isSubWidget = false;
+
+                $.each(
+                    this.subWidgets(),
+                    $.proxy(function (idx, $wdgt) {
+                        if ($wdgt === $widget) {
+                            isSubWidget = true;
+                            return;
+                        }
+                    }, this)
+                );
+
+                if (! isSubWidget) {
+                    this.data('subWidgets').append($widget.$elem);
+                    this.subWidgets().push($widget);
+                }
+            },
+
+            removeWidget : function($widget) {
+
+                for (var idx = 0; idx < this.subWidgets().length; idx++) {
+                    if (this.subWidgets()[idx] === $widget) {
+                        this.subWidgets().splice(idx,1);
+                        $widget.$elem.remove();
+                        break;
+                    }
+                }
+
+            },
 
         }
 

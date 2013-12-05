@@ -15,7 +15,8 @@
             version: "1.0.0",
 
             _accessors : [
-
+                'collapsed',
+                {name : 'isComment', setter : 'setIsComment'},
             ],
 
             options: {
@@ -53,25 +54,69 @@
                 return this;
             },
 
-            appendUI : function($elem) {
+            setIsComment : function(isComment) {
+                this.setValueForKey('isComment', isComment);
+console.log("IS COMMENT DATA");
+console.log(this.data());
+                console.log(this.data('input'));
+                if (isComment) {
+                    this.data('cwdDisplay').css('display', 'none');
+                    this.data('inputContainer').css('font-weight', 'normal');
+                    this.data('input').css('font-weight', 'normal');
+                    this.data('inputContainer').css('font-style', 'italic');
+                    this.data('line').css('display', 'none');
+                }
+                else {
+                    this.data('cwdDisplay').css('display', '');
+                    this.data('inputContainer').css('font-weight', 'bold');
+                    this.data('input').css('font-weight', '');
+                    this.data('inputContainer').css('font-style', '');
+                    this.data('line').css('display', '');
+                }
+            },
 
+            appendUI : function($elem) {
+console.log("APPENDED UI!");
                 var $inputDiv = $.jqElem('div')
                     .css('white-space', 'pre')
                     .css('position', 'relative')
                     .css('style', 'font-weight : bold')
-                    .append('&gt;')
                     .append(
                         $.jqElem('span')
-                            .attr('id', 'cwd')
-                            .addClass('command')
-                            .kb_bind(this, 'cwd')
+                            .attr('id', 'cwdDisplay')
+                            .append('&gt;')
+                            .append(
+                                $.jqElem('span')
+                                    .attr('id', 'cwd')
+                                    .addClass('command')
+                                    .kb_bind(this, 'cwd', {transformedValue : $.proxy(function (val) {return this.escapeText(val)}, this)} )
+                            )
+                            .append('&nbsp;')
                     )
-                    .append('&nbsp;')
                     .append(
                         $.jqElem('span')
                             .attr('id', 'input')
+                            .attr('contenteditable', 'true')
                             .addClass('command')
-                            .kb_bind(this, 'input')
+                            .kb_bind(this, 'input',
+                                {
+                                    transformedValue        : $.proxy(function (val) {return this.escapeText(val)}, this),
+                                    reverseTransformedValue : $.proxy(function (val) {
+                                        var $html = $.jqElem('span').html(val);
+                                    console.log("RTV");console.log($html.text());
+                                        this.trigger('runWidget', {$widget : this, command : $html.text()});
+                                        return $html.text()
+                                    }, this)
+                                }
+                            )
+                            .bind('keypress', function(e) {
+                                if (event.metaKey || event.altKey || event.ctrlKey) {
+                                    return;
+                                }
+                                if (event.which == 13) {
+                                    this.blur();
+                                }
+                            })
                     )
                     .mouseover(
                         function(e) {
@@ -85,10 +130,63 @@
                     )
                 ;
 
+                $elem
+                    .append(
+                        $.jqElem('div')
+                            .attr('id', 'thoughtBox')
+                            .addClass('pull-left')
+                            .append( $.jqElem('i').addClass('icon-spinner icon-spin') )
+                            .css('display', 'none')
+                    )
+                    .append(
+                        $inputDiv
+                            .attr('id', 'inputContainer')
+                            .on('click',
+                                $.proxy(function(e) {
+                                    this.data('output').show();
+                                    this.data('subWidgets').show();
+                                    this.data('error').show();
+                                    this.data('line').show();
+                                }, this)
+                            )
+                    )
+                    .append(
+                        $.jqElem('div')
+                            .attr('id', 'outputWrapper')
+                            .css('position', 'relative')
+                            .append(
+                                $.jqElem('div')
+                                    .attr('id', 'output')
+                                    .kb_bind(this, 'output', {transformedValue : $.proxy(function (val) {return this.escapeText(val)}, this)} )
+                            )
+                            .append(
+                                $.jqElem('div')
+                                    .attr('id', 'subWidgets')
+                            )
+                    )
+                    .append(
+                        $.jqElem('div')
+                            .attr('id', 'error')
+                            .css('font-style', 'italic')
+                            .kb_bind(this, 'error', {transformedValue : $.proxy(function (val) {return this.escapeText(val)}, this)} )
+                    )
+                    .append($.jqElem('hr').attr('id', 'line'))
+                ;
+console.log("REWIRES IDS RIGHT FUCKIGN HERE");
+                this._rewireIds($elem, this);
+
                 $inputDiv.kbaseButtonControls(
                     {
                         context : this,
                         controls : [
+                            {
+                                icon : 'icon-link',
+                                //tooltip : 'select widget',
+                                callback :
+                                    function (e, $it) {
+                                        $it.toggleSelection();
+                                    },
+                            },
                             {
                                 icon : 'icon-eye-open',
                                 //tooltip : 'view output',
@@ -110,7 +208,9 @@
                                 'icon-alt' : 'icon-caret-down',
                                 //tooltip : {title : 'collapse / expand', placement : 'bottom'},
                                 callback : $.proxy(function(e) {
+                                    this.collapsed( ! this.collapsed() );
                                     this.data('output').toggle();
+                                    this.data('subWidgets').toggle();
                                     this.data('error').toggle();
                                     this.data('line').toggle();
                                 }, this)
@@ -120,97 +220,47 @@
                     }
                 );
 
-                $elem
-                    .append(
-                        $.jqElem('div')
-                            .attr('id', 'thoughtBox')
-                            .addClass('pull-left')
-                            .append( $.jqElem('i').addClass('icon-spinner icon-spin') )
-                            .css('display', 'none')
-                    )
-                    .append(
-                        $inputDiv
-                            .attr('id', 'inputContainer')
-                            .on('click',
-                                $.proxy(function(e) {
-                                    this.data('output').show();
-                                    this.data('error').show();
-                                    this.data('line').show();
-                                }, this)
-                            )
-                    )
-                    .append(
-                        $.jqElem('div')
-                            .attr('id', 'outputWrapper')
-                            .css('position', 'relative')
-                            .append(
-                                $.jqElem('div')
-                                    .attr('id', 'output')
-                                    .kb_bind(this, 'output')
-                            )
-                            .append(
-                                $.jqElem('div')
-                                    .addClass('btn-group')
-                                    .attr('id', 'motion-buttons')
-                                    .css('right', '0px')
-                                    .css('bottom', '0px')
-                                    .css('position', 'absolute')
-                                    .css('margin-right', '3px')
-                                    .css('display', 'none')
-                                    .append(
-                                        $.jqElem('button')
-                                            .addClass('btn btn-default btn-xs')
-                                            .append(
-                                                $.jqElem('i')
-                                                    .addClass('icon-double-angle-up')
-                                            )
-                                            .on('click',
-                                                $.proxy( function (e) {
-                                                    this.$elem.parent().animate(
-                                                        {
-                                                            scrollTop: this.$elem.prop('offsetTop') - 85
-                                                        },
-                                                        0
-                                                    );
-                                                }, this)
-                                            )
-                                    )
-                                    .append(
-                                        $.jqElem('button')
-                                            .addClass('btn btn-default btn-xs')
-                                            .append(
-                                                $.jqElem('i')
-                                                    .addClass('icon-remove')
-                                            )
-                                            .on('click',
-                                                $.proxy( function (e) {
-                                                    this.removeWidgetPrompt();
-                                                }, this)
-                                            )
-                                    )
-                            )
-                            .mouseover(
-                                $.proxy(function(e) {
-                                    this.data('motion-buttons').show();
-                                }, this)
-                            )
-                            .mouseout(
-                                $.proxy(function(e) {
-                                    this.data('motion-buttons').hide();
-                                }, this)
-                            )
-                    )
-                    .append(
-                        $.jqElem('div')
-                            .attr('id', 'error')
-                            .css('font-style', 'italic')
-                            .kb_bind(this, 'error')
-                    )
-                    .append($.jqElem('hr').attr('id', 'line'))
-                ;
-
-                this._rewireIds($elem, this);
-
+                this.data('outputWrapper').kbaseButtonControls(
+                    {
+                        position : 'bottom',
+                        context : this,
+                        controls : [
+                            {
+                                icon : 'icon-link',
+                                callback :
+                                    function (e, $it) {
+                                        console.log("via button controls!");
+                                        $it.toggleSelection();
+                                    }
+                            },
+                            {
+                                icon : 'icon-double-angle-up',
+                                callback :
+                                function (e, $it) {
+                                    $it.trigger('scrollTo', $it.$elem.prop('offsetTop') - 85);
+                                    /*$it.$elem.parent().animate(
+                                            {
+                                                scrollTop: $it.$elem.prop('offsetTop') - 85
+                                            },
+                                            0
+                                        );
+                                    }*/
+                                }
+                            },
+                            {
+                                icon : 'icon-remove',
+                                callback :
+                                    function (e, $it) {
+                                        $it.removeWidgetPrompt();
+                                    }
+                            }
+                        ]
+                    }
+                );
+console.log("CWD DISPLAY");
+console.log(this.data('cwdDisplay'));
+console.log(this.data('input'));
+console.log(this.data());
                 return $elem;
 
             },
@@ -221,11 +271,12 @@
                         name     : 'this widget',
                         callback : $.proxy( function(e, $prompt) {
                             $prompt.closePrompt();
-                            var $next = this.$elem.next();
+                            /*var $next = this.$elem.next();
                             if ($next.prop('tagName') == 'HR') {
                                 $next.remove();
                             }
-                            this.$elem.remove();
+                            this.$elem.remove();*/
+                            this.trigger('removeWidget', {$widget : this});
                         }, this)
                     }
                 );
@@ -244,7 +295,7 @@
             setInput : function(newVal) {
                 this._super(newVal);
 
-                if (newVal == undefined || ! newVal.length) {
+                if (typeof newVal != 'string' || ! newVal.length) {
                     this.data('inputContainer').css('display', 'none');
                 }
 
@@ -253,7 +304,7 @@
             setError : function (newVal) {
                 this._super(newVal);
 
-                if ( newVal.match(/error/i) ) {
+                if (typeof newVal == 'string' && newVal.match(/error/i) ) {
                     this.data('inputContainer').css('color', 'red');
                 }
 
@@ -280,6 +331,27 @@
                 this._super(subCommand);
 
             },
+
+            freeze : function() {
+                var json = this._super();
+                json.collapsed = this.collapsed();
+                json.isComment = this.isComment();
+                return json;
+            },
+
+            thaw : function(json) {
+                var $widget = this._super(json);
+                if (json.collapsed) {
+                console.log('collapsing!');
+                    $widget.data('output').hide();
+                    $widget.data('subWidgets').hide();
+                    $widget.data('error').hide();
+                    $widget.data('line').hide();
+                }
+                $widget.setIsComment(json.isComment);
+                return $widget;
+            },
+
         }
 
     );

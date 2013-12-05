@@ -38,6 +38,7 @@
         options: {
             controls : [],
             onMouseover : true,
+            position : 'top',
         },
 
         init: function(options) {
@@ -61,9 +62,10 @@
                         .addClass('btn-group')
                         .attr('id', 'control-buttons')
                         .css('right', '0px')
-                        .css('top', '0px')
+                        .css(this.options.position, '0px')
                         .css('position', 'absolute')
                         .css('margin-right', '3px')
+                        .attr('z-index', 10000)
                 )
             ;
 
