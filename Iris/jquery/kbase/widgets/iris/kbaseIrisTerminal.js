@@ -1626,7 +1626,14 @@
             if (m = command.match(/^view\s+(\S+)$/)) {
                 var file = m[1];
 
-                this.client().get_file(
+                $widget.setOutput(
+                    $.jqElem('img')
+                        .attr('src', this.fileBrowsers[0].urlForFile(file))
+                );
+                this.scroll();
+                $deferred.resolve();
+
+                /*this.client().get_file(
                     this.sessionId(),
                     file,
                     this.cwd
@@ -1646,7 +1653,7 @@
                 .fail($.proxy(function(res) {
                     $widget.setError('No such file');
                     $deferred.reject();
-                }, this));
+                }, this));*/
 
                 return $deferred.promise();
 
