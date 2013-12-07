@@ -1012,9 +1012,12 @@
 
         openFile : function(file) {
 
-            var url = this.options.invocationURL + "/download/" + file + "?session_id=" + this.sessionId();
-            window.location.href = url;
+            window.location.href = this.urlForFile(file);
 
+        },
+
+        urlForFile : function(file) {
+            return this.options.invocationURL + "/download/" + file + "?session_id=" + this.sessionId();
         },
 
         deleteFile : function(file, type) {
