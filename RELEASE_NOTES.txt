@@ -4,6 +4,26 @@ The invocation service allows access to command line scripts running on KBase ha
 
 It also deploys the Iris interface, which provides a web gui to do the the same.
 
+VERSION: 0.0.5 (Release 11/18/2013)
+------------------------------------------
+- Scriptability - save your commands to a file (one command per line), then run it later with execute nameofscript
+- Scriptability - Write a javascript program and run it later with evaluate text of program or evaluate name of program file. The terminal object is accessible via $terminal, the current widget via $widget. Run further iris commands via $terminal.invoke('....');
+- Multiple commands can be run at once - delimited commands with semicolons. echo a ; echo b
+- ls command can now accept standard shell wildcard syntax ls *.txt, or ls sequences.*, etc.
+- Added variables command to list user defined session variables
+- Added download filename command to download a file from the command line
+- Added edit filename command to launch the file editor from the command line
+- Added environment and setenv key=value syntax to customize Iris behavior
+- Added end command to jump to end of terminal input
+- Added record command. Save all your actions from that point on as an executable script. Save it with save nameofscript. It can then be executed with execute nameofscript
+- Added new file button () to file browser to add and optionally immediately edit a file
+- Added automatic communication with the workspace. Pass around "files" with @W#workpaceid:type:objectid-instance, such as: all_entities_Genome > @W#genome_obj_in_workspace, will create an object with id 'genome_obj_in_workspace in your current workspace. The workspace id, type, and instance number are optional (and must be : delimited, the instance is appended with a hyphen). If this is an ID through standard script redirects (< or >), you don't need to specify IO. If it's a switch (some_script -i name_of_file) then append the io flag - @W#objid#i to read from the workspace or @W#objid#o to write to it.
+- Much nicer selection of variables with the right arrow key
+- Alphabetically sorted the groups of commands
+- Scrolling up while the UI is automatically scrolling down will now halt the scroll
+- Greatly improved performance of 'view' command
+- Moved the interface to bootstrap v3.0
+
 VERSION: 0.0.4 (Released 09/23/2013)
 ------------------------------------------
 Minor bug fixes
