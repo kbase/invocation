@@ -288,7 +288,7 @@
                     +"Please click the 'Sign in' button in the upper right to get started.<br>\n"
                     +"Type <b>commands</b> for a list of commands.<br>\n"
                     +"For usage information about a specific command, type the command name with -h or --help after it.<br>\n"
-                    +"Please visit <a href = 'http://kbase.us/for-users/tutorials/navigating-iris/' target = '_blank'>http://kbase.us/for-users/tutorials/navigating-iris/</a> or type <b>tutorial</b> for an Iris tutorial.<br>\n"
+                    +"Please visit <a href = 'http://www.kbase.us/for-users/get-started#iris' target = '_blank'>http://www.kbase.us/for-users/get-started#iris</a> or type <b>tutorial</b> for an Iris tutorial.<br>\n"
                     +"To find out what's new, type <b>whatsnew</b> (v0.0.5 - 11/18/2013)<br>\n",
 
                     'html'
