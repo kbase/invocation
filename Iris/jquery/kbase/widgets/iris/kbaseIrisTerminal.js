@@ -857,7 +857,7 @@
 
                 $.each(
                     wstokens,
-                    function (idx, wstoken_string) {
+                    $.proxy(function (idx, wstoken_string) {
 
                         var workspaceToken = {
                             type : this.options.defaultFileType
@@ -915,7 +915,7 @@
                             cmdCopy = cmdCopy.replace(wstoken_string, io + workspaceToken.id);
 
                         }
-                    }
+                    }, this)
                 );
 
                 if (! validTokens) {
@@ -942,7 +942,7 @@
                     function (idx, token) {
                         if (token.io == 'i') {
                             var workspaceId = '';
-                            if (token.workspace.length) {
+                            if (token.workspace && token.workspace.length) {
                                 workspaceId = ' -w ' + token.workspace + ' ';
                             }
                             newCommands.push(
@@ -959,7 +959,7 @@
                     function (idx, token) {
                         if (token.io == 'o') {
                             var workspaceId = '';
-                            if (token.workspace.length) {
+                            if (token.workspace && token.workspace.length) {
                                 workspaceId = ' -w ' + token.workspace + ' ';
                             }
                             newCommands.push(
