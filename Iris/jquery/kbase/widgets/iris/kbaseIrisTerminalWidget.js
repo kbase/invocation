@@ -56,9 +56,7 @@
 
             setIsComment : function(isComment) {
                 this.setValueForKey('isComment', isComment);
-console.log("IS COMMENT DATA");
-console.log(this.data());
-                console.log(this.data('input'));
+
                 if (isComment) {
                     this.data('cwdDisplay').css('display', 'none');
                     this.data('inputContainer').css('font-weight', 'normal');
@@ -103,7 +101,7 @@ console.log("APPENDED UI!");
                                     transformedValue        : $.proxy(function (val) {return this.escapeText(val)}, this),
                                     reverseTransformedValue : $.proxy(function (val) {
                                         var $html = $.jqElem('span').html(val);
-                                    console.log("RTV");console.log($html.text());
+
                                         this.trigger('runWidget', {$widget : this, command : $html.text()});
                                         return $html.text()
                                     }, this)
@@ -180,6 +178,7 @@ console.log("REWIRES IDS RIGHT FUCKIGN HERE");
                         context : this,
                         controls : [
                             {
+
                                 icon : 'icon-link',
                                 //tooltip : 'select widget',
                                 callback :
@@ -187,6 +186,7 @@ console.log("REWIRES IDS RIGHT FUCKIGN HERE");
                                         $it.toggleSelection();
                                     },
                             },
+
                             {
                                 icon : 'icon-eye-open',
                                 //tooltip : 'view output',
@@ -257,10 +257,7 @@ console.log("REWIRES IDS RIGHT FUCKIGN HERE");
                         ]
                     }
                 );
-console.log("CWD DISPLAY");
-console.log(this.data('cwdDisplay'));
-console.log(this.data('input'));
-console.log(this.data());
+
                 return $elem;
 
             },
@@ -342,7 +339,6 @@ console.log(this.data());
             thaw : function(json) {
                 var $widget = this._super(json);
                 if (json.collapsed) {
-                console.log('collapsing!');
                     $widget.data('output').hide();
                     $widget.data('subWidgets').hide();
                     $widget.data('error').hide();

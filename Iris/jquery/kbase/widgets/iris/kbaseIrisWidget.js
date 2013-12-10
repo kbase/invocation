@@ -44,7 +44,6 @@
                 this.$elem.on(
                     'toggleWidgetSelection.kbaseIris',
                     $.proxy(function (e, $widget) {
-                    console.log("INTERCEPTS SW");
                         e.stopPropagation();e.preventDefault();
                         this.$elem.parent().trigger('toggleWidgetSelection', this);
                         //this.toggleSelection();
@@ -63,7 +62,6 @@
 
             setIsSelected : function(newIsSelected) {
                 this.setValueForKey('isSelected', newIsSelected);
-                console.log("SETS SELEC " + newIsSelected);
                 if (this.isSelected()) {
                     this.$elem.css('border', '1px solid green');
                 }
@@ -114,8 +112,7 @@
             },
 
             escapeText : function (newVal) {
-            console.log("ESCAPES");
-            console.log(newVal);
+
                 if (typeof newVal == 'string') {
                     newVal = newVal.replace(/&/g, '&amp;');
                     newVal = newVal.replace(/</g, '&lt;');
@@ -185,10 +182,7 @@
             },
 
             freeze : function () {
-                console.log("INPUT");console.log(this.input());
-                console.log(this.error());
-                console.log(this.output());
-                console.log(this.value());
+
                 var json = {
                     type        : this.name,
                     input       : typeof this.input() == 'object' ? $.jqElem('div').append(this.input().clone()).html() : this.input(),

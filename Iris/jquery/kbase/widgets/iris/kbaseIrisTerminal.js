@@ -148,7 +148,6 @@
                 'toggleWidgetSelection.kbaseIris',
                 $.proxy(function (e, $widget) {
                     e.stopPropagation();e.preventDefault();
-                    console.log('selected');console.log($widget);
                     if ($widget.isSelected()) {
                         this.deselectWidget($widget);
                     }
@@ -340,9 +339,8 @@
                     +"Please click the 'Sign in' button in the upper right to get started.<br>\n"
                     +"Type <b>commands</b> for a list of commands.<br>\n"
                     +"For usage information about a specific command, type the command name with -h or --help after it.<br>\n"
-                    +"Please visit <a href = 'http://kbase.us/for-users/tutorials/navigating-iris/' target = '_blank'>http://kbase.us/for-users/tutorials/navigating-iris/</a> or type <b>tutorial</b> for an Iris tutorial.<br>\n"
+                    +"Please visit <a href = 'http://www.kbase.us/for-users/get-started#iris' target = '_blank'>http://www.kbase.us/for-users/get-started#iris</a> or type <b>tutorial</b> for an Iris tutorial.<br>\n"
                     +"To find out what's new, type <b>whatsnew</b> (v0.0.6 - 12/XX/2013)<br>\n",
-
                     'html'
             );
 
@@ -807,12 +805,9 @@
         },
 
         removeWidget : function($widget) {
-console.log("TRIES RW CALL!");
-console.log(this.subWidgets());
             for (var idx = 0; idx < this.subWidgets().length; idx++) {
                 if (this.subWidgets()[idx] === $widget) {
                     this.deselectWidget($widget);
-                    console.log("IN AT IDX " + idx);
                     this.subWidgets().splice(idx,1);
                     $widget.$elem.remove();
                     break;
@@ -824,7 +819,6 @@ console.log(this.subWidgets());
         selectWidget : function($widget) {
             this.selectedWidgets.push($widget);
             $widget.setIsSelected(true);
-            console.log(this.selectedWidgets);
         },
 
         deselectWidget : function ($widget) {
@@ -882,7 +876,6 @@ console.log(this.subWidgets());
         //run: function(rawCmd, /*$widget*/, /*subCommand*/, $containerWidget, /*viaInvoke*/) {
 
         run: function (rawCmd, opts) {
-console.log("RUNS RAW " + rawCmd);
             if (opts == undefined) {
                 opts = {};
             }
@@ -899,8 +892,7 @@ console.log("RUNS RAW " + rawCmd);
             var $deferred = $.Deferred();
 
             var tokens = this.options.grammar.tokenize(rawCmd);
-            console.log("TOKENIZED");
-            console.log(tokens);
+
             // no tokens? No command. Bail out.
             if (tokens.length == 0) {
                 $deferred.resolve();
@@ -1004,7 +996,7 @@ console.log("COMMAND NOW " + command);
                             id = m[1];
                             workspaceToken.io = m[3];
                             workspaceToken.instance = m[2];
-console.log("FULL MATCH IS ");console.log(m);
+
 
                             if (io.match(/</)) {
                                 workspaceToken.io = 'i';
@@ -1451,7 +1443,7 @@ console.log("FULL MATCH IS ");console.log(m);
             }
 
             if (command == 'clear') {
-                console.log(this.subWidgets());
+
                 while (this.subWidgets().length) {
                     this.removeWidget(this.subWidgets()[0]);
                 }
@@ -1459,8 +1451,7 @@ console.log("FULL MATCH IS ");console.log(m);
                 this.trigger('clearIrisProcesses');
                 this.terminal.empty();
                 $deferred.resolve();
-                console.log("CL");
-                console.log(this.subWidgets());
+
                 return $deferred.promise();
             }
 
@@ -1548,7 +1539,7 @@ console.log("FULL MATCH IS ");console.log(m);
                 $.each(
                     this.fileBrowsers,
                     function (idx, $fb) {
-                    console.log("SELECTED");console.log($fb.selectedFiles());
+
                         $.each(
                             $fb.selectedFiles(),
                             function (file, isSelected) {
@@ -1576,14 +1567,14 @@ console.log("FULL MATCH IS ");console.log(m);
                         $.each(
                             selectedWidgets,
                             function (idx, $widget) {
-                            console.log($widget);
+
                                 $widget.setIsSelected(false);
                             }
                         );
                         $.each(
                             this.fileBrowsers,
                             function (idx, $fb) {
-                            console.log("SELECTED");console.log($fb.selectedFiles());
+
                                 var selectedFiles = $fb.selectedFiles();
                                 $.each(
                                     selectedFiles,
@@ -1881,7 +1872,7 @@ console.log("FULL MATCH IS ");console.log(m);
                 //$widget.$elem.remove();
                 $widget.setIsComment(true);
                 $widget.setInput(m[1]);
-                console.log("SETS INPUT TO : " + m[1]);
+
                 $widget.setOutput('');
                 $widget.setError('');
                 $widget.subWidgets([]);
@@ -2188,7 +2179,7 @@ console.log("FULL MATCH IS ");console.log(m);
                             //Sigh. Freakin' special case. This is the time that a run commmand
                             //can spawn a new run, but NOT via tokenization. So we explicitly
                             //toss the <hr> into the output, and nuke the following hr in the terminal
-                            $widget.setOutput($.jqElem('div'));
+                            //$widget.setOutput('abc');//$.jqElem('div'));
                             //this.out_line($widget.output());
                             if ($widget.$elem.next().prop('tagName') == 'HR') {
                                 $widget.$elem.next().remove();
@@ -2199,8 +2190,8 @@ console.log("FULL MATCH IS ");console.log(m);
                                 script,
                                 {
                                     subCommand : true,
-                                    $widget : $widget,
-                                    $containerWidget : $containerWidget,
+                                    //$widget : $widget,
+                                    $containerWidget : $widget,
                                     viaInvoke : opts.viaInvoke
                                 }
                             );
