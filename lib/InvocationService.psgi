@@ -42,6 +42,7 @@ $dispatch->add('/', 'handle_service');
 $dispatch->add('/invoke', 'handle_invoke');
 $dispatch->add('/upload', 'handle_upload');
 $dispatch->add('/download/#*', 'handle_download');
+$dispatch->add('//download/#*', 'handle_download');
 
 {
     package handle_download;

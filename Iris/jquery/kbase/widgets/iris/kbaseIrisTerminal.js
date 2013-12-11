@@ -1462,7 +1462,7 @@
             }
 
             if (! this.sessionId()) {
-                $widget.setError("You are not logged in.");
+                $widget.setError($.jqElem('span').html("You are not logged in.<br>Please click the Sign In link in the upper right to get started."));
                 this.scroll();
                 $deferred.resolve();
                 return $deferred.promise();
