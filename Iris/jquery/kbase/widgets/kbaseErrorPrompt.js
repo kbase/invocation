@@ -15,7 +15,13 @@
 
 */
 
-(function( $, undefined ) {
+define('kbaseErrorPrompt',
+    [
+        'jquery',
+        'kbasePrompt',
+    ],
+    function ($) {
+
 
 
     $.KBWidget({
@@ -65,4 +71,4 @@
 
     });
 
-}( jQuery ) );
+});

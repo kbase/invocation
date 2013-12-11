@@ -48,7 +48,14 @@
 
 */
 
-(function( $, undefined ) {
+define('kbaseLogin',
+    [
+        'jquery',
+        'kbwidget',
+        'kbasePrompt'
+    ],
+    function ($) {
+
 
     $.KBWidget({
 
@@ -1044,4 +1051,4 @@
 
     });
 
-}( jQuery ) );
+});

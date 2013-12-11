@@ -2,7 +2,13 @@
 
 */
 
-(function( $, undefined ) {
+define('kbaseIrisTutorial',
+    [
+        'jquery',
+        'kbwidget',
+    ],
+    function ($) {
+
 
 
     $.KBWidget({
@@ -170,4 +176,4 @@
 
     });
 
-}( jQuery ) );
+});

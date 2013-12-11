@@ -52,7 +52,13 @@
 
 */
 
-(function( $, undefined ) {
+define('kbasePrompt',
+    [
+        'jquery',
+        'kbwidget',
+    ],
+    function ($) {
+
 
     $.KBWidget({
 
@@ -277,4 +283,4 @@
 
     });
 
-}( jQuery ) );
+});

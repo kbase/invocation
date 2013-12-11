@@ -18,7 +18,9 @@
  *         init: function () {}
  *     });
  */
-(function ($) {
+ console.log('kbw1');
+define('kbwidget', ['jquery'], function ($) {
+ console.log('kbw2');
     var KBase;
     var ucfirst = function(string) {
         if (string != undefined && string.length) {
@@ -385,7 +387,8 @@
         if (parent) {
             var pWidget = widgetRegistry[parent];
             if (pWidget === undefined)
-                throw new Error("Parent widget is not registered");
+                throw new Error("Parent widget is not registered. Cannot find " + parent
+                    + " for " + name);
             subclass(Widget, pWidget);
         }
 
@@ -860,4 +863,4 @@
 
         }
     );
-})(jQuery);
+});

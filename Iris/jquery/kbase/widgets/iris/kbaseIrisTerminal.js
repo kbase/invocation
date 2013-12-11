@@ -3,7 +3,21 @@
 
 */
 
-(function( $, undefined ) {
+define('kbaseIrisTerminal',
+    [
+        'jquery',
+        'kbaseButtonControls',
+        'kbaseIrisTutorial',
+        'kbaseIrisFileBrowser',
+        'kbaseAuthenticatedWidget',
+        'kbaseIrisCommands',
+        'kbaseIrisGrammar',
+        'kbaseIrisTerminalWidget',
+        'kbaseIrisTextWidget',
+        'kbaseIrisContainerWidget',
+        'kbaseTable',
+    ],
+    function ($) {
 
 
     $.KBWidget({
@@ -2542,4 +2556,4 @@ console.log("RUNNING COMMAND " + command);
 
     });
 
-}( jQuery ) );
+});

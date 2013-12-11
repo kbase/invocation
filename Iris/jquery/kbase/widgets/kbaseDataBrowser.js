@@ -3,7 +3,15 @@
 
 */
 
-(function( $, undefined ) {
+define('kbaseDataBrowser',
+    [
+        'jquery',
+        'kbaseAuthenticatedWidget',
+        'kbaseButtonControls',
+        'kbaseBox',
+    ],
+    function ($) {
+
 
 
     $.KBWidget({
@@ -225,4 +233,4 @@
 
     });
 
-}( jQuery ) );
+});

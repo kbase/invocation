@@ -3,7 +3,15 @@
 
 */
 
-(function( $, undefined ) {
+define('kbaseIrisGUIWidget',
+    [
+        'jquery',
+        'kbaseIrisWidget',
+        'kbaseFormBuilder',
+        'kbaseBox',
+        'kbaseDeletePrompt'
+    ],
+    function ($) {
 
 
     $.KBWidget(
@@ -154,4 +162,4 @@
 
     );
 
-}( jQuery ) );
+});

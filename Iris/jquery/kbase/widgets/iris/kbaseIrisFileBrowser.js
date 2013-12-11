@@ -3,7 +3,15 @@
 
 */
 
-(function( $, undefined ) {
+define('kbaseIrisFileBrowser',
+    [
+        'jquery',
+        'kbaseDataBrowser',
+        'kbaseButtonControls',
+        'kbaseDeletePrompt',
+        'kbasePrompt',
+    ],
+    function ($) {
 
 
     $.KBWidget({
@@ -1214,4 +1222,4 @@
 
     });
 
-}( jQuery ) );
+});

@@ -3,7 +3,13 @@
 
 */
 
-(function( $, undefined ) {
+define('kbaseIrisWidget',
+    [
+        'jquery',
+        'kbaseAuthenticatedWidget',
+    ],
+    function ($) {
+
 
 
     $.KBWidget(
@@ -283,4 +289,4 @@
 
     );
 
-}( jQuery ) );
+});

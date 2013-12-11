@@ -3,7 +3,13 @@
 
 */
 
-(function( $, undefined ) {
+define('kbaseIrisWorkspace',
+    [
+        'jquery',
+        'kbaseTabs',
+    ],
+    function ($) {
+
 
 
     $.KBWidget({
@@ -66,4 +72,4 @@
 
     });
 
-}( jQuery ) );
+});

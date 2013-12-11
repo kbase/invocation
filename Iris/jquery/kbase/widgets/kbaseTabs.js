@@ -32,7 +32,14 @@
 
 */
 
-(function( $, undefined ) {
+define('kbaseTabs',
+    [
+        'jquery',
+        'kbwidget',
+        'kbaseDeletePrompt',
+    ],
+    function ($) {
+
 
 
     $.KBWidget({
@@ -286,4 +293,4 @@
 
     });
 
-}( jQuery ) );
+});

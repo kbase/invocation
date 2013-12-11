@@ -36,7 +36,7 @@
 
 */
 
-(function( $, undefined ) {
+define('kbaseBox', ['jquery', 'kbaseButtonControls'], function( $ ) {
 
     $.KBWidget({
 
@@ -206,4 +206,4 @@
 
     });
 
-}( jQuery ) );
+} );

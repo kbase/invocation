@@ -25,7 +25,7 @@ Widget to create an accordion control. Easy to use!
 
 */
 
-(function( $, undefined ) {
+define('kbaseAccordion', ['jquery', 'kbwidget'], function( $ ) {
 
 
     $.KBWidget({
@@ -145,4 +145,4 @@ Widget to create an accordion control. Easy to use!
 
     });
 
-}( jQuery ) );
+});

@@ -2,7 +2,12 @@
 
 
 */
-(function( $, undefined ) {
+define('kbaseIrisGrammar',
+    [
+        'jquery',
+        'kbwidget',
+    ],
+    function ($) {
 
 
     $.KBWidget({
@@ -510,4 +515,4 @@
 
     });
 
-}( jQuery ) );
+});

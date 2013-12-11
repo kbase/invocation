@@ -28,7 +28,7 @@
     );
 */
 
-(function( $, undefined ) {
+define('kbaseButtonControls', ['jquery', 'bootstrap', 'kbwidget'], function( $ ) {
 
     $.KBWidget({
 
@@ -170,4 +170,4 @@
 
     });
 
-}( jQuery ) );
+} );

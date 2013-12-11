@@ -3,7 +3,15 @@
 
 */
 
-(function( $, undefined ) {
+define('kbaseIrisEchoWidget',
+    [
+        'jquery',
+        'kbaseIrisWidget',
+        'kbaseFormBuilder',
+        'kbaseBox',
+        'kbaseDeletePrompt'
+    ],
+    function ($) {
 
 
     $.KBWidget(
@@ -108,4 +116,4 @@
 
     );
 
-}( jQuery ) );
+});

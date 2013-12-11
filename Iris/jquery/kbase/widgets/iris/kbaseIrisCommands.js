@@ -21,9 +21,16 @@
     That's it. You're done. This is a useful module to study to see how to subclass kbaseAccordion.
 
 */
-
-(function( $, undefined ) {
-
+console.log('ic1');
+define('kbaseIrisCommands',
+    [
+        'jquery',
+        'kbaseAccordion',
+        'kbaseButtonControls',
+        'kbaseBox',
+    ],
+    function ($) {
+console.log('ic2');
     $.KBWidget({
 
 		  name: "kbaseIrisCommands",
@@ -524,4 +531,4 @@
 
     });
 
-}( jQuery ) );
+});

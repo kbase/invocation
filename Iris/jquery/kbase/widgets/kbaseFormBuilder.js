@@ -116,7 +116,14 @@
 
 */
 
-(function( $, undefined ) {
+define('kbaseFormBuilder',
+    [
+        'jquery',
+        'kbwidget',
+        'kbasePrompt',
+    ],
+    function ($) {
+
 
 
     $.KBWidget({
@@ -932,4 +939,4 @@
 
     });
 
-}( jQuery ) );
+});

@@ -2,7 +2,13 @@
 
 */
 
-(function( $, undefined ) {
+define('kbaseAuthenticatedWidget',
+    [
+        'jquery',
+        'kbwidget',
+    ],
+    function ($) {
+
 
 
     $.KBWidget({
@@ -87,4 +93,4 @@
 
     });
 
-}( jQuery ) );
+});

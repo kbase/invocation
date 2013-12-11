@@ -3,7 +3,15 @@
 
 */
 
-(function( $, undefined ) {
+define('kbaseIrisTerminalWidget',
+    [
+        'jquery',
+        'kbaseIrisWidget',
+        'kbaseButtonControls',
+        'kbaseDeletePrompt',
+    ],
+    function ($) {
+
 
 
     $.KBWidget(
@@ -352,4 +360,4 @@ console.log("REWIRES IDS RIGHT FUCKIGN HERE");
 
     );
 
-}( jQuery ) );
+});

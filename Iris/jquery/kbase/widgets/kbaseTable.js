@@ -57,7 +57,14 @@
 
 */
 
-(function( $, undefined ) {
+define('kbaseTable',
+    [
+        'jquery',
+        'kbwidget',
+        'kbaseDeletePrompt',
+    ],
+    function ($) {
+
 
 
     $.KBWidget({
@@ -512,4 +519,4 @@
 
     });
 
-}( jQuery ) );
+});
