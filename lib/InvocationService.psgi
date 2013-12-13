@@ -54,27 +54,19 @@ $dispatch->add('//download/#*', 'handle_download');
 	my($req, $args) = @_;
 	my $session = $req->param("session_id");
 
-my $dlobj = Bio::KBase::InvocationService::InvocationServiceImpl->new($cfg);
-my @dldispatch = 'InvocationService' => $dlobj;
-
-my $dlserver = Bio::KBase::InvocationService::Service->new(instance_dispatch => { @dldispatch },
-				allow_get => 0,
-			       );
-
-
-    my $token = $dlserver->_plack_req->header("Authorization");
+    my $token = $server->_plack_req->header("Authorization");
 	my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1);
 	my $valid = $auth_token->validate();
 
     my $ctx = undef;
     if ($valid) {
-        $ctx = Bio::KBase::InvocationService::ServiceContext->new(client_ip => $dlserver->_plack_req->address);
+        $ctx = Bio::KBase::InvocationService::ServiceContext->new(client_ip => $server->_plack_req->address);
 	    $ctx->authenticated(1);
 	    $ctx->user_id($auth_token->user_id);
 	    $ctx->token( $token);
     }
 
-	my $us = Bio::KBase::InvocationService::UserSession->new($dlobj, $session, $ctx);
+	my $us = Bio::KBase::InvocationService::UserSession->new($obj, $session, $ctx);
 
 	my $dir = $us->_session_dir();
 
@@ -123,20 +115,12 @@ my $dlserver = Bio::KBase::InvocationService::Service->new(instance_dispatch => 
     {
 	my($req, $args) = @_;
 
-my $ulobj = Bio::KBase::InvocationService::InvocationServiceImpl->new($cfg);
-my @uldispatch = 'InvocationService' => $ulobj;
-
-my $ulserver = Bio::KBase::InvocationService::Service->new(instance_dispatch => { @uldispatch },
-				allow_get => 0,
-			       );
-
-
 	my @origin_hdr = ('Access-Control-Allow-Origin', $req->env->{HTTP_ORIGIN});
 
 	my $session = $req->param("session_id");
-	my $us = Bio::KBase::InvocationService::UserSession->new($ulobj, $session, undef);
+	my $us = Bio::KBase::InvocationService::UserSession->new($obj, $session, undef);
 
-	my $dir = $ulobj->_session_dir();
+	my $dir = $obj->_session_dir();
 	if (!-d $dir)
 	{
 	    return [500, \@origin_hdr, ["Invalid session id\n"]];
@@ -221,14 +205,7 @@ my $ulserver = Bio::KBase::InvocationService::Service->new(instance_dispatch => 
     {
 	my($req) = @_;
 
-my $ulobj = Bio::KBase::InvocationService::InvocationServiceImpl->new($cfg);
-my @uldispatch = 'InvocationService' => $ulobj;
-
-my $ulserver = Bio::KBase::InvocationService::Service->new(instance_dispatch => { @uldispatch },
-				allow_get => 0,
-			       );
-
-	my $resp = $ulserver->handle_input($req->env);
+	my $resp = $server->handle_input($req->env);
 	my($code, $hdrs, $body) = @$resp;
 #	if ($code =~ /^5/)
 	{
