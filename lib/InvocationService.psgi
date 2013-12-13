@@ -54,7 +54,7 @@ $dispatch->add('//download/#*', 'handle_download');
 	my($req, $args) = @_;
 	my $session = $req->param("session_id");
 
-    my $token = $req->header("Authorization") || $session;
+    my $token = $req->header("Authorization") || $req->param('token');
 	my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1);
 	my $valid = $auth_token->validate();
 
