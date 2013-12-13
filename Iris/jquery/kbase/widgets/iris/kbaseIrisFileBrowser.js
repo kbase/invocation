@@ -1017,7 +1017,7 @@
         },
 
         urlForFile : function(file) {
-            return this.options.invocationURL + "/download/" + file + "?session_id=" + this.sessionId() + '&token=' + this.authToken();
+            return this.options.invocationURL + "/download/" + file + "?session_id=" + encodeURIComponent(this.sessionId()) + '&token=' + encodeURIComponent(this.authToken());
         },
 
         deleteFile : function(file, type) {
