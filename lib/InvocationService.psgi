@@ -123,6 +123,14 @@ my $dlserver = Bio::KBase::InvocationService::Service->new(instance_dispatch => 
     {
 	my($req, $args) = @_;
 
+my $ulobj = Bio::KBase::InvocationService::InvocationServiceImpl->new($cfg);
+my @uldispatch = 'InvocationService' => $ulobj;
+
+my $ulserver = Bio::KBase::InvocationService::Service->new(instance_dispatch => { @uldispatch },
+				allow_get => 0,
+			       );
+
+
 	my @origin_hdr = ('Access-Control-Allow-Origin', $req->env->{HTTP_ORIGIN});
 
 	my $session = $req->param("session_id");
