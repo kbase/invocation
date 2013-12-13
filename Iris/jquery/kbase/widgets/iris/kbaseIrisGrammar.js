@@ -42,13 +42,24 @@
 
             var detokenized = '';
 
+            //comments are a special case. Parse out nothing.
+            if (tokens.length && ! $.isArray(tokens[0]) && tokens[0].match(/^\s*#/)) {
+                return tokens[0];
+            }
+
+
+            if (tokens.forceString == undefined) {
+                tokens.forceString = {};
+            }
+
             for (var idx = 0; idx < tokens.length; idx++) {
                 var token = tokens[idx];
                 if ($.isArray(token)) {
                     detokenized += this.detokenize(token) + ';';
                 }
                 else {
-                    if (token.match(/[\s;]/)) {
+                    //pipes are a frustrating special case. Quote the string if it has a pipe, as long as it is not a pipe.
+                    if (token.match(/[\s;|]/) && token != '|' || tokens.forceString[idx]) {
                         if (token.match(/"/) && ! token.match(/\\"/)) {
                             detokenized += " '" + token + "'";
                         }
@@ -82,12 +93,19 @@
         tokenize : function(string) {
 
             var tokens = [];
+            tokens.forceString = {};
             var partial = '';
             var quote = undefined;
             var escaped = false;
             var tokensList = [];
             var lastRedirectChar = false;
             var lastChr = '';
+
+            //comments are a special case. Parse out nothing.
+            if (string.match(/^\s*#/)) {
+                tokens.push(string);
+                return tokens;
+            }
 
             for (var idx = 0; idx < string.length; idx++) {
                 var chr = string.charAt(idx);
@@ -120,6 +138,14 @@
                         isKBid = true;
                     }
 
+                    //Fine. We need to deal with appending and STDERR redirects.
+                    if (chr == '>' && partial != undefined && partial.match(/((^|\s)2|>)$/)
+                        && ! quote && ! isKBid) {
+                        partial += chr;
+                        lastRedirectChar = isRedirectChar;
+                        continue;
+                    }
+
                     if ( (isRedirectChar || lastRedirectChar) && ! quote && ! isKBid) {
                         if (partial.length) {
                             tokens.push(partial);
@@ -147,6 +173,7 @@
                     if (chr == quote && ! escaped) {
                         partial = partial.substring(1, partial.length - 1);
                         tokens.push(partial);
+                        tokens.forceString[tokens.length - 1] = true;
                         partial = '';
                         quote = undefined;
                         lastChr = chr;
