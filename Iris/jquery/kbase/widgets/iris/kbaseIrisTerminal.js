@@ -354,7 +354,7 @@ define('kbaseIrisTerminal',
                     +"Type <b>commands</b> for a list of commands.<br>\n"
                     +"For usage information about a specific command, type the command name with -h or --help after it.<br>\n"
                     +"Please visit <a href = 'http://www.kbase.us/for-users/get-started#iris' target = '_blank'>http://www.kbase.us/for-users/get-started#iris</a> or type <b>tutorial</b> for an Iris tutorial.<br>\n"
-                    +"To find out what's new, type <b>whatsnew</b> (v0.0.6 - 12/XX/2013)<br>\n",
+                    +"To find out what's new, type <b>whatsnew</b> (v0.0.6 - 12/13/2013)<br>\n",
                     'html'
             );
 
@@ -1476,7 +1476,7 @@ console.log("COMMAND NOW " + command);
             }
 
             if (! this.sessionId()) {
-                $widget.setError("You are not logged in.");
+                $widget.setError($.jqElem('span').html("You are not logged in.<br>Please click the Sign In link in the upper right to get started."));
                 this.scroll();
                 $deferred.resolve();
                 return $deferred.promise();

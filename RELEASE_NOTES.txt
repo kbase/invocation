@@ -4,6 +4,12 @@ The invocation service allows access to command line scripts running on KBase ha
 
 It also deploys the Iris interface, which provides a web gui to do the the same.
 
+VERSION: 0.0.6 (Release 12/13/2013)
+------------------------------------------
+- Resolved the issue regarding downloads occasionally not working.
+- Resolved the layout issue that would occasionally make the chevrons on the command list slide off the screen.
+- Fixed redirecting STDERR, as well as appending to files.
+
 VERSION: 0.0.5 (Release 11/18/2013)
 ------------------------------------------
 - Scriptability - save your commands to a file (one command per line), then run it later with execute nameofscript
