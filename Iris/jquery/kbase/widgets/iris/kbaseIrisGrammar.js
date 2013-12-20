@@ -48,7 +48,7 @@ define('kbaseIrisGrammar',
             var detokenized = '';
 
             //comments are a special case. Parse out nothing.
-            if (tokens.length && tokens[0].match(/^\s*#/)) {
+            if (tokens.length && ! $.isArray(tokens[0]) && tokens[0].match(/^\s*#/)) {
                 return tokens[0];
             }
 
@@ -60,7 +60,7 @@ define('kbaseIrisGrammar',
                 }
                 else {
                     //pipes are a frustrating special case. Quote the string if it has a pipe, as long as it is not a pipe.
-                    if (token.match(/[\s;|]/) && token != '|') {
+                    if (token.match(/[\s;|]/) && token != '|' || tokens.forceString[idx]) {
                         if (token.match(/"/) && ! token.match(/\\"/)) {
                             detokenized += " '" + token + "'";
                         }
@@ -94,6 +94,7 @@ define('kbaseIrisGrammar',
         tokenize : function(string) {
 
             var tokens = [];
+            tokens.forceString = {};
             var partial = '';
             var quote = undefined;
             var escaped = false;
@@ -138,6 +139,14 @@ define('kbaseIrisGrammar',
                         isKBid = true;
                     }
 
+                    //Fine. We need to deal with appending and STDERR redirects.
+                    if (chr == '>' && partial != undefined && partial.match(/((^|\s)2|>)$/)
+                        && ! quote && ! isKBid) {
+                        partial += chr;
+                        lastRedirectChar = isRedirectChar;
+                        continue;
+                    }
+
                     if ( (isRedirectChar || lastRedirectChar) && ! quote && ! isKBid) {
                         if (partial.length) {
                             tokens.push(partial);
@@ -163,8 +172,12 @@ define('kbaseIrisGrammar',
                 if (quote != undefined) {
 
                     if (chr == quote && ! escaped) {
+                        //I want to revisit commenting this out to potentially add the ability to echo redirect chars
+                        //also not to alter original quotes at all. Or maybe it should be an object with an explicit string
+                        //flag set? I'm not completely sure.
                         partial = partial.substring(1, partial.length - 1);
                         tokens.push(partial);
+                        tokens.forceString[tokens.length - 1] = true;
                         partial = '';
                         quote = undefined;
                         lastChr = chr;

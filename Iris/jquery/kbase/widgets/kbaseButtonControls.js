@@ -10,15 +10,15 @@
             id: some_id, //arbitrary value to associate with these controls. Each button gets a copy in .data('id')
             controls : [
                 {
-                    icon : 'icon-search',
-                    'icon-alt' : 'icon-search-alt', //optional. Toggle icon between icon and icon-alt when clicked.
+                    icon : 'fa fa-search',
+                    'icon-alt' : 'fa fa-search-o', //optional. Toggle icon between icon and icon-alt when clicked.
                     callback : function(e) {
                         console.log("clicked on search");
                     },
                     id : 'search' //optional. Keys the button to be available via $('#some_div').controls('search')
                 },
                 {
-                    icon : 'icon-minus',
+                    icon : 'fa fa-minus',
                     callback : function(e) {
                         console.log("clicked on delete");
                     }

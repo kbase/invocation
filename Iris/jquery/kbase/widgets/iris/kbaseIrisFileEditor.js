@@ -82,7 +82,7 @@ define('kbaseIrisFileEditor',
                 .append(
                     $.jqElem('div')
                         .attr('align', 'center')
-                        .append($.jqElem('i').addClass('icon-spinner').addClass('icon-spin icon-4x'))
+                        .append($.jqElem('i').addClass('fa fa-spinner').addClass('fa fa-spin fa fa-4x'))
                 )
             ;
 

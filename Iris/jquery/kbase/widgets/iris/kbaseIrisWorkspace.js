@@ -40,7 +40,7 @@ define('kbaseIrisWorkspace',
                                 .append(
                                     $.jqElem('button')
                                         .addClass('btn btn-default btn-mini')
-                                        .append($('<i></i>').addClass('icon-plus'))
+                                        .append($('<i></i>').addClass('fa fa-plus'))
                                         .css('padding-top', '1px')
                                         .css('padding-bottom', '1px')
                                         .attr('title', 'Add a terminal')

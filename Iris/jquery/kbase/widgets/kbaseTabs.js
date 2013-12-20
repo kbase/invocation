@@ -223,7 +223,7 @@ define('kbaseTabs',
             }
         },
 
-        closeIcon : function () { return 'icon-remove'; },
+        closeIcon : function () { return 'fa fa-times'; },
 
         deleteTabToolTip : function (tabName) {
             return 'Remove ' + tabName;

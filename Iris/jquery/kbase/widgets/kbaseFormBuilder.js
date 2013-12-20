@@ -570,14 +570,14 @@ define('kbaseFormBuilder',
                                                 $('<button></button>')
                                                     .addClass('btn btn-default')
                                                     .attr('title', 'Add more')
-                                                    .append($('<i></i>').addClass('icon-plus'))
+                                                    .append($('<i></i>').addClass('fa fa-plus'))
                                                     .bind(
                                                         'click',
                                                         function (evt) {
                                                             evt.stopPropagation(); evt.preventDefault();
                                                             var $newgroup = $container.children().first().clone();
                                                             var $newerror = $error.clone();
-                                                            $newgroup.find('i').toggleClass('icon-plus icon-minus');
+                                                            $newgroup.find('i').toggleClass('fa fa-plus fa fa-minus');
                                                             $newgroup.find('button').unbind('click');
                                                             $newgroup.find('button').bind('click', function (e) {
                                                                 e.stopPropagation(); e.preventDefault();

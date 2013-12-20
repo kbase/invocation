@@ -164,7 +164,7 @@ define('kbaseIrisWidget',
             },
 
             acceptInput : function($widget) {
-
+console.log('calls superclass acceptInput');
                 this.kb_bind(
                     $widget,
                     'value',
@@ -173,6 +173,9 @@ define('kbaseIrisWidget',
                         this.render();
                     }
                 );
+                if ($widget.value() != undefined) {
+                    this.setInput($widget.value());
+                }
             },
 
             startThinking : function() {},

@@ -2,6 +2,7 @@ define('kbpaths',[], function (paths) {
  requirejs.config({
     //baseUrl: 'jquery/FUCK/',
     baseUrl : 'jquery/kbase/widgets',
+    urlArgs: "bust=" + (new Date()).getTime(),
     paths : {
      jquery : '../../ext/jquery/jquery-1.10.2.min',
      bootstrap : "../../ext/bootstrap/3.0.3/js/bootstrap.min",

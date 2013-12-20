@@ -782,16 +782,16 @@ define('kbaseIrisTerminal',
         },
 
         addWidget : function(widgetName) {
-            var $widget = $.jqElem('div').kbaseIrisContainerWidget(
+            var $widget = this.options.widgets[widgetName]();
+            /*$.jqElem('div').kbaseIrisContainerWidget(
                 {
                     widget : this.options.widgets[widgetName]()
                 }
-            );
+            );*/
             this.appendWidget( $widget );
             $widget.render();
             if (this.live_widgets.length) {
                 $widget.acceptInput(this.live_widgets[this.live_widgets.length - 1]);
-                $widget.setInput(this.live_widgets[this.live_widgets.length - 1].value());
             }
 
             this.live_widgets.push($widget);
@@ -876,7 +876,7 @@ define('kbaseIrisTerminal',
         },
 
         invoke : function($containerWidget, rawCmd) {
-            this.run(
+            return this.run(
                 rawCmd,
                 {
                     subCommand : false,
@@ -958,6 +958,8 @@ define('kbaseIrisTerminal',
             //otherwise, we just soldier on. Replace the variables in the raw command. We're off to the races.
             //detokenize the tokens back into a command
             else {
+            console.log("TOKENS ARE");
+            console.log(tokens);
                 rawCmd = this.options.grammar.detokenize(tokens);
             }
 
@@ -1476,7 +1478,7 @@ console.log("COMMAND NOW " + command);
             }
 
             if (! this.sessionId()) {
-                $widget.setError("You are not logged in.");
+                $widget.setError($.jqElem('span').html("You are not logged in.<br>Please click the Sign In link in the upper right to get started."));
                 this.scroll();
                 $deferred.resolve();
                 return $deferred.promise();
@@ -2436,7 +2438,7 @@ console.log("COMMAND NOW " + command);
                     context : this,
                     controls : [
                         {
-                            'icon' : 'icon-ban-circle',
+                            'icon' : 'fa fa-ban-circle',
                             //'tooltip' : 'Cancel',
                             callback : function(e, $term) {
                                 $widget.promise().xhr.abort();

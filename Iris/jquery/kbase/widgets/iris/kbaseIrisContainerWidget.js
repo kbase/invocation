@@ -96,14 +96,14 @@ define('kbaseIrisContainerWidget',
                         context : this,
                         controls : [
                             /*{
-                                icon : 'icon-eye-open',
+                                icon : 'fa fa-eye',
                                 callback :
                                     function (e, $it) {
                                         $it.viewOutput();
                                     },
                             },*/
                             {
-                                icon : 'icon-remove',
+                                icon : 'fa fa-times',
                                 callback :
                                     function (e) {
                                         $elem.remove();

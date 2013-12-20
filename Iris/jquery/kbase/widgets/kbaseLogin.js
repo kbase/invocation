@@ -247,7 +247,7 @@ define('kbaseLogin',
                                 .addClass('btn btn-default')
                                 .addClass('btn-xs')
                                 .addClass('dropdown-toggle')
-                                .append($('<span></span>').addClass('glyphicon glyphicon-user'))
+                                .append($('<span></span>').addClass('fa fa-user'))
                                 .append($('<span></span>').addClass('caret'))
                                 .bind('click',
                                 //$.proxy(
@@ -404,7 +404,7 @@ define('kbaseLogin',
                                         .append(
                                             $('<i></i>')
                                                 .attr('id', 'loginicon')
-                                                .addClass('icon-lock')
+                                                .addClass('fa fa-lock')
                                         )
                                 )
                             )
@@ -433,7 +433,7 @@ define('kbaseLogin',
                                 .append(
                                     $('<i></i>')
                                         .attr('id', 'logouticon')
-                                        .addClass('icon-signout')
+                                        .addClass('fa fa-signout')
                                 )
                         )
                 );
@@ -456,7 +456,7 @@ define('kbaseLogin',
             this.registerLogin =
                 function(args) {
 
-                    this.data('loginicon').removeClass().addClass('icon-lock');
+                    this.data('loginicon').removeClass().addClass('fa fa-lock');
 
                     if ( args.success ) {
                         this.data("entrance").hide();
@@ -479,7 +479,7 @@ define('kbaseLogin',
                                                     .addClass('pull-left')
                                                     .append(
                                                         $('<i></i>')
-                                                            .addClass('icon-warning-sign')
+                                                            .addClass('fa fa-warning-sign')
                                                             .attr('style', 'float: left; margin-right: .3em;')
                                                     )
                                             )
@@ -509,7 +509,7 @@ define('kbaseLogin',
                 $.proxy(
                     function(evt) {
 
-                        this.data('loginicon').removeClass().addClass('icon-refresh');
+                        this.data('loginicon').removeClass().addClass('fa fa-refresh');
 
                         this.login(
 
@@ -553,7 +553,7 @@ define('kbaseLogin',
                         .append(
                             $('<i></i>')
                                 .attr('id', 'loginicon')
-                                .addClass('icon-lock')
+                                .addClass('fa fa-lock')
                         )
                 );
 
@@ -585,7 +585,7 @@ define('kbaseLogin',
                             }
                         );
 
-                        this.data('loginicon').removeClass().addClass('icon-user');
+                        this.data('loginicon').removeClass().addClass('fa fa-user');
 
                         this.data('loginbutton').bind(
                             'click',
@@ -605,7 +605,7 @@ define('kbaseLogin',
             this.specificLogout =
                 function() {
                     this.data('loginbutton').tooltip('destroy');
-                    this.data('loginicon').removeClass().addClass('icon-lock');
+                    this.data('loginicon').removeClass().addClass('fa fa-lock');
                 };
 
             return $prompt;
@@ -750,7 +750,7 @@ define('kbaseLogin',
                                                                     .addClass('pull-left')
                                                                     .append(
                                                                         $('<i></i>')
-                                                                            .addClass('icon-warning-sign')
+                                                                            .addClass('fa fa-warning-sign')
                                                                             .attr('style', 'float: left; margin-right: .3em;')
                                                                     )
                                                             )
@@ -779,7 +779,7 @@ define('kbaseLogin',
                                                                     .addClass('pull-left')
                                                                     .append(
                                                                         $('<i></i>')
-                                                                            .addClass('icon-info-sign')
+                                                                            .addClass('fa fa-info-sign')
                                                                             .attr('style', 'float: left; margin-right: .3em;')
                                                                     )
                                                             )*/

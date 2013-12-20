@@ -184,7 +184,7 @@ define('kbaseTable',
 
                             var buttonId = header.value + '-sortButton';
                             var $buttonIcon = $('<i></i>')
-                                .addClass('icon-sort');
+                                .addClass('fa fa-sort');
                             var $button = $('<button></button>')
                                 .addClass('btn btn-default btn-xs')
                                 .attr('id', buttonId)
@@ -197,32 +197,32 @@ define('kbaseTable',
 
                                     var $lastSort = this.data('lastSort');
                                     if ($lastSort != undefined && $lastSort.get(0) != $button.get(0)) {
-                                        $lastSort.children(':first').removeClass('icon-sort-up');
-                                        $lastSort.children(':first').removeClass('icon-sort-down');
-                                        $lastSort.children(':first').addClass('icon-sort');
+                                        $lastSort.children(':first').removeClass('fa fa-sort-up');
+                                        $lastSort.children(':first').removeClass('fa fa-sort-down');
+                                        $lastSort.children(':first').addClass('fa fa-sort');
                                         $lastSort.data('shouldHide', true);
                                         $lastSort.css('display', 'none');
                                     }
 
                                     this.data('lastSortHeader', h);
 
-                                    if ($buttonIcon.hasClass('icon-sort')) {
-                                        $buttonIcon.removeClass('icon-sort');
-                                        $buttonIcon.addClass('icon-sort-up');
+                                    if ($buttonIcon.hasClass('fa fa-sort')) {
+                                        $buttonIcon.removeClass('fa fa-sort');
+                                        $buttonIcon.addClass('fa fa-sort-up');
                                         $button.data('shouldHide', false);
                                         this.sortAndLayoutOn(h, 1);
                                         this.data('lastSortDir', 1);
                                     }
-                                    else if ($buttonIcon.hasClass('icon-sort-up')) {
-                                        $buttonIcon.removeClass('icon-sort-up');
-                                        $buttonIcon.addClass('icon-sort-down');
+                                    else if ($buttonIcon.hasClass('fa fa-sort-up')) {
+                                        $buttonIcon.removeClass('fa fa-sort-up');
+                                        $buttonIcon.addClass('fa fa-sort-down');
                                         $button.data('shouldHide', false);
                                         this.sortAndLayoutOn(h, -1);
                                         this.data('lastSortDir', -1);
                                     }
-                                    else if ($buttonIcon.hasClass('icon-sort-down')) {
-                                        $buttonIcon.removeClass('icon-sort-down');
-                                        $buttonIcon.addClass('icon-sort');
+                                    else if ($buttonIcon.hasClass('fa fa-sort-down')) {
+                                        $buttonIcon.removeClass('fa fa-sort-down');
+                                        $buttonIcon.addClass('fa fa-sort');
                                         $button.data('shouldHide', true);
                                         this.sortAndLayoutOn(undefined);
                                         this.data('lastSortHeader', undefined);

@@ -73,7 +73,7 @@ define('kbaseIrisGUIWidget',
                                 ),
                         controls : [
                             {
-                                icon : 'icon-copy',
+                                icon : 'fa fa-copy',
                                 callback : $.proxy(function(e) {
                                     var $box = this.data('box').kbaseBox();
 
@@ -81,7 +81,7 @@ define('kbaseIrisGUIWidget',
                                 id : 'runButton'
                             },
                             {
-                                icon : 'icon-save',
+                                icon : 'fa fa-save',
                                 callback : $.proxy(function(e) {
                                     var $box = this.data('box').kbaseBox();
 
@@ -89,7 +89,7 @@ define('kbaseIrisGUIWidget',
                                 id : 'runButton'
                             },
                             {
-                                icon : 'icon-play',
+                                icon : 'fa fa-play',
                                 callback : $.proxy(function(e) {
                                     $box.startThinking();
                                     var command = this.options.command + ' ' + $form.getFormValuesAsString();
@@ -98,7 +98,7 @@ define('kbaseIrisGUIWidget',
                                 id : 'runButton'
                             },
                             {
-                                icon : 'icon-question',
+                                icon : 'fa fa-question',
                                 callback : $.proxy(function(e) {
                                     e.preventDefault(); e.stopPropagation();
 
@@ -109,7 +109,7 @@ define('kbaseIrisGUIWidget',
                                 id : 'helpButton'
                             },
                             {
-                                icon : 'icon-remove',
+                                icon : 'fa fa-times',
                                 callback :
                                     $.proxy(function (e, $gui) {
                                         var $deleteModal = $.jqElem('div').kbaseDeletePrompt(

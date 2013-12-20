@@ -50,7 +50,7 @@ define('kbaseErrorPrompt',
                                         .addClass('pull-left')
                                         .append(
                                             $('<i></i>')
-                                                .addClass('icon-warning-sign')
+                                                .addClass('fa fa-warning-sign')
                                                 .attr('style', 'float: left; margin-right: .3em;')
                                         )
                                 )

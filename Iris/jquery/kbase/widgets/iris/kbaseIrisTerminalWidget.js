@@ -141,7 +141,7 @@ console.log("APPENDED UI!");
                         $.jqElem('div')
                             .attr('id', 'thoughtBox')
                             .addClass('pull-left')
-                            .append( $.jqElem('i').addClass('icon-spinner icon-spin') )
+                            .append( $.jqElem('i').addClass('fa fa-spinner fa fa-spin') )
                             .css('display', 'none')
                     )
                     .append(
@@ -187,7 +187,7 @@ console.log("REWIRES IDS RIGHT FUCKIGN HERE");
                         controls : [
                             {
 
-                                icon : 'icon-link',
+                                icon : 'fa fa-link',
                                 //tooltip : 'select widget',
                                 callback :
                                     function (e, $it) {
@@ -196,7 +196,7 @@ console.log("REWIRES IDS RIGHT FUCKIGN HERE");
                             },
 
                             {
-                                icon : 'icon-eye-open',
+                                icon : 'fa fa-eye',
                                 //tooltip : 'view output',
                                 callback :
                                     function (e, $it) {
@@ -204,7 +204,7 @@ console.log("REWIRES IDS RIGHT FUCKIGN HERE");
                                     },
                             },
                             {
-                                icon : 'icon-remove',
+                                icon : 'fa fa-times',
                                 //tooltip : 'remove command',
                                 callback :
                                     $.proxy( function (e) {
@@ -212,8 +212,8 @@ console.log("REWIRES IDS RIGHT FUCKIGN HERE");
                                     }, this)
                             },
                             {
-                                icon : 'icon-caret-up',
-                                'icon-alt' : 'icon-caret-down',
+                                icon : 'fa fa-caret-up',
+                                'icon-alt' : 'fa fa-caret-down',
                                 //tooltip : {title : 'collapse / expand', placement : 'bottom'},
                                 callback : $.proxy(function(e) {
                                     this.collapsed( ! this.collapsed() );
@@ -234,7 +234,7 @@ console.log("REWIRES IDS RIGHT FUCKIGN HERE");
                         context : this,
                         controls : [
                             {
-                                icon : 'icon-link',
+                                icon : 'fa fa-link',
                                 callback :
                                     function (e, $it) {
                                         console.log("via button controls!");
@@ -242,7 +242,7 @@ console.log("REWIRES IDS RIGHT FUCKIGN HERE");
                                     }
                             },
                             {
-                                icon : 'icon-double-angle-up',
+                                icon : 'fa fa-angle-double-up',
                                 callback :
                                 function (e, $it) {
                                     $it.trigger('scrollTo', $it.$elem.prop('offsetTop') - 85);
@@ -256,7 +256,7 @@ console.log("REWIRES IDS RIGHT FUCKIGN HERE");
                                 }
                             },
                             {
-                                icon : 'icon-remove',
+                                icon : 'fa fa-times',
                                 callback :
                                     function (e, $it) {
                                         $it.removeWidgetPrompt();

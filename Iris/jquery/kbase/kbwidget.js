@@ -140,6 +140,7 @@ define('kbwidget', ['jquery'], function ($) {
                 var setter = $target.__attributes[attribute].setter;
 
                 $target[setter](newVal);
+                this.data('kbase_bindingValue', this[accessors.getter]());
             }
 
         }, $(elem))

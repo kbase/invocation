@@ -68,7 +68,7 @@ define('kbaseIrisEchoWidget',
                                 ),
                         controls : [
                             {
-                                icon : 'icon-remove',
+                                icon : 'fa fa-times',
                                 callback :
                                     $.proxy(function (e, $gui) {
                                         var $deleteModal = $.jqElem('div').kbaseDeletePrompt(

@@ -12,14 +12,14 @@
             //and a callback function.
             controls : [
                 {
-                    icon : 'icon-search',
+                    icon : 'fa fa-search',
                     callback : function(e) {
                         console.log("clicked on search");
                     },
                     id : 'search' //optional. Keys the button to be available via $box.controls('search')
                 },
                 {
-                    icon : 'icon-minus',
+                    icon : 'fa fa-minus',
                     callback : function(e) {
                         console.log("clicked on delete");
                     }
@@ -58,8 +58,8 @@ define('kbaseBox', ['jquery', 'kbaseButtonControls'], function( $ ) {
             if (this.options.canCollapse) {
                 this.options.controls.push(
                     {
-                        icon : 'icon-caret-up',
-                        'icon-alt' : 'icon-caret-down',
+                        icon : 'fa fa-caret-up',
+                        'icon-alt' : 'fa fa-caret-down',
                         'tooltip' : {title : 'collapse / expand', placement : 'bottom'},
                         callback : $.proxy(function(e) {
                             this.data('content').slideToggle();
@@ -100,6 +100,7 @@ define('kbaseBox', ['jquery', 'kbaseButtonControls'], function( $ ) {
                 .append(
                     $('<div></div>')
                         .css('border', '1px solid ' + this.options.boxColor)
+//                        .addClass('col-sm-12')
                         .css('padding', '2px')
                         .append(
                             $('<div></div>')
@@ -144,7 +145,7 @@ define('kbaseBox', ['jquery', 'kbaseButtonControls'], function( $ ) {
                                             .append('&nbsp;&nbsp;')
                                             .append(
                                                 $.jqElem('i')
-                                                    .addClass('icon-spinner icon-spin')
+                                                    .addClass('fa fa-spinner fa fa-spin')
                                             )
                                     )
                             )
@@ -152,6 +153,7 @@ define('kbaseBox', ['jquery', 'kbaseButtonControls'], function( $ ) {
                         .append(
                             $('<div></div>')
                                 .attr('id', 'content')
+//                                .addClass('col-sm-12')
                         )
                 )
                 .append(

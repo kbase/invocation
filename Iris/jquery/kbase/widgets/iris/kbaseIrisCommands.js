@@ -278,7 +278,7 @@ console.log('ic2');
 
             var controls = [
                         {
-                            icon : 'icon-question',
+                            icon : 'fa fa-question',
                             callback : function(e, $ic) {
                                 if ($ic.options.terminal != undefined) {
                                     $ic.options.terminal.run(cmd + ' --help');
@@ -388,7 +388,7 @@ console.log('ic2');
                                                             },
                                                             [
                                                                 {
-                                                                    icon : 'icon-long-arrow-right',
+                                                                    icon : 'fa fa-long-arrow-right',
                                                                     callback : function(e, $ic) {
                                                                         $ic.data('searchField').val('');
                                                                         $ic.data('searchField').trigger('keyup');
@@ -437,7 +437,7 @@ console.log('ic2');
                                                     .append(
                                                         $.jqElem('button')
                                                             .addClass('btn btn-default btn-xs')
-                                                            .append($.jqElem('i').addClass('icon-remove'))
+                                                            .append($.jqElem('i').addClass('fa fa-times'))
                                                             .on('click',
                                                                 $.proxy(function(e) {
                                                                     this.data('searchField').val('');
@@ -461,7 +461,7 @@ console.log('ic2');
 //                                                .css('padding-top', '1px')
 //                                                .css('padding-bottom', '1px')
                                                 .attr('id', 'search-button')
-                                                .append($.jqElem('i').attr('id', 'search-button-icon').addClass('icon-search'))
+                                                .append($.jqElem('i').attr('id', 'search-button-icon').addClass('fa fa-search'))
                                                 .on(
                                                     'click',
                                                     $.proxy(function(e) {
