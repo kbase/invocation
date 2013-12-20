@@ -54,13 +54,13 @@ $dispatch->add('//download/#*', 'handle_download');
 	my($req, $args) = @_;
 	my $session = $req->param("session_id");
 
-    my $token = $server->_plack_req->header("Authorization");
+    my $token = $req->header("Authorization") || $req->param('token');
 	my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1);
 	my $valid = $auth_token->validate();
 
     my $ctx = undef;
     if ($valid) {
-        $ctx = Bio::KBase::InvocationService::ServiceContext->new(client_ip => $server->_plack_req->address);
+        $ctx = Bio::KBase::InvocationService::ServiceContext->new(client_ip => $req->address);
 	    $ctx->authenticated(1);
 	    $ctx->user_id($auth_token->user_id);
 	    $ctx->token( $token);

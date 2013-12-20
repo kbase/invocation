@@ -52,6 +52,9 @@ define('kbaseIrisGrammar',
                 return tokens[0];
             }
 
+            if (tokens.forceString == undefined) {
+                tokens.forceString = {};
+            }
 
             for (var idx = 0; idx < tokens.length; idx++) {
                 var token = tokens[idx];
