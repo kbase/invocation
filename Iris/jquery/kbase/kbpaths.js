@@ -5,6 +5,7 @@ define('kbpaths',[], function (paths) {
     urlArgs: "bust=" + (new Date()).getTime(),
     paths : {
      jquery : '../../ext/jquery/jquery-1.10.2.min',
+     jqueryui : '../../ext/jquery-ui/1.10.3/js/jquery-ui-1.10.3.custom.min',
      bootstrap : "../../ext/bootstrap/3.0.3/js/bootstrap.min",
      kbwidget : '../kbwidget',
         //iris widgets

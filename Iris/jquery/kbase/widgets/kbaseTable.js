@@ -62,6 +62,7 @@ define('kbaseTable',
         'jquery',
         'kbwidget',
         'kbaseDeletePrompt',
+        'jqueryui',
     ],
     function ($) {
 
@@ -79,6 +80,7 @@ define('kbaseTable',
             hover       : true,
             bordered    : true,
             headerOptions : {},
+            resizable   : false,
 
             header_callback : function(header) {
                 if (header.label != undefined) {
@@ -174,9 +176,15 @@ define('kbaseTable',
                         var label = callback(header, this);
                         var h = header.value;
 
-                        var $th = $('<th></th>')
+                        var $th = $.jqElem('th')
                             .append(label)
                         ;
+
+                        if (this.options.resizable) {
+                            $th.resizable({
+                                handles: 'e'
+                            });
+                        }
 
                         this.addOptions($th, $.extend(true, {}, this.options.headerOptions, header));
 
@@ -316,6 +324,9 @@ define('kbaseTable',
                         }
                     )
                 ;
+                console.log("ROWS + SORT");
+                console.log(this.options.structure.rows);
+                console.log(sortedRows);
             }
 
             this.layoutRows(sortedRows, this.options.structure.header);

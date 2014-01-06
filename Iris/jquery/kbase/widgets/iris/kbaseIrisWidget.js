@@ -62,6 +62,8 @@ define('kbaseIrisWidget',
 
             },
 
+            render : function() {},
+
             toggleSelection : function() {
                 this.trigger('toggleWidgetSelection', this);
             },

@@ -354,7 +354,7 @@ define('kbaseIrisTerminal',
                     +"Type <b>commands</b> for a list of commands.<br>\n"
                     +"For usage information about a specific command, type the command name with -h or --help after it.<br>\n"
                     +"Please visit <a href = 'http://www.kbase.us/for-users/get-started#iris' target = '_blank'>http://www.kbase.us/for-users/get-started#iris</a> or type <b>tutorial</b> for an Iris tutorial.<br>\n"
-                    +"To find out what's new, type <b>whatsnew</b> (v0.0.6 - 12/13/2013)<br>\n",
+                    +"To find out what's new, type <b>whatsnew</b> (v0.0.7 - 01/XX/2014)<br>\n",
                     'html'
             );
 
@@ -782,6 +782,7 @@ define('kbaseIrisTerminal',
         },
 
         addWidget : function(widgetName) {
+
             var $widget = this.options.widgets[widgetName]();
             /*$.jqElem('div').kbaseIrisContainerWidget(
                 {
@@ -796,6 +797,7 @@ define('kbaseIrisTerminal',
 
             this.live_widgets.push($widget);
             this.subWidgets().push($widget);
+            return $widget;
         },
 
         appendWidget: function($widget) {
@@ -958,14 +960,11 @@ define('kbaseIrisTerminal',
             //otherwise, we just soldier on. Replace the variables in the raw command. We're off to the races.
             //detokenize the tokens back into a command
             else {
-            console.log("TOKENS ARE");
-            console.log(tokens);
                 rawCmd = this.options.grammar.detokenize(tokens);
             }
 
             //now replaceVariables on the rawCmd and away we go.
             var command = this.replaceVariables(rawCmd);
-console.log("COMMAND NOW " + command);
 
             var isHidden = false;
             if ( m = command.match(/^\(\((.+)\)\)$/) ) {
@@ -2392,13 +2391,17 @@ console.log("COMMAND NOW " + command);
                 var args = w[1].split(/\s+/)
                 var obj = this;
 
-                if (args.length != 1 || ! args[0].length) {
+                if (! args[0].length) {
                     $widget.setError("incorrect add widget syntax");
                     $deferred.reject();
                     return $deferred.promise();
                 }
 
-                this.addWidget(args[0]);
+                var $widget = this.addWidget(args[0]);
+
+                if (args.length > 1) {
+                    $widget.setInput(args[1]);
+                }
 
                 $deferred.resolve();
                 return $deferred.promise();
@@ -2461,7 +2464,7 @@ console.log("COMMAND NOW " + command);
             }
 
             //var commands = command.split(/[;\r\n]/) {
-console.log("RUNNING COMMAND " + command);
+
             var promise = this.client().run_pipeline(
                 this.sessionId(),
                 command,
@@ -2482,43 +2485,36 @@ console.log("RUNNING COMMAND " + command);
 
                             if (output.length > 0 && output[0].indexOf("\t") >= 0) {
 
-                                var $tbl = $('<table></table>')
-                                    //.attr('border', 1);
+                                var data = {
+                                    structure : {
+                                        header      : [],
+                                        rows        : [],
+                                    },
+                                    sortable    : false,
+                                    hover       : false,
+                                    resizable   : true,
+                                };
 
-                                jQuery.each(
+                                $.each(
                                     output,
-                                    jQuery.proxy(
-                                        function (idx, val) {
-                                            var parts = val.split(/\t/);
-                                            var $row = $.jqElem('tr')
-                                            jQuery.each(
-                                                parts,
-                                                jQuery.proxy(
-                                                    function (idx, val) {
-                                                        $row.append(
-                                                            $('<td></td>')
-                                                                .html(val)
-                                                            );
-                                                        if (idx > 0) {
-                                                            $row.children().last().css('padding-left', '15px')
-                                                        }
-                                                        if (idx < parts.length - 1) {
-                                                            $row.children().last().css('padding-right', '15px')
-                                                        }
-                                                    },
-                                                    this
-                                                )
-                                            );
-                                            $tbl.append($row);
-                                        },
-                                        this
-                                    )
+                                    function (idx, rowStr) {
+                                        var row = [];
+                                        data.structure.rows.push(row);
+                                        $.each(
+                                            rowStr.split(/\t/),
+                                            function (idx, val) {
+                                                row.push(val);
+                                            }
+                                        )
+                                    }
                                 );
-                                $widget.setOutput($tbl);
+
+                                var $tbl = $.jqElem('div').kbaseTable(data);
+                                $widget.setOutput($tbl.$elem);
+
                                 $widget.setValue(output);
                             }
                             else {
-                            console.log("SETTING OUTPUT HERE TO " + output);
                                 $widget.setOutput(output.join(''));
                                 $widget.setValue(output);
                             }

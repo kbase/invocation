@@ -6,6 +6,7 @@
 
         <link href="./jquery/ext/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
         <link href="./jquery/ext/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" />
 
         <link rel="stylesheet" href="iris.css" type="text/css" media="screen" title="main" charset="utf-8">
 
@@ -106,6 +107,7 @@
                             client : $term.client(),
                             invocationURL   : $term.options.invocationURL,
                             addFileCallback : function (file, $fb) {
+                                file = file.replace(new RegExp('^' + $fb.options.root), '');
                                 $term.appendInput(file + ' ');
                             },
                             editFileCallback : function (file, $fb) {
