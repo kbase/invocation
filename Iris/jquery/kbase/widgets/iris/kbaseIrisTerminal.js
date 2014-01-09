@@ -906,13 +906,16 @@ define('kbaseIrisTerminal',
             var $containerWidget    = opts.$containerWidget;
 
             var $deferred = $.Deferred();
+            var $promise = $deferred.promise();
+            $promise['$widget'] = $widget;
+
 
             var tokens = this.options.grammar.tokenize(rawCmd);
 
             // no tokens? No command. Bail out.
             if (tokens.length == 0) {
                 $deferred.resolve();
-                return $deferred.promise();
+                return $promise;
             }
 
             // okay. We've tokenized the command. If the first element is an array, then it's a set of commands
@@ -1025,6 +1028,10 @@ define('kbaseIrisTerminal',
                                 workspaceToken.workspace    = id[0];
                                 workspaceToken.type         = id[1];
                                 workspaceToken.id           = id[2];
+
+                                if (id[1] == '') {
+                                    workspaceToken.type = this.options.defaultFileType;
+                                }
                             }
                             else if (id.length == 2) {
                                 workspaceToken.type         = id[0];
@@ -1033,6 +1040,7 @@ define('kbaseIrisTerminal',
                             else if (id.length == 1) {
                                 workspaceToken.id           = id[0];
                             }
+
 
                             if (workspaceToken.io == undefined) {
                                 validTokens = false;
@@ -1061,7 +1069,7 @@ define('kbaseIrisTerminal',
                     }
 
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
 
                 var newCommands = [];
@@ -1121,7 +1129,7 @@ define('kbaseIrisTerminal',
                     }
                 );
 
-                return $deferred.promise();
+                return $promise;
 
             }
             else {
@@ -1146,7 +1154,7 @@ define('kbaseIrisTerminal',
                 this.appendWidget($widget);
             }
 
-            this.dbg("Run (" + command + ')');
+            this.dbg("Run (" + command + ')[' + isHidden + ']');
 
             if (command == 'help') {
                 $widget.setOutput(
@@ -1155,7 +1163,7 @@ define('kbaseIrisTerminal',
                     )
                 );
                 $deferred.resolve();
-                return $deferred.promise();
+                return $promise;
             }
 
             //if ($containerWidget) {
@@ -1174,7 +1182,7 @@ define('kbaseIrisTerminal',
                 if (! args[0].match(/^\w/)) {
                     $widget.setError('Invalid login syntax');
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
                 sid = args[0];
 
@@ -1207,8 +1215,8 @@ define('kbaseIrisTerminal',
                         this
                     )
                 );
-                this.scroll();
-                return $deferred.promise();
+                if (! isHidden) { this.scroll() };
+                return $promise;
             }
 
             if (m = command.match(/^authenticate\s*(.*)/)) {
@@ -1216,7 +1224,7 @@ define('kbaseIrisTerminal',
                 if (args.length != 1) {
                     $widget.setError("Invalid login syntax.");
                     $deferred.resolve();
-                    return $deferred.promise();
+                    return $promise;
                 }
                 sid = args[0];
 
@@ -1232,22 +1240,22 @@ define('kbaseIrisTerminal',
             if (m = command.match(/^unauthenticate/)) {
 
                 this.trigger('logout');
-                this.scroll();
+                if (! isHidden) { this.scroll() };
 
                 $deferred.resolve();
 
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^logout/)) {
 
                 this.trigger('logout', false);
                 this.trigger('loggedOut', false);
-                this.scroll();
+                if (! isHidden) { this.scroll() };
 
                 $deferred.resolve();
 
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^whatsnew/)) {
@@ -1260,17 +1268,17 @@ define('kbaseIrisTerminal',
                         success: $.proxy(function (data, status, xhr) {
                             $widget.setOutput($.jqElem('div').html(data));
                             $deferred.resolve();
-                            this.scroll();
+                            if (! isHidden) { this.scroll() };
                         }, this),
                         error : $.proxy(function(xhr, textStatus, errorThrown) {
                             $widget.setError($.jqElem('div').html(xhr.responseText));
                             $deferred.reject();
-                            this.scroll();
+                            if (! isHidden) { this.scroll() };
                         }, this),
                         type: 'GET',
                     }
                 );
-                return $deferred.promise();
+                return $promise;
             }
 
             if (command == "next") {
@@ -1297,7 +1305,7 @@ define('kbaseIrisTerminal',
                         + "Type <i>tutorial list</i> to see available tutorials.")
                     );
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
 
                 var $output = $widget.data('output');
@@ -1316,7 +1324,7 @@ define('kbaseIrisTerminal',
                                     e.stopPropagation();
                                     $widget.setError($.jqElem('span').append('Set tutorial to <b>' + val.title + '</b><br>'));
                                     this.tutorial.retrieveTutorial(val.url);
-                                    this.scroll();
+                                    if (! isHidden) { this.scroll() };
                                     this.input_box.focus();
                                 }, this))
                             .append('<br>')
@@ -1327,8 +1335,8 @@ define('kbaseIrisTerminal',
 
                 $deferred.resolve();
 
-                this.scroll();
-                return $deferred.promise();
+                if (! isHidden) { this.scroll() };
+                return $promise;
             }
 
             if (command == 'show_tutorial') {
@@ -1338,7 +1346,7 @@ define('kbaseIrisTerminal',
                 if ($page == undefined) {
                     $widget.setError("Could not load tutorial");
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
 
                 $page = $page.clone();
@@ -1356,9 +1364,9 @@ define('kbaseIrisTerminal',
 
                 $widget.setOutput($page);
                 $deferred.resolve();
-                this.scroll();
+                if (! isHidden) { this.scroll() };
 
-                return $deferred.promise();
+                return $promise;
             }
 
             if (command == 'commands') {
@@ -1399,13 +1407,13 @@ define('kbaseIrisTerminal',
                             $widget.setOutput($tbl.$elem);
                             $widget.setValue(cmds);
                             $deferred.resolve();
-                            this.scroll();
+                            if (! isHidden) { this.scroll() };
 
                         },
                        this
                     )
                 );
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^questions\s*(\S+)?/)) {
@@ -1452,9 +1460,9 @@ define('kbaseIrisTerminal',
                 $widget.setOutput($tbl.$elem);
                 $widget.setValue(questions);
                 $deferred.resolve();
-                this.scroll();
+                if (! isHidden) { this.scroll() };
 
-                return $deferred.promise();
+                return $promise;
             }
 
             if (command == 'clear') {
@@ -1467,20 +1475,20 @@ define('kbaseIrisTerminal',
                 this.terminal.empty();
                 $deferred.resolve();
 
-                return $deferred.promise();
+                return $promise;
             }
 
             if (command == 'end') {
                 this.terminal.animate({scrollTop: this.terminal.prop('scrollHeight') - this.terminal.height()}, 0);
                 $deferred.resolve();
-                return $deferred.promise();
+                return $promise;
             }
 
             if (! this.sessionId()) {
                 $widget.setError($.jqElem('span').html("You are not logged in.<br>Please click the Sign In link in the upper right to get started."));
-                this.scroll();
+                if (! isHidden) { this.scroll() };
                 $deferred.resolve();
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^save\s*(.+)/)) {
@@ -1488,7 +1496,7 @@ define('kbaseIrisTerminal',
                 if (args.length != 1) {
                     $widget.setError("Invalid save syntax. Please specify a file name.");
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
                 file = args[0];
 
@@ -1510,7 +1518,7 @@ define('kbaseIrisTerminal',
                     }, this)
                 );
 
-                return $deferred.promise();
+                return $promise;
 
             }
 
@@ -1521,9 +1529,9 @@ define('kbaseIrisTerminal',
             if (command == 'record') {
                 $widget.setError("recording actions");
                 this.recording = true;
-                this.scroll();
+                if (! isHidden) { this.scroll() };
                 $deferred.resolve();
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^snapshot\s*(.+)/)) {
@@ -1531,14 +1539,14 @@ define('kbaseIrisTerminal',
                 if (args.length != 1) {
                     $widget.setError("Invalid snapshot syntax. Please specify a file name.");
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
                 file = args[0];
 
                 if (! this.selectedWidgets.length) {
                     $widget.setError('No widgets selected for snapshot');
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
 
                 var snappedWidgets = [];
@@ -1609,7 +1617,7 @@ define('kbaseIrisTerminal',
                     }, this)
                 );
 
-                return $deferred.promise();
+                return $promise;
 
             }
 
@@ -1618,7 +1626,7 @@ define('kbaseIrisTerminal',
                 if (args.length != 1) {
                     $widget.setError("Invalid that syntax. Please specify a file name.");
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
                 file = args[0];
 
@@ -1647,7 +1655,7 @@ define('kbaseIrisTerminal',
                     }, this)
                 );
 
-                return $deferred.promise();
+                return $promise;
 
             }
 
@@ -1695,7 +1703,7 @@ define('kbaseIrisTerminal',
                 $widget.setOutput($tbl.$elem);
                 $widget.setValue(this.commandHistory);
                 $deferred.resolve();
-                return $deferred.promise();
+                return $promise;
             }
             else if (m = command.match(/^!(\d+)/)) {
                 command = this.commandHistory[m[1]];
@@ -1707,7 +1715,7 @@ define('kbaseIrisTerminal',
                 if (args.length != 1) {
                     $widget.setError("Invalid cd syntax.");
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
                 dir = args[0];
 
@@ -1731,7 +1739,7 @@ define('kbaseIrisTerminal',
                         this
                     )
                 );
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^(\$\S+)\s*=\s*(\S+)/)) {
@@ -1744,7 +1752,7 @@ define('kbaseIrisTerminal',
                     $widget.setOutput(m[1] + ' set to ' + m[2]);
                 }
                 $deferred.resolve();
-                return $deferred.promise();
+                return $promise;
             }
 
             if (command == 'variables') {
@@ -1775,8 +1783,8 @@ define('kbaseIrisTerminal',
                 $widget.setOutput($tbl.$elem);
                 $widget.setValue(keyedVars);
                 $deferred.resolve();
-                this.scroll();
-                return $deferred.promise();
+                if (! isHidden) { this.scroll() };
+                return $promise;
 
             }
 
@@ -1810,8 +1818,8 @@ define('kbaseIrisTerminal',
                 $widget.setOutput($tbl.$elem);
                 $widget.setValue(keyedVars);
                 $deferred.resolve();
-                this.scroll();
-                return $deferred.promise();
+                if (! isHidden) { this.scroll() };
+                return $promise;
 
             }
 
@@ -1827,8 +1835,8 @@ define('kbaseIrisTerminal',
                     $widget.setError("Cannot set environment variable <i>" + m[1] + "</i>: Unknown");
                 }
                 $deferred.resolve();
-                this.scroll();
-                return $deferred.promise();
+                if (! isHidden) { this.scroll() };
+                return $promise;
             }
 
 
@@ -1837,7 +1845,7 @@ define('kbaseIrisTerminal',
                 this.aliases[m[1]] = m[2];
                 $widget.setOutput(m[1] + ' set to ' + m[2]);
                 $deferred.resolve();
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^upload\s*(\S+)?$/)) {
@@ -1852,7 +1860,7 @@ define('kbaseIrisTerminal',
                     //XXX NOT QUITE ACCURATE...NEEDS TO WAIT FOR UPLOADFILE TO FINISH
                     $deferred.resolve();
                 }
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^download\s*(\S+)?$/)) {
@@ -1863,7 +1871,7 @@ define('kbaseIrisTerminal',
                     $fb.openFile(file);
                     $deferred.resolve();
                 }
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^edit\s*(\S+)?$/)) {
@@ -1880,7 +1888,7 @@ define('kbaseIrisTerminal',
 
                     $deferred.resolve();
                 }
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^#\s*((?:.|\n)+)/)) {
@@ -1894,17 +1902,27 @@ define('kbaseIrisTerminal',
                 //$widget.setOutput($.jqElem('i').text(m[1]));
                 //$widget.setValue(m[1]);
                 $deferred.resolve();
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^view\s+(\S+)$/)) {
                 var file = m[1];
 
+                var $img = $.jqElem('img')
+                    .attr('src', this.fileBrowsers[0].urlForFile(file))
+                    .css('max-width', '90%');
+
+                var $link = $.jqElem('a')
+                    .append($img)
+                    .attr('href', this.fileBrowsers[0].urlForFile(file))
+                    .css('border', '0px');
+
                 $widget.setOutput(
-                    $.jqElem('img')
-                        .attr('src', this.fileBrowsers[0].urlForFile(file))
+                    $link
                 );
-                this.scroll();
+
+
+                setTimeout($.proxy(function() {this.scroll()}, this), 500);
                 $deferred.resolve();
 
                 /*this.client().get_file(
@@ -1921,7 +1939,7 @@ define('kbaseIrisTerminal',
                     else {
                         $widget.setOutput(res);
                     }
-                    this.scroll();
+                    if (! isHidden) { this.scroll() };
                     $deferred.resolve();
                 }, this))
                 .fail($.proxy(function(res) {
@@ -1929,7 +1947,7 @@ define('kbaseIrisTerminal',
                     $deferred.reject();
                 }, this));*/
 
-                return $deferred.promise();
+                return $promise;
 
 
             }
@@ -1988,7 +2006,7 @@ define('kbaseIrisTerminal',
                                 });
                                 var res = this.search_json_to_table(data.body, filter);
 
-                                this.scroll();
+                                if (! isHidden) { this.scroll() };
                                 $deferred.resolve();
 
                             },
@@ -2005,7 +2023,7 @@ define('kbaseIrisTerminal',
                    }
                 );
 
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^cp\s*(.*)/)) {
@@ -2013,7 +2031,7 @@ define('kbaseIrisTerminal',
                 if (args.length != 2) {
                     $widget.setError("Invalid cp syntax.");
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
                 from = args[0];
                 to   = args[1];
@@ -2037,14 +2055,14 @@ define('kbaseIrisTerminal',
                         this
                     )
                 );
-                return $deferred.promise();
+                return $promise;
             }
             if (m = command.match(/^mv\s*(.*)/)) {
                 var args = m[1].split(/\s+/)
                 if (args.length != 2) {
                     $widget.setError("Invalid mv syntax.");
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
 
                 from = args[0];
@@ -2068,7 +2086,7 @@ define('kbaseIrisTerminal',
                         },
                         this
                     ));
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^mkdir\s*(.*)/)) {
@@ -2076,7 +2094,7 @@ define('kbaseIrisTerminal',
                 if (args[0].length < 1){
                     $widget.setError("Invalid mkdir syntax.");
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
                 $.each(
                     args,
@@ -2102,7 +2120,7 @@ define('kbaseIrisTerminal',
                         );
                     }, this)
                 )
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^rmdir\s*(.*)/)) {
@@ -2110,7 +2128,7 @@ define('kbaseIrisTerminal',
                 if (args[0].length < 1) {
                     $widget.setError("Invalid rmdir syntax.");
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
                 $.each(
                     args,
@@ -2136,7 +2154,7 @@ define('kbaseIrisTerminal',
                         );
                     }, this)
                 );
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^rm\s+(.*)/)) {
@@ -2144,7 +2162,7 @@ define('kbaseIrisTerminal',
                 if (args[0].length < 1) {
                     $widget.setError("Invalid rm syntax.");
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
                 $.each(
                     args,
@@ -2170,7 +2188,7 @@ define('kbaseIrisTerminal',
                         );
                     }, this)
                 );
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^execute\s+(.*)/)) {
@@ -2178,7 +2196,7 @@ define('kbaseIrisTerminal',
                 if (args.length != 1) {
                     $widget.setError("Invalid execute syntax.");
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
                 this.client().get_file(
                     this.sessionId(),
@@ -2218,7 +2236,7 @@ define('kbaseIrisTerminal',
                         $deferred.reject();
                     }, this)
                 );
-                return $deferred.promise();
+                return $promise;
             }
 
             if (m = command.match(/^evaluate\s+(.*)/)) {
@@ -2227,7 +2245,7 @@ define('kbaseIrisTerminal',
                 if (script.length < 1) {
                     $widget.setError("Invalid evalute syntax.");
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
 
                 this.client().get_file(
@@ -2247,7 +2265,7 @@ define('kbaseIrisTerminal',
                     }, this)
                 );
 
-                return $deferred.promise();
+                return $promise;
             }
 
             if (d = command.match(/^ls\s*(.*)/)) {
@@ -2373,7 +2391,7 @@ define('kbaseIrisTerminal',
                                 $widget.setError("no matching files found");
                             }
                             $deferred.resolve();
-                            this.scroll();
+                            if (! isHidden) { this.scroll() };
                          },
                          this
                      ),
@@ -2384,7 +2402,7 @@ define('kbaseIrisTerminal',
                          $deferred.reject();
                      }
                     );
-                return $deferred.promise();
+                return $promise;
             }
 
             if (w = command.match(/^widget\s+(.*)/)) {
@@ -2394,7 +2412,7 @@ define('kbaseIrisTerminal',
                 if (! args[0].length) {
                     $widget.setError("incorrect add widget syntax");
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
 
                 var $widget = this.addWidget(args[0]);
@@ -2404,7 +2422,7 @@ define('kbaseIrisTerminal',
                 }
 
                 $deferred.resolve();
-                return $deferred.promise();
+                return $promise;
             }
 
 
@@ -2417,14 +2435,14 @@ define('kbaseIrisTerminal',
                     if (parsed.explain) {
                         $widget.setOutput(parsed.execute);
                         $deferred.resolve();
-                        return $deferred.promise();
+                        return $promise;
                     }
 
                 }
                 else if (parsed.parsed.length && parsed.fail) {
                     $widget.setError(parsed.error);
                     $deferred.reject();
-                    return $deferred.promise();
+                    return $promise;
                 }
             }
 
@@ -2538,7 +2556,7 @@ define('kbaseIrisTerminal',
                             $widget.setError('Error running command.');
                             $deferred.reject();
                         }
-                        this.scroll();
+                        if (! isHidden) { this.scroll() };
                     },
                     this
                 ),
@@ -2548,7 +2566,7 @@ define('kbaseIrisTerminal',
             $widget.promise(promise);
             this.live_widgets.push($widget);
 
-            return $deferred.promise();
+            return $promise;
         }
 
 
