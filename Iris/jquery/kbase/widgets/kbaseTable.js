@@ -98,6 +98,10 @@ define('kbaseTable',
 
         default_row_callback : function (cell) {
 
+            if (cell == undefined) {
+                return cell;
+            }
+
             if (cell.label != undefined) {
                 return cell.label;
             }
@@ -324,9 +328,6 @@ define('kbaseTable',
                         }
                     )
                 ;
-                console.log("ROWS + SORT");
-                console.log(this.options.structure.rows);
-                console.log(sortedRows);
             }
 
             this.layoutRows(sortedRows, this.options.structure.header);
