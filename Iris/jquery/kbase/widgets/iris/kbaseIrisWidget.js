@@ -166,7 +166,7 @@ define('kbaseIrisWidget',
             },
 
             acceptInput : function($widget) {
-console.log('calls superclass acceptInput');
+
                 this.kb_bind(
                     $widget,
                     'value',
