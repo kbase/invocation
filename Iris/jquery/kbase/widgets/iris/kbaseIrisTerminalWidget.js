@@ -82,7 +82,7 @@ define('kbaseIrisTerminalWidget',
             },
 
             appendUI : function($elem) {
-console.log("APPENDED UI!");
+
                 var $inputDiv = $.jqElem('div')
                     .css('white-space', 'pre')
                     .css('position', 'relative')
@@ -178,7 +178,7 @@ console.log("APPENDED UI!");
                     )
                     .append($.jqElem('hr').attr('id', 'line'))
                 ;
-console.log("REWIRES IDS RIGHT FUCKIGN HERE");
+
                 this._rewireIds($elem, this);
 
                 $inputDiv.kbaseButtonControls(
@@ -237,7 +237,6 @@ console.log("REWIRES IDS RIGHT FUCKIGN HERE");
                                 icon : 'fa fa-link',
                                 callback :
                                     function (e, $it) {
-                                        console.log("via button controls!");
                                         $it.toggleSelection();
                                     }
                             },

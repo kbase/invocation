@@ -8,7 +8,8 @@ define('iris',
         'kbaseIrisCommands',
         'kbaseIrisGUIWidget',
         'kbaseIrisFileBrowser',
-        'kbaseIrisFileEditor'
+        'kbaseIrisFileEditor',
+        'forceDirectedNetwork',
     ],
     function() {
         console.log('iris is loaded');

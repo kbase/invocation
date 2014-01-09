@@ -14,7 +14,17 @@
             src = './jquery/ext/requirejs/2.1.9/require.js'></script>
 
         <script src = './js/MetaTool.js'></script>
+        <script src = './js/workspaceService/Client.js'></script>
         <script src="../lib/InvocationService.js" type="text/javascript" charset="utf-8"></script>
+
+
+<!-- pulls in the force directed network graph for whizbang demo purposes -->
+    <link rel="stylesheet" href="ui-css/datavis.css" type="text/css" media="screen" charset="utf-8">
+
+    <script src="./jquery/ui-js/kbase-api.js"></script>
+    <script src="./jquery/kbase/widgets/networks/force-directed.js"></script>
+    <script src="./jquery/kbase/datavis.js"></script>
+<!-- done whizbang network widget -->
 
         <script type = 'text/javascript'>
             <!--
@@ -45,6 +55,18 @@
                         autocreateFileBrowser       : false,
                         widgets : {
                             echo : function() { return $.jqElem('div').kbaseIrisEchoWidget()},
+                            network : function() {
+
+                                return $.jqElem('div').kbaseIrisContainerWidget(
+                                                {
+                                                    widget : $.jqElem("div").ForceDirectedNetwork({
+                                                        //workspaceID: "",
+                                                        minHeight: "600px",
+                                                    })
+                                                }
+                                            )
+                            }
+
                         }
                     });
 
