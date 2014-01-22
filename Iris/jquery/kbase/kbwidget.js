@@ -18,9 +18,9 @@
  *         init: function () {}
  *     });
  */
- console.log('kbw1');
+
 define('kbwidget', ['jquery'], function ($) {
- console.log('kbw2');
+
     var KBase;
     var ucfirst = function(string) {
         if (string != undefined && string.length) {
@@ -156,6 +156,13 @@ define('kbwidget', ['jquery'], function ($) {
 
         }, $(elem));
 
+    };
+
+    $.fn.asD3 = function() {
+        if (this.data('d3rep') == undefined) {
+            this.data('d3rep', d3.select(this.get(0)));
+        }
+        return this.data('d3rep')
     };
 
     $.fn.kb_bind = function($target, attribute, transformers, accessors) {
