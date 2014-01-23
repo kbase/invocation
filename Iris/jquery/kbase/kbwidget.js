@@ -727,6 +727,22 @@ define('kbwidget', ['jquery'], function ($) {
                     return this.valueForKey(attribute);
                 },
 
+            setValuesForKeys : function (obj) {
+
+                var objCopy = $.extend({}, obj);
+
+                for (attribute in this.__attributes) {
+                    if (objCopy[attribute] != undefined) {
+                        var setter = this.__attributes[attribute].setter;
+                        this[setter](objCopy[attribute]);
+                        delete objCopy[attribute];
+                    }
+                }
+
+                this.options = $.extend(this.options, objCopy);
+
+            },
+
             /**
              * Sets data.
              * @param {Object} key The key for the data

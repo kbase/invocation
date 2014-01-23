@@ -17,15 +17,6 @@
         <script src = './js/workspaceService/Client.js'></script>
         <script src="../lib/InvocationService.js" type="text/javascript" charset="utf-8"></script>
 
-
-<!-- pulls in the force directed network graph for whizbang demo purposes -->
-    <link rel="stylesheet" href="ui-css/datavis.css" type="text/css" media="screen" charset="utf-8">
-
-    <script src="./jquery/ui-js/kbase-api.js"></script>
-    <script src="./jquery/kbase/widgets/networks/force-directed.js"></script>
-    <script src="./jquery/kbase/datavis.js"></script>
-<!-- done whizbang network widget -->
-
         <script type = 'text/javascript'>
             <!--
 
@@ -55,17 +46,86 @@
                         autocreateFileBrowser       : false,
                         widgets : {
                             echo : function() { return $.jqElem('div').kbaseIrisEchoWidget()},
-                            network : function() {
+                            barchart : function() {
 
                                 return $.jqElem('div').kbaseIrisContainerWidget(
                                                 {
-                                                    widget : $.jqElem("div").ForceDirectedNetwork({
-                                                        //workspaceID: "",
-                                                        minHeight: "600px",
-                                                    })
+                                                    inputType : 'json',
+                                                    widget : $.jqElem("div")
+                                                        .css({width : 400, height : 300})
+                                                        .kbaseBarchart({
+                                                            scaleAxes : true
+                                                        })
                                                 }
                                             )
-                            }
+                            },
+                            heatmap : function() {
+
+                                return $.jqElem('div').kbaseIrisContainerWidget(
+                                                {
+                                                    inputType : 'json',
+                                                    widget : $.jqElem("div")
+                                                        .css({width : 500, height : 500})
+                                                        .kbaseHeatmap({
+                                                            yGutter : 80,
+                                                            xPadding : 80,
+                                                            scaleAxes : true
+                                                        })
+                                                }
+                                            )
+                            },
+                            linechart : function() {
+
+                                return $.jqElem('div').kbaseIrisContainerWidget(
+                                                {
+                                                    inputType : 'json',
+                                                    widget : $.jqElem("div")
+                                                        .css({width : 500, height : 300})
+                                                        .kbaseLinechart({
+                                                            scaleAxes : true
+                                                        })
+                                                }
+                                            )
+                            },
+                            scatterplot : function() {
+
+                                return $.jqElem('div').kbaseIrisContainerWidget(
+                                                {
+                                                    inputType : 'json',
+                                                    widget : $.jqElem("div")
+                                                        .css({width : 500, height : 300})
+                                                        .kbaseScatterplot({
+                                                            scaleAxes : true
+                                                        })
+                                                }
+                                            )
+                            },
+                            piechart : function() {
+
+                                return $.jqElem('div').kbaseIrisContainerWidget(
+                                                {
+                                                    inputType : 'json',
+                                                    widget : $.jqElem("div")
+                                                        .css({width : 500, height : 500})
+                                                        .kbasePiechart({
+                                                            scaleAxes : true
+                                                        })
+                                                }
+                                            )
+                            },
+                            forcednetwork : function() {
+
+                                return $.jqElem('div').kbaseIrisContainerWidget(
+                                                {
+                                                    inputType : 'json',
+                                                    widget : $.jqElem("div")
+                                                        .css({width : 500, height : 500})
+                                                        .kbaseForcedNetwork({
+                                                            scaleAxes : true
+                                                        })
+                                                }
+                                            )
+                            },
 
                         }
                     });
@@ -133,7 +193,10 @@
                                 $term.appendInput(file + ' ');
                             },
                             editFileCallback : function (file, $fb) {
-
+console.log("EDITS FILE " + file + ' @ ' + $term.cwd + ' from ' + $fb.options.root);
+                                file = $fb.options.root + '/' + $term.cwd + '/' + file;
+                                file = file.replace(/\/\/+/, '/');
+console.log("EDITS FILE " + file + ' @ ' + $term.cwd + ' from ' + $fb.options.root);
                                 var $editor = $.jqElem('div').kbaseIrisFileEditor(
                                     {
                                         file : file,

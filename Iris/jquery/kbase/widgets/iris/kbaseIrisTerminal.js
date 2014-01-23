@@ -46,6 +46,310 @@ define('kbaseIrisTerminal',
             defaultFileType : 'IrisFile',
         },
 
+        run_dispatch : [
+            {
+                name        : 'help',
+                auth        : false,
+                callback    : function (args, command, $widget, $deferred, $promise) {
+                    $widget.setOutput(
+                        $.jqElem('span').html(
+                            'There is an introductory Iris tutorial available <a target="_blank" href="http://kbase.us/developer-zone/tutorials/iris/introduction-to-the-kbase-iris-interface/">on the KBase tutorials website</a>.'
+                        )
+                    );
+                    $deferred.resolve();
+                    return true;
+                }
+            },
+            {
+                name        : 'retest',
+                auth        : true,
+                regex       : new RegExp(/^retest (.+)$/),
+                callback    : function (args, command, $widget, $deferred) {
+                    $widget.setOutput(
+                        "RETEST " +
+                        args.join(', ')
+                    );
+                    $deferred.resolve();
+                    return true;
+                }
+            },
+            {
+                name        : 'login',
+                auth        : false,
+                regex       : new RegExp(/^log[io]n\s+(.+)$/),
+                callback    : function (args, command, $widget, $deferred) {
+
+                    args = args[0].split(/\s+/);
+                    if (args.length != 1) {
+                        $widget.setError(
+                            $.jqElem('span')
+                                .append("Invalid login syntax, should be : ")
+                                .append(this.create_input_link("login $username"))
+                        );
+                        $deferred.reject();
+                        return;
+                    }
+
+                    this.client().start_session(
+                        args[0],
+                        $.proxy(
+                            function (newsid) {
+                                var auth = {'kbase_sessionid' : sid, success : true, unauthenticated : true};
+
+                                if (this.sessionId()) {
+                                    this.terminal.empty();
+                                    this.trigger('logout', false);
+                                    this.trigger('loggedOut');
+                                }
+                                this.trigger('loggedIn', auth );
+
+                                // XXX not quite accurate...because the resolve needs to fire AFTER the loggedIn.
+                                $deferred.resolve();
+
+                            },
+                            this
+                        ),
+                        $.proxy(
+                            function (err) {
+                                $widget.setError(
+                                    $.jqElem('span').append("Error on session_start:<br>" + this.format_error(err))
+                                );
+                                $deferred.reject();
+                            },
+                            this
+                        )
+                    );
+
+                    return true;
+
+                }
+            },
+            {
+                name        : 'authenticate',
+                auth        : false,
+                regex       : new RegExp(/^authenticate\s*(.*)$/),
+                callback    : function (args, command, $widget, $deferred) {
+
+                    if (args.length == 0) {
+                        args = [''];
+                    }
+
+                    args = args[0].split(/\s+/);
+                    if (args.length > 1) {
+                        $widget.setError(
+                            $.jqElem('span')
+                                .append("Invalid authenticate syntax, should be : ")
+                                .append(this.create_input_link("authenticate $username"))
+                        );
+                        $deferred.reject();
+                        return;
+                    }
+
+                    if (this.sessionId()) {this.trigger('loggedOut');}
+                    this.trigger('promptForLogin', {user_id : args[0]});
+
+                    //XXX no promise resolution here, so we will not return the promise.
+                    //this is the ONLY exception
+
+                    return true;
+                }
+            },
+            {
+                name        : 'unauthenticate',
+                auth        : true,
+                callback    : function (args, command, $widget, $deferred) {
+                    this.trigger('logout');
+                    $deferred.resolve();
+                    return true;
+                }
+            },
+            {
+                name        : 'logout',
+                auth        : true,
+                callback    : function (args, command, $widget, $deferred) {
+                    this.trigger('logout', false);
+                    this.trigger('loggedOut', false);
+                    $deferred.resolve();
+                    return true;
+                }
+            },
+            {
+                name        : 'whatsnew',
+                auth        : false,
+                callback    : function (args, command, $widget, $deferred) {
+                    $.ajax(
+                        {
+                            async       : true,
+                            dataType    : "text",
+                            url         : "whatsnew.html",
+                            crossDomain : true,
+                            success     :
+                                $.proxy(function (data, status, xhr) {
+                                    $widget.setOutput($.jqElem('div').html(data));
+                                    $deferred.resolve();
+                                    if (! $widget.isHidden()) { this.scroll() };
+                                }, this),
+                            error       :
+                                $.proxy(function(xhr, textStatus, errorThrown) {
+                                    $widget.setError($.jqElem('div').html(xhr.responseText));
+                                    $deferred.reject();
+                                    if (! $widget.isHidden()) { this.scroll() };
+                                }, this),
+                            type        : 'GET',
+                        }
+                    );
+                    return true;
+                }
+            },
+            {
+                name        : 'next',
+                auth        : false,
+                callback    : function (args, command, $widget, $deferred) {
+                    this.tutorial.goToNextPage();
+                    return "show_tutorial";
+                }
+            },
+            {
+                name        : 'back',
+                auth        : false,
+                callback    : function (args, command, $widget, $deferred) {
+                    this.tutorial.goToPrevPage();
+                    return "show_tutorial";
+                }
+            },
+            {
+                name        : 'tutorial',
+                auth        : false,
+                callback    : function (args, command, $widget, $deferred) {
+                    this.tutorial.currentPage = 0;
+                    return "show_tutorial";
+                }
+            },
+            {
+                name        : 'questions',
+                regex       : new RegExp(/^questions\s*(\S+)?/),
+                auth        : false,
+                callback    : function (args, command, $widget, $deferred) {
+
+                    var questions = this.options.grammar.allQuestions(args[0]);
+
+                    var data = {
+                        structure : {
+                            header      : [],
+                            rows        : [],
+                        },
+                        sortable    : true,
+                    };
+
+                    $.each(
+                        questions,
+                        $.proxy( function (idx, question) {
+                            data.structure.rows.push(
+                                [
+                                    {
+                                        value :
+                                            $.jqElem('a')
+                                            .attr('href', '#')
+                                            .text(question)
+                                            .bind('click',
+                                                jQuery.proxy(
+                                                    function (evt) {
+                                                        evt.preventDefault();
+                                                        this.input_box.val(question);
+                                                        this.selectNextInputVariable();
+                                                    },
+                                                    this
+                                                )
+                                            )
+                                    }
+                                ]
+                            );
+
+                        }, this)
+                    );
+
+                    var $tbl = $.jqElem('div').kbaseTable(data);
+
+                    $widget.setOutput($tbl.$elem);
+                    $widget.setValue(questions);
+                    $deferred.resolve();
+                    if (! $widget.isHidden()) { this.scroll() };
+
+                    return true;
+                }
+            },
+
+        ],
+
+        create_input_link : function(text, value) {
+
+            if (value == undefined) {
+                value = text;
+            }
+
+            var $a = $.jqElem('a')
+                .attr('title', text)
+                .append(text)
+                .on('click',
+                    $.proxy(function(e) {
+                        var append = value + ' ';
+                        if (this.input_box.val().length && ! $term.input_box.val().match(/[\|;]\s*$/)) {
+                            append = '| ' + append;
+                        }
+                        this.appendInput(append);
+                        this.input_box.setCursorPosition(0);
+                        if (! this.selectNextInputVariable()) {
+                            this.input_box.focusEnd();
+                        }
+
+                    }, this)
+                );
+
+            return $a;
+        },
+
+        create_run_link : function(text, value) {
+
+            if (value == undefined) {
+                value = text;
+            }
+
+            var $a = $.jqElem('a')
+                .attr('title', text)
+                .append(text)
+                .on('click',
+                    $.proxy(function(e) {
+                        this.run(value);
+                    }, this)
+                );
+
+            return $a;
+        },
+
+        warn_not_logged_in : function($widget) {
+            $widget.setError(
+                $.jqElem('span')
+                    .append("You are not logged in.<br>Please click the ")
+                    .append(this.create_run_link('Sign In', '((authenticate))'))
+                    .append(" link in the upper right to get started.")
+            );
+            if (! $widget.isHidden()) { this.scroll() };
+        },
+
+        format_error : function(err) {
+            var msg = undefined;
+
+            if (typeof(err.error) == 'string' ) {
+                msg = err.error + ' : ' + err.status;
+            }
+            else {
+                msg = err.error.message;
+            }
+
+            msg.replace("\n", "<br>\n");
+            return msg;
+        },
+
         setenv : function (variable, value) {
 
         },
@@ -349,12 +653,24 @@ define('kbaseIrisTerminal',
             this.terminal = this.data('terminal');
             this.input_box = this.data('input_box');
 
-            this.out_text("Welcome to the interactive KBase terminal!<br>\n"
-                    +"Please click the 'Sign in' button in the upper right to get started.<br>\n"
-                    +"Type <b>commands</b> for a list of commands.<br>\n"
+            this.out_text(
+                $.jqElem('span')
+                .append(
+                    "Welcome to the interactive KBase terminal!<br>\n"
+                    +"Please click the ")
+                    .append(this.create_run_link('Sign In', '((authenticate))'))
+                    .append(" button in the upper right to get started.<br>\n"
+                    +"Type ")
+                    .append(this.create_run_link('commands'))
+                    .append(" for a list of commands.<br>\n"
                     +"For usage information about a specific command, type the command name with -h or --help after it.<br>\n"
-                    +"Please visit <a href = 'http://www.kbase.us/for-users/get-started#iris' target = '_blank'>http://www.kbase.us/for-users/get-started#iris</a> or type <b>tutorial</b> for an Iris tutorial.<br>\n"
-                    +"To find out what's new, type <b>whatsnew</b> (v0.0.7 - 01/XX/2014)<br>\n",
+                    +"Please visit <a href = 'http://www.kbase.us/for-users/get-started#iris' target = '_blank'>http://www.kbase.us/for-users/get-started#iris</a> or type ")
+                    .append(this.create_run_link('tutorial'))
+                    .append(" for an Iris tutorial.<br>\n"
+                    +"To find out what's new, type "
+                    )
+                    .append(this.create_run_link('whatsnew'))
+                    .append(" (v0.0.7 - 01/XX/2014)<br>\n"),
                     'html'
             );
 
@@ -784,19 +1100,28 @@ define('kbaseIrisTerminal',
         addWidget : function(widgetName) {
 
             var $widget = this.options.widgets[widgetName]();
-            /*$.jqElem('div').kbaseIrisContainerWidget(
-                {
-                    widget : this.options.widgets[widgetName]()
-                }
-            );*/
+
+
             this.appendWidget( $widget );
+
             $widget.render();
             if (this.live_widgets.length) {
-                $widget.acceptInput(this.live_widgets[this.live_widgets.length - 1]);
+                var wIdx = this.live_widgets.length - 1;
+                while (wIdx >= 0) {
+                    var $last = this.live_widgets[wIdx];
+                    if ( ! $last.isHidden() ) {
+                        $widget.acceptInput($last);
+                        break;
+                    }
+                    else {
+                        wIdx--;
+                    }
+                }
             }
 
             this.live_widgets.push($widget);
             this.subWidgets().push($widget);
+
             return $widget;
         },
 
@@ -817,6 +1142,7 @@ define('kbaseIrisTerminal',
             if (! isSubWidget) {
                 this.terminal.append($widget.$elem);
                 this.subWidgets().push($widget);
+                $widget.$terminal = this;
             }
         },
 
@@ -1156,26 +1482,67 @@ define('kbaseIrisTerminal',
 
             this.dbg("Run (" + command + ')[' + isHidden + ']');
 
-            if (command == 'help') {
-                $widget.setOutput(
-                    $.jqElem('span').html(
-                        'There is an introductory Iris tutorial available <a target="_blank" href="http://kbase.us/developer-zone/tutorials/iris/introduction-to-the-kbase-iris-interface/">on the KBase tutorials website</a>.'
-                    )
-                );
-                $deferred.resolve();
-                return $promise;
-            }
+            var redispatching = false;
 
-            //if ($containerWidget) {
-            //    this.out_line($containerWidget.output());
-            //}
-            //else {
-            //    this.out_line();
-            //}
+            do {
+
+                redispatching = false;
+                var dispatched = false;
+                $.each(
+                    this.run_dispatch,
+                    $.proxy(function (idx, dispatch) {
+                        if (dispatched) {
+                            return;
+                        }
+
+                        var m = [];
+                        var use_callback = false;
+                        if (dispatch.regex) {
+                            if (m = command.match(dispatch.regex) ) {
+                                m.shift();  //toss out the full match. we don't use it.
+                                use_callback = true;
+                            }
+                        }
+                        else if (dispatch.name == command) {
+                            use_callback = true;
+                        }
+
+                        if (use_callback) {
+
+                            if (dispatch.auth == true && ! this.sessionId()) {
+                                this.warn_not_logged_in($widget);
+                                dispatched = true;
+                            }
+                            else {
+                                dispatched = dispatch.callback.call(this, m, command, $widget, $deferred, $promise);
+                            }
+                        }
+                    }, this)
+                );
+
+                if (typeof(dispatched) == 'boolean' && dispatched == true) {
+                    return $promise;
+                }
+                else if (typeof(dispatched) == 'string') {
+                    //okay. We've been given a new command to dispatch. Hop all the way back up and do it again.
+                    command = dispatched;
+                    redispatching = true;
+                }
+                else {
+// XXX RE-ENABLE THIS ONE LATER!
+/*                    this.dbg("need to run a pipeline");
+                    if (! this.sessionId()) {
+                        this.warn_not_logged_in($widget);
+                        $deferred.resolve();
+                        return $promise;
+                    }
+*/
+                }
+            } while (redispatching);
 
             var m;
 
-            if (m = command.match(/^log[io]n\s*(.*)/)) {
+            /*if (m = command.match(/^log[io]n\s*(.*)/)) {
                 var args = m[1].split(/\s+/);
 
                 this.dbg(args.length);
@@ -1217,9 +1584,9 @@ define('kbaseIrisTerminal',
                 );
                 if (! isHidden) { this.scroll() };
                 return $promise;
-            }
+            }*/
 
-            if (m = command.match(/^authenticate\s*(.*)/)) {
+            /*if (m = command.match(/^authenticate\s*(.*)/)) {
                 var args = m[1].split(/\s+/)
                 if (args.length != 1) {
                     $widget.setError("Invalid login syntax.");
@@ -1235,9 +1602,9 @@ define('kbaseIrisTerminal',
                 //this is the ONLY exception
 
                 return;
-            }
+            }*/
 
-            if (m = command.match(/^unauthenticate/)) {
+            /*if (m = command.match(/^unauthenticate/)) {
 
                 this.trigger('logout');
                 if (! isHidden) { this.scroll() };
@@ -1245,9 +1612,9 @@ define('kbaseIrisTerminal',
                 $deferred.resolve();
 
                 return $promise;
-            }
+            }*/
 
-            if (m = command.match(/^logout/)) {
+            /*if (m = command.match(/^logout/)) {
 
                 this.trigger('logout', false);
                 this.trigger('loggedOut', false);
@@ -1256,9 +1623,9 @@ define('kbaseIrisTerminal',
                 $deferred.resolve();
 
                 return $promise;
-            }
+            }*/
 
-            if (m = command.match(/^whatsnew/)) {
+            /*if (m = command.match(/^whatsnew/)) {
                 $.ajax(
                     {
                         async : true,
@@ -1279,9 +1646,9 @@ define('kbaseIrisTerminal',
                     }
                 );
                 return $promise;
-            }
+            }*/
 
-            if (command == "next") {
+            /*if (command == "next") {
                 this.tutorial.goToNextPage();
                 command = "show_tutorial";
             }
@@ -1294,7 +1661,7 @@ define('kbaseIrisTerminal',
             if (command == "tutorial") {
                 this.tutorial.currentPage = 0;
                 command = "show_tutorial";
-            }
+            }*/
 
             if (command == 'tutorial list') {
                 var list = this.tutorial.list();
@@ -1416,7 +1783,7 @@ define('kbaseIrisTerminal',
                 return $promise;
             }
 
-            if (m = command.match(/^questions\s*(\S+)?/)) {
+            /*if (m = command.match(/^questions\s*(\S+)?/)) {
 
                 var questions = this.options.grammar.allQuestions(m[1]);
 
@@ -1463,7 +1830,7 @@ define('kbaseIrisTerminal',
                 if (! isHidden) { this.scroll() };
 
                 return $promise;
-            }
+            }*/
 
             if (command == 'clear') {
 
@@ -1485,9 +1852,7 @@ define('kbaseIrisTerminal',
             }
 
             if (! this.sessionId()) {
-                $widget.setError($.jqElem('span').html("You are not logged in.<br>Please click the Sign In link in the upper right to get started."));
-                if (! isHidden) { this.scroll() };
-                $deferred.resolve();
+                this.warn_not_logged_in($widget);                $deferred.resolve();
                 return $promise;
             }
 
@@ -1924,28 +2289,6 @@ define('kbaseIrisTerminal',
 
                 setTimeout($.proxy(function() {this.scroll()}, this), 500);
                 $deferred.resolve();
-
-                /*this.client().get_file(
-                    this.sessionId(),
-                    file,
-                    this.cwd
-                )
-                .done($.proxy(function(res) {
-                    if (file.match(/\.(jpg|gif|png)$/)) {
-                        var $img = $.jqElem('img')
-                            .attr('src', 'data:image/jpeg;base64,' + btoa(res));
-                        $widget.setOutput($img);
-                    }
-                    else {
-                        $widget.setOutput(res);
-                    }
-                    if (! isHidden) { this.scroll() };
-                    $deferred.resolve();
-                }, this))
-                .fail($.proxy(function(res) {
-                    $widget.setError('No such file');
-                    $deferred.reject();
-                }, this));*/
 
                 return $promise;
 

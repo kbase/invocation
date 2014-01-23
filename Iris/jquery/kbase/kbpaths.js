@@ -12,13 +12,13 @@ define('kbpaths',[], function (paths) {
 //     kbaseapi : './jquery/ui-js/kbase-api',
      kbwidget : '../kbwidget',
 
-     kbaseVisWidget : '../widgets/kbaseVisWidget',
-     kbaseHeatmap : '../widgets/vis/kbaseHeatmap',
-     kbaseBarchart : '../widgets/vis/kbaseBarchart',
-     kbaseScatterplot : '../widgets/vis/kbaseScatterplot',
-     kbaseLinechart : '../widgets/vis/kbaseLinechart',
-     kbasePiechart : '../widgets/vis/kbasePiechart',
-     kbaseForcedNetwork : '../widgets/vis/kbaseForcedNetwork',
+     kbaseVisWidget : 'kbaseVisWidget',
+     kbaseHeatmap : 'vis/kbaseHeatmap',
+     kbaseBarchart : 'vis/kbaseBarchart',
+     kbaseScatterplot : 'vis/kbaseScatterplot',
+     kbaseLinechart : 'vis/kbaseLinechart',
+     kbasePiechart : 'vis/kbasePiechart',
+     kbaseForcedNetwork : 'vis/kbaseForcedNetwork',
 
         //iris widgets
         iris              : 'iris/iris',
@@ -36,8 +36,6 @@ define('kbpaths',[], function (paths) {
         kbaseIrisTutorial : 'iris/kbaseIrisTutorial',
         kbaseIrisWidget : 'iris/kbaseIrisWidget',
         kbaseIrisWorkspace : 'iris/kbaseIrisWorkspace',
-
-        forceDirectedNetwork : 'networks/force-directed',
 
         RGBColor : '../../../js/RGBColor',
         geometry_point : '../../../js/geometry/point',

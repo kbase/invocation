@@ -97,7 +97,6 @@ define('kbaseIrisFileBrowser',
 
                         this.listDirectory(path, $.proxy(function (results) {
                             callback(results);
-                            console.log("SF HERE!");
                             this.selectFiles();
                         }, this));
                     },

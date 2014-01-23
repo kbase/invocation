@@ -112,7 +112,20 @@ define('kbaseIrisFileEditor',
                     },
                     this
                 ),
-                $.proxy(function (err) { this.dbg("FILE FAILURE"); this.dbg(err); this.dbg(this);}, this)
+                $.proxy(function (err) {
+                    var $ui = $.jqElem('textarea')
+                        .attr('rows', this.rows())
+                        .attr('cols', this.cols())
+                        .css('width', '720px')
+                        .kb_bind(
+                            this,
+                            'content'
+                        );
+
+                    $elem.empty();
+                    $elem.append($ui);
+
+                }, this)
             );
 
         },

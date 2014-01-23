@@ -2,6 +2,12 @@
 <ul>
     <li>The <b>view</b> command now scales an image to fit within the terminal window. Click on the image to download it full size.</li>
     <li>Clicking the right arrow button on the file browser now no longer prepends a leading slash to the file name.</li>
+    <li>File Editor can now properly edit files in subdirectories.</li>
+    <li>Files can now be created via the <b>edit</b> <i>newfilename</i> command.</li>
+    <li>Added visualization widgets. Type <b>widget</b> <i>widgetname</i> <i>jsondata</i> to display. Available visualization widgets are:
+        <b>barchart</b>, <b>forcednetwork</b>, <b>heatmap</b>, <b>linechart</b>, <b>piechart</b>, <b>scatterplot</b>. To see sample data formats,
+        type this in any directory: <b>execute @W#sharediris::get_chart_data#i</b>. That command will create 6 json files with sample
+        data that can be fed into a visualization.</li>
 </ul>
 <h3>v0.0.6 - 12/13/2013</h3>
 <ul>

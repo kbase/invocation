@@ -20,13 +20,44 @@ define('kbaseIrisContainerWidget',
 
             version: "1.0.0",
 
+            options : {
+                inputType : 'string',
+            },
+
             _accessors : [
 
             ],
 
-            setInput : function( newVal) {
-                this.setValueForKey('input', newVal);
-                this.options.widget.setInput(newVal);
+            setInput : function( newInput) {
+
+                if (this.options.inputType == 'string') {
+                    this.setValueForKey('input', newInput);
+                    this.options.widget.setInput(newInput);
+                }
+                else if ( this.options.inputType.match(/file|json/) ) {
+
+                    this.$terminal.client().get_file(
+                        this.$terminal.sessionId(),
+                        newInput,
+                        this.$terminal.cwd,
+                        $.proxy(
+                            function (inputFile) {
+                                if (this.options.inputType == 'json') {
+                                    inputFile = JSON.parse(inputFile);
+                                }
+
+                                this.setValueForKey('input',  inputFile);
+                                this.options.widget.setInput(inputFile);
+                            },
+                            this
+                        ),
+                        $.proxy(function (e) {
+                            this.setError('No such input file');
+                        }, this)
+                    );
+
+                }
+
             },
 
             setOutput : function( newVal) {

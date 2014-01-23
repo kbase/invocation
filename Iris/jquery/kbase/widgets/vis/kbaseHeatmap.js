@@ -119,7 +119,7 @@ define('kbaseHeatmap',
                         //arbitrarily rotate around -12 because it looks right. I got nothin'.
                         //then we move it 5 pixels to the right, which in our rotate coordinate system is
                         //5 pixels up. Whee!
-                        return "rotate(-90,0,-12) translate(25,0)";// translate(2,3)";
+                        return "rotate(-90,0,-12) translate(30,0)";// translate(2,3)";
                     })
             ;
 
@@ -309,8 +309,8 @@ define('kbaseHeatmap',
 
                         $hm.showToolTip(
                             {
-                                label : d.label || 'Value for: ' + xId + ' - ' + xId + '<br>is ' + d.value,
-                                event: d3.event
+                                label : d.label || 'Value for: ' + xId + ' - ' + yId + '<br>is ' + d.value,
+                                coords : d3.mouse(this),
                             }
                         );
 

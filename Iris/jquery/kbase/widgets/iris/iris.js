@@ -9,10 +9,15 @@ define('iris',
         'kbaseIrisGUIWidget',
         'kbaseIrisFileBrowser',
         'kbaseIrisFileEditor',
-        'forceDirectedNetwork',
+        'kbaseBarchart',
+        'kbaseHeatmap',
+        'kbaseLinechart',
+        'kbaseScatterplot',
+        'kbasePiechart',
+        'kbaseForcedNetwork',
     ],
     function() {
-        console.log('iris is loaded');
+
     }
 );
 
