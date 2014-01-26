@@ -6,7 +6,6 @@ define('kbaseHeatmap',
     [
         'jquery',
         'd3',
-        'bootstrap',
         'kbaseVisWidget',
         'RGBColor',
         'geometry_rectangle',
@@ -310,7 +309,6 @@ define('kbaseHeatmap',
                         $hm.showToolTip(
                             {
                                 label : d.label || 'Value for: ' + xId + ' - ' + yId + '<br>is ' + d.value,
-                                coords : d3.mouse(this),
                             }
                         );
 

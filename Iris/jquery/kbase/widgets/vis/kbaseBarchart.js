@@ -69,7 +69,7 @@ define('kbaseBarchart',
         },
 
         renderChart : function() {
-
+console.log('tries to render here...');
             if (this.dataset() == undefined) {
                 return;
             }
@@ -135,7 +135,6 @@ define('kbaseBarchart',
                             $bar.showToolTip(
                                 {
                                     label : label,
-                                    coords : d3.mouse(this),
                                 }
                             );
                         }
@@ -160,15 +159,8 @@ define('kbaseBarchart',
                 return this;
             };
 
-            var chart = this.data('D3svg').select('.chart').selectAll('.barGroup');
-            chart
-                .data(this.dataset())
-                .enter()
-                    .append('g')
-                    .attr('class', 'barGroup')
-
-                        //experimental code
-                        .each(function (d, i) {
+            var groupAction = function() {
+                this.each(function (d, i) {
 
                             if (d.value != undefined && ! $.isArray(d.value)) {
                                 d.value = [d.value];
@@ -198,12 +190,25 @@ define('kbaseBarchart',
                                 .data(d.value)
                                 .call(function() { return mouseAction.call(this, d,i) } )
                                 .transition()
-                                .duration(500)
+                                .duration($bar.options.transitionTime)
                                     .call(function() { return funkyTown.call(this, barScale, d, i) } );
 
-                        });
+                        })
+                return this;
+            }
 
+            var chart = this.data('D3svg').select('.chart').selectAll('.barGroup');
+            chart
+                .data(this.dataset())
+                .enter()
+                    .append('g')
+                    .attr('class', 'barGroup')
+                        .call(groupAction)
+                        ;
 
+            chart
+                .data(this.dataset())
+                .call(groupAction)
             ;
 
             /*var barGroups = chart.selectAll('.bar')
@@ -222,11 +227,10 @@ define('kbaseBarchart',
                         .call(funkyTown)
             ;*/
 
-
-
         },
 
         setXScaleRange : function(range, xScale) {
+
             if (xScale == undefined) {
                 xScale = this.xScale();
             }

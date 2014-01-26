@@ -9,12 +9,7 @@ define('iris',
         'kbaseIrisGUIWidget',
         'kbaseIrisFileBrowser',
         'kbaseIrisFileEditor',
-        'kbaseBarchart',
-        'kbaseHeatmap',
-        'kbaseLinechart',
-        'kbaseScatterplot',
-        'kbasePiechart',
-        'kbaseForcedNetwork',
+        'vis',
     ],
     function() {
 

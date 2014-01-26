@@ -72,7 +72,7 @@ define('kbaseLogin',
 
         get_kbase_cookie : function (field) {
 
-            var chips = sessionStorage.getItem('kbase_session');
+            var chips = localStorage.getItem('kbase_session');
 
             if (chips != undefined) {
                 chips = JSON.parse(chips);
@@ -964,7 +964,7 @@ define('kbaseLogin',
                                     }
                                     var jsonARGS = JSON.stringify(args);
 
-                                    sessionStorage.setItem('kbase_session', jsonARGS);
+                                    localStorage.setItem('kbase_session', jsonARGS);
 
                                     this.populateLoginInfo(args);
 
@@ -973,7 +973,7 @@ define('kbaseLogin',
                                     callback.call(this,args);
                                 }
                                 else {
-                                    sessionStorage.removeItem('kbase_session');
+                                    localStorage.removeItem('kbase_session');
                                     this.populateLoginInfo({});
                                     callback.call(this, {status : 0, message : data.error_msg});
 
@@ -1027,7 +1027,7 @@ define('kbaseLogin',
                 return;
             }
 
-            sessionStorage.removeItem('kbase_session');
+            localStorage.removeItem('kbase_session');
 
             // the rest of this is just housekeeping.
 

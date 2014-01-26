@@ -27,8 +27,18 @@ define('kbaseForcedNetwork',
             nodeStrokeColor : 'black',
             nodeStrokeWeight : 1,
             nodeRadius : 10,
-            highlightColor : 'yellow',
-            highlightNodeStrokeWeight : 3,
+
+            nodeHighlightColor : 'yellow',
+            nodeHighlightStrokeWeight : 3,
+            edgeHighlightColor : 'yellow',
+            edgeHighlightStrokeWeight : 3,
+
+            relatedNodeHighlightColor : 'orange',
+            relatedNodeHighlightStrokeWeight : 2,
+            relatedEdgeHighlightColor : 'orange',
+            relatedEdgeHighlightStrokeWeight : 2,
+
+
             linkDistance : 100,
             charge : -100,
         },
@@ -130,10 +140,10 @@ define('kbaseForcedNetwork',
 
                                     if (nodeRect.intersects(boxRect)) {
                                         selectedNodes.push(node);
-                                        node.highlighted = true;
+                                        node.highlighted = 2;
                                     }
                                     else {
-                                        node.highlighted = false;
+                                        node.highlighted = 0;
                                     }
 
                                 }
@@ -227,12 +237,67 @@ define('kbaseForcedNetwork',
                     //function(d) { return d.source.name + "-" + d.target.name }
                 );
 
+                var mouseEdgeAction = function() {
+                    this.on('mouseover', function(d) {
+                        $force.showToolTip(
+                            {
+                                label : d.label || d.source.name + ' to ' + d.target.name,
+                            }
+                        );
+                        d.source.highlighted = 2;
+                        d.target.highlighted = 2;
+                        d.highlighted = 2;
+                        start();
+                    })
+                    .on('mouseout', function(d) {
+                        $force.hideToolTip();
+                        d.source.highlighted = 0;
+                        d.target.highlighted = 0;
+                        d.highlighted = 0;
+                        start();
+                    })
+                    .call(forceLayout.drag);
+                    return this;
+                };
+
+                var edgeTown = function() {
+                    this.attr("class", "edge")
+                    .attr('stroke', function(d) {
+                        if (d.highlighted == 2) {
+                            return $force.options.edgeHighlightColor;
+                        }
+                        else if (d.highlighted == 1) {
+                            return $force.options.relatedEdgeHighlightColor;
+                        }
+                        else {
+                            return d.color || $force.options.lineColor
+                        }
+                    })
+                    .attr('stroke-width', function(d) {
+                        if (d.highlighted == 2) {
+                            return $force.options.edgeHighlightStrokeWeight;
+                        }
+                        else if (d.highlighted == 1) {
+                            return $force.options.relatedEdgeHighlightStrokeWeight;
+                        }
+                        else {
+                            return d.weight || $force.options.lineWeight
+                        }
+                    });
+                    return this;
+                };
+
                 links
                     .enter()
                     .insert("line", ".node")
-                    .attr("class", "edge")
-                    .attr('stroke', function(d) { return d.color || $force.options.lineColor })
-                    .attr('stroke-width', function(d) { return d.weight || $force.options.lineWeight });
+                    .call(mouseEdgeAction)
+                    .call(edgeTown);
+
+                links
+                    .call(mouseEdgeAction)
+                    .transition()
+                    .duration(100)
+                        .call(edgeTown);
 
                 links
                     .exit()
@@ -248,15 +313,38 @@ define('kbaseForcedNetwork',
                         $force.showToolTip(
                             {
                                 label : d.label || 'Node: ' + d.name,
-                                coords : d3.mouse(this),
                             }
                         );
-                        d.highlighted = true;
+
+                        $force.forceLayout().links().forEach(
+                            function(link, idx) {
+                                if (link.source == d) {
+                                    link.target.highlighted = 1;
+                                    link.highlighted = 1;
+                                }
+                                if (link.target == d) {
+                                    link.source.highlighted = 1;
+                                    link.highlighted = 1;
+                                }
+                            }
+                        );
+
+                        d.highlighted = 2;
+
                         start();
                     })
                     .on('mouseout', function(d) {
                         $force.hideToolTip();
-                        d.highlighted = false;
+                        d.highlighted = 0;
+
+                        $force.forceLayout().links().forEach(
+                            function(link, idx) {
+                                link.highlighted = 0;
+                                link.source.highlighted = 0;
+                                link.target.highlighted = 0;
+                            }
+                        );
+
                         start();
                     })
                     .call(forceLayout.drag);
@@ -270,16 +358,22 @@ define('kbaseForcedNetwork',
                             return d.color || $force.options.nodeColor
                         })
                         .attr('stroke', function(d) {
-                            if (d.highlighted) {
-                                return $force.options.highlightColor;
+                            if (d.highlighted == 2) {
+                                return $force.options.nodeHighlightColor;
+                            }
+                            else if (d.highlighted == 1) {
+                                return $force.options.relatedNodeHighlightColor;
                             }
                             else {
                                 return d.stroke || $force.options.nodeStrokeColor
                             }
                         })
                         .attr('stroke-width', function(d) {
-                            if (d.highlighted) {
-                                return $force.options.highlightNodeStrokeWeight;
+                            if (d.highlighted == 2) {
+                                return $force.options.nodeHighlightStrokeWeight;
+                            }
+                            else if (d.highlighted == 1) {
+                                return $force.options.relatedNodeHighlightStrokeWeight;
                             }
                             else {
                                 return d.strokeWidth || $force.options.nodeStrokeWeight;
