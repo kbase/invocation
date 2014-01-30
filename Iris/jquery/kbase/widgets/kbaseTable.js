@@ -62,6 +62,7 @@ define('kbaseTable',
         'jquery',
         'kbwidget',
         'kbaseDeletePrompt',
+        'kbaseButtonControls',
         'jqueryui',
     ],
     function ($) {
@@ -136,6 +137,48 @@ define('kbaseTable',
             var $tbl = $('<table></table>')
                 .attr('id', 'table')
                 .addClass('table');
+
+
+            if (this.options.visControls) {
+                $tbl.kbaseButtonControls(
+                    {
+                        onMouseover : true,
+                        context : this,
+                        controls : [
+                            {
+                                icon : 'fa fa-minus',
+                                //'tooltip' : 'add a subdirectory',
+                                callback : function(e, $tbl) {
+
+                                    var currentVis = $tbl.options.visibleRows || 0;
+                                    currentVis--;
+
+                                    if (currentVis < 1) {
+                                        currentVis = 1;
+                                    }
+
+                                    $tbl.options.visibleRows = currentVis;
+
+                                    $tbl.displayRows();
+                                },
+                                id : 'addFileButton'
+                            },
+                            {
+                                'icon' : 'fa fa-plus',
+                                callback : function(e, $tbl) {
+                                    var currentVis = $tbl.options.visibleRows || 0;
+                                    currentVis++;
+                                    $tbl.options.visibleRows = currentVis;
+
+                                    $tbl.displayRows();
+                                },
+
+                            },
+                        ]
+
+                    }
+                );
+            }
 
             if (this.options.tblOptions) {
                 this.addOptions($tbl, this.options.tblOptions);
@@ -375,7 +418,21 @@ define('kbaseTable',
                 }
             }
 
+            this.displayRows();
+
             this.numRows(numRows);
+        },
+
+        displayRows : function() {
+            this.data('tbody')
+                .find('tr')
+                .css('display', '');
+
+            if (this.options.visibleRows != undefined) {
+                this.data('tbody')
+                    .find('tr:gt(' + (this.options.visibleRows - 1) + ')')
+                    .css('display', 'none');
+            }
         },
 
         addOptions : function ($cell, options) {
