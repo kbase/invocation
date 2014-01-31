@@ -165,10 +165,7 @@ define('kbasePlantsNetworkTable',
                                                     $.each(
                                                         dataset.edges,
                                                         function(idx, edge) {
-console.log("INSPECT " + edge.name);console.log(edge);
-console.log(d3.keys(edge.activeDatasets));
                                                             if (edge.activeDatasets[row.dataset] && ! $check.checked) {
-console.log('removes ' + row.dataset);
                                                                 delete edge.activeDatasets[row.dataset];
                                                             }
 
@@ -199,16 +196,10 @@ console.log('removes ' + row.dataset);
                                                         );
 
                                                         var color = colorCats(ridx % 20);
-                                                        console.log("COLOR OF " + (ridx % 20) + " IS " + color);
-                                                        for (var cidx = 0; cidx < 50; cidx++) {
-                                                            console.log("colors " + cidx + ' is ' + colorCats(cidx));
-                                                        }
 
                                                         $.each(
                                                             row.edges,
                                                             function (idx, edge) {
-console.log('adds edge ' + edge.name);console.log(edge);
-console.log(row.dataset);
                                                                 edge.activeDatasets[row.dataset] = 1;
                                                                 edge.color = color;
                                                                 if (! activeEdges[edge.name]) {
@@ -222,7 +213,7 @@ console.log(row.dataset);
                                                             }
                                                         );
                                                     }
-console.log(newDataset);
+
                                                     $self.networkGraph().setDataset(newDataset);
                                                     $self.networkGraph().renderChart();
 

@@ -10,6 +10,7 @@ define('kbasePlantsNetworkNarrative',
         'kbaseForcedNetwork',
         'kbaseTable',
         'KbaseNetworkServiceClient',
+        'IdMapClient',
     ],
     function ($) {
         $.KBWidget(
@@ -24,10 +25,12 @@ define('kbasePlantsNetworkNarrative',
                 'networkTable',
                 'networkGraph',
                 'networkClient',
+                'idMapClient',
             ],
 
             options: {
                 networkClientURL : 'http://140.221.85.171:7064/KBaseNetworksRPC/networks',
+                idmapClientURL : "http://140.221.85.96:7111",
             },
 
             init : function(options) {
@@ -36,9 +39,22 @@ define('kbasePlantsNetworkNarrative',
                 this.networkClient(
                     new window.KBaseNetworks(
                         this.options.networkClientURL,
+                        undefined//this.auth()
+                    )
+                );
+
+/*                this.idMapClient(
+                    new window.IdMapClient(
+                        this.options.idmapClientURL,
                         this.auth()
                     )
                 );
+                this.idMapClient().longest_cds_from_locus('kb|g.3899.locus.2079')
+                .always(function(res) {
+                    console.log("ID MAP RESULTS");
+                    console.log(res);
+                });
+*/
 
                 return this;
             },
@@ -65,13 +81,13 @@ define('kbasePlantsNetworkNarrative',
 
                 if (species.length) {
                     species = species[0];
-console.log("about to call t2d @ " + new Date());
+
                     this.networkClient().taxon2datasets(
                         species
                     )
                     .done(
                         function(res) {
-console.log("t2d results @ " + new Date());
+
                             var records = {};
                             var datasets = [];
 
@@ -98,9 +114,7 @@ console.log("t2d results @ " + new Date());
 
                                 }
                             );
-datasets = ['kb|netdataset.plant.cn.191', 'kb|netdataset.plant.cn.192'];
-console.log("about to call bin @ " + new Date());
-console.log("BIG DATA : " + datasets.length + ',' + cdses.length);
+//datasets = ['kb|netdataset.plant.cn.191', 'kb|netdataset.plant.cn.192'];
                             $self.networkClient().buildInternalNetwork(
                                 datasets,
                                 cdses,
@@ -108,9 +122,6 @@ console.log("BIG DATA : " + datasets.length + ',' + cdses.length);
                             )
                             .done(
                                 function(results) {
-console.log("bin results @ " + new Date());
-console.log("RESULTS");
-console.log(results);
 
                                     var colorCats = d3.scale.category20();
                                     var linkScale = d3.scale.linear()
@@ -161,7 +172,7 @@ console.log(results);
                                                 if (edgeObj.linknum == 14) {
                                                     edgeObj.linknum = 150;
                                                 }
-console.log("LINKNUM FOR " + edge.datasetId + " IS " + edgeObj.linknum);
+
                                             if (! datasetRec.edgesByName[edgeName]) {
                                                 datasetRec.edgesByName[edgeName] = 1;
                                                 datasetRec.edges.push(
@@ -193,7 +204,6 @@ console.log("LINKNUM FOR " + edge.datasetId + " IS " + edgeObj.linknum);
                                     );
 
                                     $self.data('loader').remove();
-console.log("about to set input @ " + new Date());
                                     $self.networkTable().setInput(tabularData);
 
                                 }
