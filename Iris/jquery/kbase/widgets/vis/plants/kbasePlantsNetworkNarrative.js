@@ -10,7 +10,7 @@ define('kbasePlantsNetworkNarrative',
         'kbaseForcedNetwork',
         'kbaseTable',
         'KbaseNetworkServiceClient',
-        'IdMapClient',
+        //'IdMapClient',
     ],
     function ($) {
         $.KBWidget(
@@ -60,6 +60,8 @@ define('kbasePlantsNetworkNarrative',
             },
 
             setInput : function(cds_list) {
+
+                var colorCats = d3.scale.category20();
 
                 var $self = this;
 
@@ -114,7 +116,7 @@ define('kbasePlantsNetworkNarrative',
 
                                 }
                             );
-//datasets = ['kb|netdataset.plant.cn.191', 'kb|netdataset.plant.cn.192'];
+datasets = ['kb|netdataset.plant.cn.191', 'kb|netdataset.plant.cn.192'];
                             $self.networkClient().buildInternalNetwork(
                                 datasets,
                                 cdses,
@@ -123,18 +125,18 @@ define('kbasePlantsNetworkNarrative',
                             .done(
                                 function(results) {
 
-                                    var colorCats = d3.scale.category20();
                                     var linkScale = d3.scale.linear()
                                         .domain([0, datasets.length])
-                                        .range([0,100]);
+                                        .range([-100,100]);
                                     var nodes = {};
+                                    var edges = {};
 
                                     $.each(
                                         results.nodes,
                                         function (idx, node) {
                                             var nodeObj = nodes[node.name];
                                             if (nodeObj == undefined) {
-                                                nodeObj = nodes[node.id] = { name : node.name, activeDatasets : {}, id : node.id };
+                                                nodeObj = nodes[node.id] = { name : node.name, activeDatasets : {}, id : node.id, radius : 10 };
                                             }
                                         }
                                     );
@@ -158,20 +160,23 @@ define('kbasePlantsNetworkNarrative',
                                             }
 
                                             var edgeName = [edge.datasetId, node1.name, node2.name].sort().join('-');//node1.name + '-' + node2.name;
+                                            var edgeObj = edges[edgeName];
+console.log("SCALES " + datasets.indexOf(edge.datasetId) + "to " + linkScale(datasets.indexOf(edge.datasetId)));
+                                            if (edgeObj == undefined) {
+                                                edgeObj = edges[edgeName] = {
+                                                        source : node1,
+                                                        target : node2,
+                                                        activeDatasets : {},
+                                                        name : edgeName,
+                                                        description : edge.name + '<br>' + node1.name + ' to ' + node2.name + ' (' + edge.strength.toFixed(3) + ')',
+                                                        //weight : 1,
+                                                        colors : {},
+                                                        curveStrength : linkScale(datasets.indexOf(edge.datasetId)),
+                                                    };
+                                            }
 
                                             var color = colorCats(datasets.indexOf(edge.datasetId) % 20);
-                                            var edgeObj = {
-                                                    source : node1,
-                                                    target : node2,
-                                                    color : color,
-                                                    activeDatasets : {},
-                                                    name : edgeName,
-                                                    label : edge.name + '<br>' + node1.name + ' to ' + node2.name + ' (' + edge.strength + ')',
-                                                    linknum : linkScale(datasets.indexOf(edge.datasetId)),
-                                                };
-                                                if (edgeObj.linknum == 14) {
-                                                    edgeObj.linknum = 150;
-                                                }
+                                            edgeObj.colors[edge.datasetId] = color;
 
                                             if (! datasetRec.edgesByName[edgeName]) {
                                                 datasetRec.edgesByName[edgeName] = 1;
@@ -191,7 +196,8 @@ define('kbasePlantsNetworkNarrative',
 
                                                 tabularData.push(
                                                     {
-                                                        dataset         : val.dataset,
+                                                        datasetID       : val.dataset,
+                                                        dataset         : {value : val.dataset, style : 'color : ' + colorCats(datasets.indexOf(val.dataset) % 20)},
                                                         nodes           : val.nodes,
                                                         edges           : val.edges,
                                                         description     : val.description,
@@ -250,9 +256,9 @@ define('kbasePlantsNetworkNarrative',
                 this.data('loader', $loader);
 
                 var $networkGraph = $.jqElem('div')
-                    .css({width : 500, height : 500})
+                    .css({width : 700, height : 600})
                     .attr('align', 'center')
-                    .kbaseForcedNetwork();
+                    .kbaseForcedNetwork({linkDistance : 200});
 
                 this.networkGraph($networkGraph);
 

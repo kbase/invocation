@@ -40,13 +40,13 @@ define('kbaseForcedNetwork',
 
 
             linkDistance : 100,
-            charge : -50,
+            charge : -10,
 
             xGutter     : 0,
             xPadding    : 0,
             yPadding    : 0,
 
-            edgeArcSize : 100,
+            maxCurveWeight : 100,
 
         },
 
@@ -216,11 +216,28 @@ define('kbaseForcedNetwork',
 
                       links.attr("d", function(d) {
 
-                            if (d.linknum) {
-                                var dx = d.target.x - d.source.x,
-                                    dy = d.target.y - d.source.y,
-                                    dr = $force.options.edgeArcSize / d.linknum;  //linknum is defined above
-                                return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+                            if (d.curveStrength) {
+
+                                var xDelta = d.target.x - d.source.x;
+                                var yDelta = d.target.y - d.source.y;
+
+                                var xCurveScale = d3.scale.linear()
+                                    .domain([-$force.options.maxCurveWeight,$force.options.maxCurveWeight])
+                                    .range([0,xDelta]);
+
+                                var yCurveScale = d3.scale.linear()
+                                    .domain([-$force.options.maxCurveWeight,$force.options.maxCurveWeight])
+                                    .range([0,yDelta]);
+
+                                var ctrlX = d.source.x + xCurveScale(d.curveStrength);
+                                var ctrlY = d.target.y - yCurveScale(d.curveStrength);
+
+                                var curve =
+                                      " M" + d.source.x  + ',' + d.source.y
+                                    + " Q" + ctrlX       + ',' + ctrlY
+                                    + "  " + d.target.x  + ',' + d.target.y;
+
+                                return curve;
                             }
                             else {
                                 return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
@@ -377,6 +394,8 @@ define('kbaseForcedNetwork',
 
                         start();
                     })
+                    .on('mousedown', function(d) { d.fixed = true } )
+                    .on('dblclick', function(d) { d.fixed = false } )
                     .call(forceLayout.drag);
                     return this;
                 };

@@ -151,8 +151,8 @@ define('kbasePlantsNetworkTable',
                                                     $.each(
                                                         dataset.nodes,
                                                         function(idx, node) {
-                                                            if (node.activeDatasets[row.dataset] && ! $check.checked) {
-                                                                delete node.activeDatasets[row.dataset];
+                                                            if (node.activeDatasets[row.datasetID] && ! $check.checked) {
+                                                                delete node.activeDatasets[row.datasetID];
                                                             }
 
                                                             if (d3.keys(node.activeDatasets).length) {
@@ -165,8 +165,8 @@ define('kbasePlantsNetworkTable',
                                                     $.each(
                                                         dataset.edges,
                                                         function(idx, edge) {
-                                                            if (edge.activeDatasets[row.dataset] && ! $check.checked) {
-                                                                delete edge.activeDatasets[row.dataset];
+                                                            if (edge.activeDatasets[row.datasetID] && ! $check.checked) {
+                                                                delete edge.activeDatasets[row.datasetID];
                                                             }
 
                                                             if (d3.keys(edge.activeDatasets).length) {
@@ -183,7 +183,7 @@ define('kbasePlantsNetworkTable',
                                                         $.each(
                                                             row.nodes,
                                                             function (idx, node) {
-                                                                node.activeDatasets[row.dataset] = 1;
+                                                                node.activeDatasets[row.datasetID] = 1;
                                                                 if (! activeNodes[node.name]) {
                                                                     newDataset.nodes.push(node);
                                                                     activeNodes[node.name] = 1;
@@ -200,19 +200,44 @@ define('kbasePlantsNetworkTable',
                                                         $.each(
                                                             row.edges,
                                                             function (idx, edge) {
-                                                                edge.activeDatasets[row.dataset] = 1;
+                                                                edge.activeDatasets[row.datasetID] = 1;
                                                                 edge.color = color;
                                                                 if (! activeEdges[edge.name]) {
                                                                     newDataset.edges.push(edge);
                                                                     activeEdges[edge.name] = 1;
                                                                 }
-
-                                                                edge.label = '<b>' + edge.label + '</b>'
-                                                                    + '<hr>'
-                                                                    + d3.keys(edge.activeDatasets).sort().join('<br>');
                                                             }
                                                         );
                                                     }
+
+                                                    $.each(
+                                                        newDataset.nodes,
+                                                        function (idx, node) {
+                                                            node.label = '<b>' + node.name + '</b>'
+                                                                + '<hr>'
+                                                                + d3.keys(node.activeDatasets).sort().join('<br>');
+
+                                                            node.radius = 8 + 3 * d3.keys(node.activeDatasets).length;
+                                                        }
+                                                    );
+
+                                                    $.each(
+                                                        newDataset.edges,
+                                                        function (idx, edge) {
+                                                            edge.label = '<b>' + edge.description + '</b>'
+                                                                + '<hr>'
+                                                                + d3.keys(edge.activeDatasets).sort().join('<br>');
+                                                                edge.weight = d3.keys(edge.activeDatasets).length;
+                                                                //edge.weight = 4;
+
+                                                            if (d3.keys(edge.activeDatasets).length > 1) {
+                                                                edge.color = 'black';
+                                                            }
+                                                            else {
+                                                                edge.color = edge.colors[d3.keys(edge.activeDatasets)[0]];
+                                                            }
+                                                        }
+                                                    );
 
                                                     $self.networkGraph().setDataset(newDataset);
                                                     $self.networkGraph().renderChart();
