@@ -46,6 +46,8 @@ define('kbpaths',[], function (paths) {
         geometry_point : '../../../js/geometry/point',
         geometry_rectangle : '../../../js/geometry/rectangle',
         geometry_size : '../../../js/geometry/size',
+
+        KbaseNetworkServiceClient : '../../../js/KbaseNetworkServiceClient',
     },
     shim: {
         bootstrap:    { deps: ["jquery"] },

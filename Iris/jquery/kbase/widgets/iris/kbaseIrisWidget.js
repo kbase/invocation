@@ -165,7 +165,7 @@ define('kbaseIrisWidget',
                 win.document.close();
             },
 
-            acceptInput : function($widget) {
+            acceptInput : function($widget, refuse) {
 
                 this.kb_bind(
                     $widget,
@@ -175,7 +175,7 @@ define('kbaseIrisWidget',
                         this.render();
                     }
                 );
-                if ($widget.value() != undefined) {
+                if ($widget.value() != undefined && ! refuse) {
                     this.setInput($widget.value());
                 }
             },

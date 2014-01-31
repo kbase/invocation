@@ -105,25 +105,29 @@ define('kbasePlantsNetworkTable',
                             data.structure.header.unshift({
                                 value : 'checkbox',
                                 label : '',
+                                sortable : false,
                             });
                         };
 
 
+                        var colorCats = d3.scale.category20();
+
                         $.each(
                             input,
-                            function (idx, row) {
+                            function (ridx, row) {
 
                                 row.checkbox = {
-                                    value :
-                                        $checkbox.clone()
-                                            .on('click',
+                                    value : $checkbox.clone(),
+                                    setup : function($checkbox) {
+                                            $checkbox.on('click',
                                                 function(e) {
+
                                                     var $check = this;
                                                     //not that we should be able to be here w/o a graph, but just in case.
                                                     if ($self.networkGraph == undefined) {
                                                         return;
                                                     }
-console.log('clicked it!');
+
                                                     var dataset = $self.networkGraph().dataset();
 
                                                     if (dataset == undefined) {
@@ -138,6 +142,9 @@ console.log('clicked it!');
                                                         edges : []
                                                     };
 
+                                                    var activeNodes = {};
+                                                    var activeEdges = {};
+
                                                     //first thing we do is pull over all the existing nodes/edges
                                                     //only copy from our network if we're checked (not really possible)
                                                     //otherwise, copy all the other networks.
@@ -150,20 +157,24 @@ console.log('clicked it!');
 
                                                             if (d3.keys(node.activeDatasets).length) {
                                                                 newDataset.nodes.push(node);
+                                                                activeNodes[node.name] = 1;
                                                             }
                                                         }
                                                     );
-console.log('check edges');
-console.log(dataset.edges);
+
                                                     $.each(
                                                         dataset.edges,
                                                         function(idx, edge) {
-                                                        console.log(edge);
-                                                        console.log(row.edges);
-                                                        console.log(row.edges.indexOf(edge));
-                                                        console.log($check.checked);
-                                                            if (row.edges.indexOf(edge) == -1 || $check.checked) {
+console.log("INSPECT " + edge.name);console.log(edge);
+console.log(d3.keys(edge.activeDatasets));
+                                                            if (edge.activeDatasets[row.dataset] && ! $check.checked) {
+console.log('removes ' + row.dataset);
+                                                                delete edge.activeDatasets[row.dataset];
+                                                            }
+
+                                                            if (d3.keys(edge.activeDatasets).length) {
                                                                 newDataset.edges.push(edge);
+                                                                activeEdges[edge.name] = 1;
                                                             }
                                                         }
                                                     );
@@ -176,24 +187,49 @@ console.log(dataset.edges);
                                                             row.nodes,
                                                             function (idx, node) {
                                                                 node.activeDatasets[row.dataset] = 1;
-                                                                newDataset.nodes.push(node);
+                                                                if (! activeNodes[node.name]) {
+                                                                    newDataset.nodes.push(node);
+                                                                    activeNodes[node.name] = 1;
+                                                                }
+
+                                                                node.label = '<b>' + node.name + '</b>'
+                                                                    + '<hr>'
+                                                                    + d3.keys(node.activeDatasets).sort().join('<br>');
                                                             }
                                                         );
+
+                                                        var color = colorCats(ridx % 20);
+                                                        console.log("COLOR OF " + (ridx % 20) + " IS " + color);
+                                                        for (var cidx = 0; cidx < 50; cidx++) {
+                                                            console.log("colors " + cidx + ' is ' + colorCats(cidx));
+                                                        }
 
                                                         $.each(
                                                             row.edges,
                                                             function (idx, edge) {
-                                                                newDataset.edges.push(edge);
+console.log('adds edge ' + edge.name);console.log(edge);
+console.log(row.dataset);
+                                                                edge.activeDatasets[row.dataset] = 1;
+                                                                edge.color = color;
+                                                                if (! activeEdges[edge.name]) {
+                                                                    newDataset.edges.push(edge);
+                                                                    activeEdges[edge.name] = 1;
+                                                                }
+
+                                                                edge.label = '<b>' + edge.label + '</b>'
+                                                                    + '<hr>'
+                                                                    + d3.keys(edge.activeDatasets).sort().join('<br>');
                                                             }
                                                         );
                                                     }
-
+console.log(newDataset);
                                                     $self.networkGraph().setDataset(newDataset);
                                                     $self.networkGraph().renderChart();
 
 
                                                 }
                                             )
+                                        }
                                 };
 
                                 row.num_nodes = row.nodes.length;

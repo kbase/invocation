@@ -409,13 +409,7 @@ define('kbaseIrisTerminal',
                 this.client(
                     new InvocationService(
                         this.options.invocationURL,
-                        undefined,
-                        $.proxy(function() {
-                            var toke = this.auth()
-                                ? this.auth().token
-                                : undefined;
-                                return toke;
-                        }, this)
+                        this.auth()
                     )
                 );
             }
@@ -1157,7 +1151,7 @@ define('kbaseIrisTerminal',
             }
         },
 
-        addWidget : function(widgetName) {
+        addWidget : function(widgetName, refuseInput) {
 
             var $widget = this.options.widgets[widgetName]();
 
@@ -1170,7 +1164,7 @@ define('kbaseIrisTerminal',
                 while (wIdx >= 0) {
                     var $last = this.live_widgets[wIdx];
                     if ( ! $last.isHidden() ) {
-                        $widget.acceptInput($last);
+                        $widget.acceptInput($last, refuseInput);
                         break;
                     }
                     else {
@@ -2819,7 +2813,7 @@ define('kbaseIrisTerminal',
                     return $promise;
                 }
 
-                var $widget = this.addWidget(args[0]);
+                var $widget = this.addWidget(args[0], args.length > 1);
 
                 if (args.length > 1) {
                     $widget.setInput(args[1]);

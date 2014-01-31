@@ -116,6 +116,10 @@ define('kbaseTable',
                     value += ' : ';
                 }
 
+                if (typeof cell == 'object' && cell.setup != undefined) {
+                    cell.setup(value);
+                }
+
                 return value;
             }
         },
@@ -168,6 +172,11 @@ define('kbaseTable',
                                 callback : function(e, $tbl) {
                                     var currentVis = $tbl.options.visibleRows || 0;
                                     currentVis++;
+
+                                    if (currentVis > $tbl.options.structure.rows.length) {
+                                        currentVis = $tbl.options.structure.rows.length;
+                                    }
+
                                     $tbl.options.visibleRows = currentVis;
 
                                     $tbl.displayRows();

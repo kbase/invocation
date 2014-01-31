@@ -35,7 +35,7 @@ define('kbaseIrisContainerWidget',
                     this.options.widget.setInput(newInput);
                 }
                 else if ( this.options.inputType.match(/file|json/) ) {
-
+console.log("GETS FILE WITH ");console.log(newInput);
                     this.$terminal.client().get_file(
                         this.$terminal.sessionId(),
                         newInput,

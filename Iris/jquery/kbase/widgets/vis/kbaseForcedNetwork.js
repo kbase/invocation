@@ -40,11 +40,13 @@ define('kbaseForcedNetwork',
 
 
             linkDistance : 100,
-            charge : -100,
+            charge : -50,
 
             xGutter     : 0,
             xPadding    : 0,
             yPadding    : 0,
+
+            edgeArcSize : 100,
 
         },
 
@@ -206,10 +208,24 @@ define('kbaseForcedNetwork',
 
                 var tick = function() {
 
-                    links.attr("x1", function(d) { return d.source.x; })
+/*                    links.attr("x1", function(d) { return d.source.x; })
                          .attr("y1", function(d) { return d.source.y; })
                          .attr("x2", function(d) { return d.target.x; })
                          .attr("y2", function(d) { return d.target.y; });
+*/
+
+                      links.attr("d", function(d) {
+
+                            if (d.linknum) {
+                                var dx = d.target.x - d.source.x,
+                                    dy = d.target.y - d.source.y,
+                                    dr = $force.options.edgeArcSize / d.linknum;  //linknum is defined above
+                                return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+                            }
+                            else {
+                                return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
+                            }
+                      });
 
                     nodes.attr("cx", function(d) { return d.x; })
                          .attr("cy", function(d) { return d.y; });
@@ -294,13 +310,16 @@ define('kbaseForcedNetwork',
                         else {
                             return d.weight || $force.options.lineWeight
                         }
-                    });
+                    })
+                    .attr('fill', 'none')
+                    ;
                     return this;
                 };
 
                 links
                     .enter()
-                    .insert("line", ".node")
+                    //.insert("line", ".node")
+                    .insert('path', '.node')
                     .call(mouseEdgeAction)
                     .call(edgeTown);
 
