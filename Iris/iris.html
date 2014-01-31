@@ -126,6 +126,30 @@
                                                 }
                                             )
                             },
+                            plantsnetworktable : function() {
+
+                                return $.jqElem('div').kbaseIrisContainerWidget(
+                                                {
+                                                    inputType : 'file',
+                                                    widget : $.jqElem("div")
+                                                        .kbasePlantsNetworkTable({
+                                                            $terminal : $term
+                                                        })
+                                                }
+                                            )
+                            },
+                            plantsnetworknarrative : function() {
+
+                                return $.jqElem('div').kbaseIrisContainerWidget(
+                                                {
+                                                    inputType : 'file',
+                                                    widget : $.jqElem("div")
+                                                        .kbasePlantsNetworkNarrative({
+                                                            $terminal : $term
+                                                        })
+                                                }
+                                            )
+                            },
 
                         }
                     });
@@ -193,10 +217,8 @@
                                 $term.appendInput(file + ' ');
                             },
                             editFileCallback : function (file, $fb) {
-console.log("EDITS FILE " + file + ' @ ' + $term.cwd + ' from ' + $fb.options.root);
                                 file = $fb.options.root + '/' + $term.cwd + '/' + file;
                                 file = file.replace(/\/\/+/, '/');
-console.log("EDITS FILE " + file + ' @ ' + $term.cwd + ' from ' + $fb.options.root);
                                 var $editor = $.jqElem('div').kbaseIrisFileEditor(
                                     {
                                         file : file,

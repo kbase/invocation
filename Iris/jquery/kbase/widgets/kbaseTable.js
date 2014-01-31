@@ -178,6 +178,12 @@ define('kbaseTable',
 
                     }
                 );
+
+                if (this.options.visibleRows == undefined) {
+                    if ($.isArray(this.options.structure.rows)) {
+                        this.options.visibleRows = this.options.structure.rows.length;
+                    }
+                }
             }
 
             if (this.options.tblOptions) {

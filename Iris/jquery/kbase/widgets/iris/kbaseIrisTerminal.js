@@ -1097,6 +1097,66 @@ define('kbaseIrisTerminal',
             return command;
         },
 
+        jobqueue : function($widget, queue, callback, throttle) {
+
+            var ns = this.uuid();
+            var job;
+            var genes = [];
+
+            var $lastWidget;
+
+            $widget.startThinking();
+            $(document).on(
+                'removeIrisProcess.kbaseIris' + ns,
+                $.proxy(function (e, pid) {
+
+                    if (pid == job) {
+
+                        if (callback != undefined) {
+                            callback($lastWidget);
+                        }
+
+                        var nextJob = this.nextJobInQueue(queue);
+
+                        if (nextJob != undefined && (throttle == undefined || throttle > 0)) {
+
+                            var promise = this.invoke($widget, nextJob);
+                            job = promise.$widget.pid();
+                            $lastWidget = promise.$widget;
+
+                            if (throttle != undefined) {
+                                throttle--;
+                            }
+
+                        }
+                        else {
+                            $widget.stopThinking();
+                            $(document).off('removeIrisProcess.kbaseIris' + ns);
+                        }
+                    }
+                }, this)
+            );
+
+            var nextJob = this.nextJobInQueue(queue);
+            if (nextJob) {
+                var promise = this.invoke($widget, nextJob);
+                job = promise.$widget.pid();
+                $lastWidget = promise.$widget;
+            }
+
+        },
+
+        nextJobInQueue : function(queue) {
+            if ($.isArray(queue)) {
+                return queue.length
+                    ? queue.shift()
+                    : undefined;
+            }
+            else {
+                return queue();
+            }
+        },
+
         addWidget : function(widgetName) {
 
             var $widget = this.options.widgets[widgetName]();
@@ -1185,7 +1245,8 @@ define('kbaseIrisTerminal',
                     $widget.setOutput($.jqElem('div'));
                 }
 
-                script = script.replace(/\$terminal.invoke\(/, '$terminal.invoke($widget,');
+                script = script.replace(/\$terminal.invoke\(/g, '$terminal.invoke($widget,');
+
                 res = eval(script);
                 if ($widget.output() == undefined) {
                     $widget.setOutput(res);
@@ -1296,7 +1357,7 @@ define('kbaseIrisTerminal',
             var command = this.replaceVariables(rawCmd);
 
             var isHidden = false;
-            if ( m = command.match(/^\(\((.+)\)\)$/) ) {
+            if ( m = command.match(/^\(\(([^]+)\)\)$/) ) {
                 isHidden = true;
                 command = m[1];
                 command = command.replace(/^\s+/, '');
@@ -2835,8 +2896,6 @@ define('kbaseIrisTerminal',
                 jQuery.proxy(
                     function (runout) {
 
-                        this.trigger( 'removeIrisProcess', pid );
-
                         if (runout) {
 
                             var output = runout[0];
@@ -2900,6 +2959,8 @@ define('kbaseIrisTerminal',
                             $deferred.reject();
                         }
                         if (! isHidden) { this.scroll() };
+
+                        this.trigger( 'removeIrisProcess', pid );
                     },
                     this
                 ),

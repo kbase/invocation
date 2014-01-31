@@ -41,6 +41,11 @@ define('kbaseForcedNetwork',
 
             linkDistance : 100,
             charge : -100,
+
+            xGutter     : 0,
+            xPadding    : 0,
+            yPadding    : 0,
+
         },
 
         _accessors : [
@@ -228,6 +233,12 @@ define('kbaseForcedNetwork',
                     .on("tick", tick);
 
                 this.forceLayout(forceLayout);
+            }
+            else {
+                this.forceLayout().nodes(this.dataset().nodes);
+                this.forceLayout().links(this.dataset().edges);
+                $force.restart()();
+                return;
             }
 
 

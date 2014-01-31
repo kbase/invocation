@@ -43,11 +43,16 @@ define('kbaseBarchart',
                 return [0,0];
             }
 
-            var min = 1.1 * d3.min(
+            var min = 0.9 * d3.min(
                     this.dataset().map(
                         function(d) {
                             if ($.isArray(d.value)) {
-                                return d3.max(d.value);
+                                if (d.stacked) {
+                                    return d3.sum(d.value);
+                                }
+                                else {
+                                    return d3.min(d.value);
+                                }
                             }
                             else {
                                 return d.value
@@ -63,13 +68,27 @@ define('kbaseBarchart',
             return [
                 min,
                 1.1 * d3.max(
-                    this.dataset().map(function(d) { return d.value })
+                    this.dataset().map(
+                        function(d) {
+                            if ($.isArray(d.value)) {
+                                if (d.stacked) {
+                                    return d3.sum(d.value);
+                                }
+                                else {
+                                    return d3.max(d.value);
+                                }
+                            }
+                            else {
+                                return d.value
+                            }
+                        }
+                    )
                 )
             ];
         },
 
         renderChart : function() {
-console.log('tries to render here...');
+
             if (this.dataset() == undefined) {
                 return;
             }
@@ -80,7 +99,9 @@ console.log('tries to render here...');
             var funkyTown = function(barScale, d, i) {
                 this
                     .attr('width', barScale.rangeBand())
-                    .attr('height', function(b) { return Math.abs($bar.yScale()(0) - $bar.yScale()(b)) } )
+                    .attr('height', function(b, bi) {
+                        return Math.abs($bar.yScale()(0) - $bar.yScale()(b))
+                    })
                     .attr('x', function (b, j) {
 
                         var xId = d.bar;
@@ -90,7 +111,15 @@ console.log('tries to render here...');
 
                         return $bar.xScale()(xId) + barScale(j);
                     } )
-                    .attr('y', function (b) { return $bar.yScale()(Math.max(0,b)); } )
+                    .attr('y', function (b, bi) {
+
+                        var barHeight = b;
+                        if (d.stacked && $.isArray(d.value)) {
+                            barHeight = d3.sum(d.value.slice(0,bi+1));
+                        }
+
+                        return $bar.yScale()(Math.max(0,barHeight));
+                    } )
                     .attr('fill', function(b,j) { return d.color[ j % d.color.length ] })
                     .attr('data-fill', function(b,j) { return d.color[ j % d.color.length ] });
                 return this;
@@ -162,38 +191,43 @@ console.log('tries to render here...');
             var groupAction = function() {
                 this.each(function (d, i) {
 
-                            if (d.value != undefined && ! $.isArray(d.value)) {
-                                d.value = [d.value];
-                            }
+                    if (d.value != undefined && ! $.isArray(d.value)) {
+                        d.value = [d.value];
+                    }
 
-                            if (d.color != undefined && ! $.isArray(d.color)) {
-                                d.color = [d.color];
-                            }
+                    if (d.color != undefined && ! $.isArray(d.color)) {
+                        d.color = [d.color];
+                    }
 
-                            if (d.label != undefined && ! $.isArray(d.label)) {
-                                d.label = [d.label];
-                            }
+                    if (d.label != undefined && ! $.isArray(d.label)) {
+                        d.label = [d.label];
+                    }
 
-                            var barScale = d3.scale.ordinal()
-                                .domain(d.value)
-                                .rangeBands([0,$bar.xScale().rangeBand()], 0.05)
-                            ;
+                    var barDomain = d.value;
+                    if (d.stacked && $.isArray(d.value)) {
+                        barDomain = [d3.sum(d.value)];
+                    }
 
-                            d3.select(this).selectAll('.bar')
-                                .data(d.value)
-                                .enter()
-                                    .append('rect')
-                                    .attr('class', 'bar')
-                                    .call(function() { return funkyTown.call(this, barScale, d, i) } );
+                    var barScale = d3.scale.ordinal()
+                        .domain(barDomain)
+                        .rangeBands([0,$bar.xScale().rangeBand()], 0.05)
+                    ;
 
-                            d3.select(this).selectAll('.bar')
-                                .data(d.value)
-                                .call(function() { return mouseAction.call(this, d,i) } )
-                                .transition()
-                                .duration($bar.options.transitionTime)
-                                    .call(function() { return funkyTown.call(this, barScale, d, i) } );
+                    d3.select(this).selectAll('.bar')
+                        .data(d.value)
+                        .enter()
+                            .append('rect')
+                            .attr('class', 'bar')
+                            .call(function() { return funkyTown.call(this, barScale, d, i) } );
 
-                        })
+                    d3.select(this).selectAll('.bar')
+                        .data(d.value)
+                        .call(function() { return mouseAction.call(this, d,i) } )
+                        .transition()
+                        .duration($bar.options.transitionTime)
+                            .call(function() { return funkyTown.call(this, barScale, d, i) } );
+
+                })
                 return this;
             }
 
@@ -209,6 +243,12 @@ console.log('tries to render here...');
             chart
                 .data(this.dataset())
                 .call(groupAction)
+            ;
+
+            chart
+                .data(this.dataset())
+                .exit()
+                    .remove()
             ;
 
             /*var barGroups = chart.selectAll('.bar')

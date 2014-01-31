@@ -215,13 +215,12 @@ define('kbaseVisWidget',
         },
 
         render : function(field) {
-console.log('render call');
+
             if (! this._init) {
                 return;
             }
 
             if (field == undefined || field == 'chart') {
-            console.log("RC");
                 this.renderChart();
             }
 
@@ -362,7 +361,17 @@ console.log('render call');
 
         },
 
+        xTickValues : function() {
+            return;
+        },
+
+        xTickLabel : function(val) {
+            return val;
+        },
+
         renderXAxis : function() {
+
+            var $self = this;
 
             if (this.xScale() == undefined || this.xScale().domain == undefined) {
                 return;
@@ -372,6 +381,16 @@ console.log('render call');
                 d3.svg.axis()
                     .scale(this.xScale())
                     .orient('bottom');
+
+            var ticks = this.xTickValues();
+
+            if (ticks != undefined) {
+                xAxis
+                    .tickValues(ticks)
+                    .tickSubdivide(0)
+                    .tickFormat( function(d) { return $self.xTickLabel.call($self, d) } )
+                ;
+            }
 
             var gxAxis = this.data('D3svg').select('.yPadding').select('.xAxis');
 

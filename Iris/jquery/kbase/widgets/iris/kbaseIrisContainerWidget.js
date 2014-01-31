@@ -79,37 +79,37 @@ define('kbaseIrisContainerWidget',
                 this._super(options);
 
 //            observe : function($target, attribute, callback) {
-            this.observe(
-                this.options.widget,
-                'didChangeValueForInput',
-                function (e, $target, vals) {
-                    this.setValueForKey('input', vals.newValue);
-                }
-            );
+                this.observe(
+                    this.options.widget,
+                    'didChangeValueForInput',
+                    function (e, $target, vals) {
+                        this.setValueForKey('input', vals.newValue);
+                    }
+                );
 
-            this.observe(
-                this.options.widget,
-                'didChangeValueForOutput',
-                function (e, $target, vals) {
-                    this.setValueForKey('output', vals.newValue);
-                }
-            );
+                this.observe(
+                    this.options.widget,
+                    'didChangeValueForOutput',
+                    function (e, $target, vals) {
+                        this.setValueForKey('output', vals.newValue);
+                    }
+                );
 
-            this.observe(
-                this.options.widget,
-                'didChangeValueForError',
-                function (e, $target, vals) {
-                    this.setValueForKey('error', vals.newValue);
-                }
-            );
+                this.observe(
+                    this.options.widget,
+                    'didChangeValueForError',
+                    function (e, $target, vals) {
+                        this.setValueForKey('error', vals.newValue);
+                    }
+                );
 
-            this.observe(
-                this.options.widget,
-                'didChangeValueForValue',
-                function (e, $target, vals) {
-                    this.setValueForKey('value', vals.newValue);
-                }
-            );
+                this.observe(
+                    this.options.widget,
+                    'didChangeValueForValue',
+                    function (e, $target, vals) {
+                        this.setValueForKey('value', vals.newValue);
+                    }
+                );
 
                 return this;
             },

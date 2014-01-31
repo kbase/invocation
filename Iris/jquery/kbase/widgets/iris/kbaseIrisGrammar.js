@@ -105,6 +105,11 @@ define('kbaseIrisGrammar',
             var lastRedirectChar = false;
             var lastChr = '';
 
+            //nothing given? Nothing returned.
+            if (string == undefined || ! string.length) {
+                return tokens;
+            }
+
             //comments are a special case. Parse out nothing.
             if (string.match(/^\s*#/)) {
                 tokens.push(string);
@@ -125,6 +130,7 @@ define('kbaseIrisGrammar',
                         if (tokens.length) {
                             tokensList.push(tokens);
                             tokens = [];
+                            tokens.forceString = {};
                         }
                         lastChr = chr;
                         continue;
@@ -249,6 +255,7 @@ define('kbaseIrisGrammar',
             // XXX ONLY EVALUATE FIRST QUESTION.
             if ($.isArray(tokens[0])) {
                 tokens = tokens[0];
+                tokens.forceString = {};
             }
 
             if (tokens[0] == 'explain') {

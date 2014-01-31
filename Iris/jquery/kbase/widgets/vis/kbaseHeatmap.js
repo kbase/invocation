@@ -360,6 +360,11 @@ define('kbaseHeatmap',
                         .call(funkyTown)
             ;
 
+            chart
+                .data(this.dataset())
+                .exit()
+                    .remove();
+
         },
 
 

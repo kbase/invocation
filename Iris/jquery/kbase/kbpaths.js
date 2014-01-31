@@ -17,8 +17,12 @@ define('kbpaths',[], function (paths) {
      kbaseBarchart : 'vis/kbaseBarchart',
      kbaseScatterplot : 'vis/kbaseScatterplot',
      kbaseLinechart : 'vis/kbaseLinechart',
+     kbaseLineSerieschart : 'vis/kbaseLineSerieschart',
      kbasePiechart : 'vis/kbasePiechart',
      kbaseForcedNetwork : 'vis/kbaseForcedNetwork',
+
+     kbasePlantsNetworkTable : 'vis/plants/kbasePlantsNetworkTable',
+     kbasePlantsNetworkNarrative : 'vis/plants/kbasePlantsNetworkNarrative',
 
         //iris widgets
         iris              : 'iris/iris',

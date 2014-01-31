@@ -272,7 +272,7 @@ define('kbaseIrisWidget',
                     }, this)
                 );
 
-                if (! isSubWidget) {
+                if (! isSubWidget && this.data('subWidgets')) {
                     this.data('subWidgets').append($widget.$elem);
                     this.subWidgets().push($widget);
                 }
