@@ -5,7 +5,7 @@
 define('kbaseForcedNetwork',
     [
         'jquery',
-        'bootstrap',
+        'kbaseSearchControls',
         'd3',
         'kbaseVisWidget',
         'RGBColor',
@@ -97,68 +97,15 @@ define('kbaseForcedNetwork',
             this._super($elem);
 
             if (this.options.filter) {
-                $elem.css('position', 'relative');
-                var $filterbox =
-                    $.jqElem('div')
-                        .addClass('input-group col-md-6')
-                        .css('right', '0px')
-                        .css('top', '0px')
-                        .css('position', 'absolute')
-                        .css('margin-right', '3px')
-                        .attr('z-index', 10000)
-                        .append(
-                            $.jqElem('input')
-                                .attr('type', 'text')
-                                .addClass('form-control')
-                                .on('keyup', function(e) {
-                                    if (e.keyCode == 27) {
-                                        $(this).val(undefined);
-                                    }
-
-                                    var value = $(this).val();
-                                    var $button = $(this).next().children().first();
-
-                                    if (value.length) {
-                                        $button.children().first().removeClass('fa-search');
-                                        $button.children().first().addClass('fa-times');
-                                    }
-                                    else {
-                                        $button.children().first().addClass('fa-search');
-                                        $button.children().first().removeClass('fa-times');
-                                    }
-
-                                    $force.options.filterVal = new RegExp(value, 'i');
-                                    $force.restart()();
-                                })
-                        )
-                        .append(
-                            $.jqElem('span')
-                                .addClass('input-group-btn')
-                                .append(
-                                    $.jqElem('button')
-                                        .addClass('btn btn-default')
-                                        .append(
-                                            $.jqElem('i')
-                                                .addClass('fa fa-search')
-                                        )
-                                        .on('click', function(e) {
-
-                                            if ($(this).children().first().hasClass('fa-times')) {
-                                                $(this).parent().prev().val(undefined);
-                                            }
-
-                                            var value = $(this).parent().prev().val();
-
-                                            $force.options.filterVal = new RegExp(value, 'i');
-                                            $force.restart()();
-                                        })
-                                )
-                        )
-                ;
-                this.$elem.append($filterbox);
-
-                this.data('$filterbox', $filterbox);
-                $filterbox.hide();
+                this.$elem.kbaseSearchControls(
+                    {
+                        context : this,
+                        searchCallback : function(e, value, $force) {
+                            $force.options.filterVal = new RegExp(value, 'i');
+                            $force.restart()();
+                        }
+                    }
+                );
             }
 
             var mousedown = undefined;
@@ -170,16 +117,6 @@ define('kbaseForcedNetwork',
             var selectedNodes = [];
 
             chart
-                /*.on('mouseover', function() {
-                    if ($force.data('$filterbox')) {
-                        $force.data('$filterbox').show();
-                    }
-                })
-                .on('mouseout', function() {
-                    if ($force.data('$filterbox')) {
-                        $force.data('$filterbox').hide();
-                    }
-                })*/
                 .on('mousedown', function() {
 
                     if (d3.select(d3.event.target).attr('class') != 'background') {
@@ -275,8 +212,6 @@ define('kbaseForcedNetwork',
             if (this.dataset() == undefined) {
                 return;
             }
-
-            this.data('$filterbox').show();
 
             var bounds = this.chartBounds();
             var $force  = this;

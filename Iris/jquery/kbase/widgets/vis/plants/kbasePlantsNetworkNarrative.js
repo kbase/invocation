@@ -143,6 +143,7 @@ datasets = ['kb|netdataset.plant.cn.191', 'kb|netdataset.plant.cn.192'];
                                                     radius : 10,
                                                     tag : node.name,
                                                     tagStyle : 'font : 12px sans-serif',
+                                                    color : 'black',
                                                 };
                                             }
                                         }

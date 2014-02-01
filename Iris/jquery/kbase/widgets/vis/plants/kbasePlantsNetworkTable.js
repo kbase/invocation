@@ -227,7 +227,7 @@ define('kbasePlantsNetworkTable',
                                                                 + d3.keys(node.activeDatasets).sort().join('<br>');
 
                                                             node.radius = 8 + 3 * d3.keys(node.activeDatasets).length;
-                                                            node.tagOffsetY = node.radius + 6;
+                                                            node.tagOffsetY = node.radius + 7;
                                                         }
                                                     );
 
