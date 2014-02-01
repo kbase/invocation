@@ -250,7 +250,7 @@ define('kbasePlantsNetworkTable',
 
                                 row.num_nodes = row.nodes.length;
                                 row.num_edges = row.edges.length;
-                                row.density = row.num_edges / row.num_nodes;
+                                row.density = (row.num_edges / row.num_nodes).toFixed(3);
 
                                 data.structure.rows.push(row);
                             }

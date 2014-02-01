@@ -109,7 +109,7 @@ define('kbasePlantsNetworkNarrative',
                                             dataset : rec.id,
                                         };
 
-                                        datasetRec.description = rec.name + ' ' + rec.description;
+                                        datasetRec.description = rec.name + ' (' + rec.description + ')';
                                         datasetRec.type = rec.networkType;
                                         datasetRec.source = rec.sourceReference;
                                     };
@@ -125,7 +125,7 @@ datasets = ['kb|netdataset.plant.cn.191', 'kb|netdataset.plant.cn.192'];
                             .done(
                                 function(results) {
 
-                                    var linkScale = d3.scale.linear()
+                                    var linkScale = d3.scale.pow()
                                         .domain([0, datasets.length])
                                         .range([-100,100]);
                                     var nodes = {};
