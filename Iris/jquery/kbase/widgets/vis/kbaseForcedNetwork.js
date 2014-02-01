@@ -201,6 +201,7 @@ define('kbaseForcedNetwork',
             var $force  = this;
 
             var nodes = this.data('D3svg').select('.chart').selectAll('.node');
+            var tags  = this.data('D3svg').select('.chart').selectAll('.tag');
             var links = this.data('D3svg').select('.chart').selectAll('.edge');
 
             var forceLayout = this.forceLayout();
@@ -246,6 +247,9 @@ define('kbaseForcedNetwork',
 
                     nodes.attr("cx", function(d) { return d.x; })
                          .attr("cy", function(d) { return d.y; });
+
+                     tags.attr("x", function(d) { return d.x + (d.tagOffsetX || 0); })
+                         .attr("y", function(d) { return d.y + (d.tagOffsetY || 0); });
 
                 };
 
@@ -394,8 +398,26 @@ define('kbaseForcedNetwork',
 
                         start();
                     })
-                    .on('mousedown', function(d) { d.fixed = true } )
+                    //.on('mousedown', function(d) { d.fixed = true } )
                     .on('dblclick', function(d) { d.fixed = false } )
+                    .on('mouseup',
+                        function(d) {
+                            console.log(d.x + ',' + d.y);
+                            console.log(bounds);
+                            console.log("TRUTHINESS");
+                            console.log(d.x < bounds.origin.x);
+                            console.log(d.y < bounds.origin.y);
+                            console.log(d.x > bounds.origin.x + bounds.size.width);
+                            console.log(d.y > bounds.origin.y + bounds.size.height);
+                            if (d.x < bounds.origin.x || d.y < bounds.origin.y
+                                || d.x > bounds.origin.x + bounds.size.width || d.y > bounds.origin.y + bounds.size.height) {
+                                    d.fixed = false;
+                            }
+                            else {
+                                d.fixed = true;
+                            }
+                        }
+                    )
                     .call(forceLayout.drag);
                     return this;
                 };
@@ -447,8 +469,43 @@ define('kbaseForcedNetwork',
                     .duration(100)
                         .call(nodeTown);
 
-
                 nodes
+                    .exit()
+                    .remove();
+
+
+                tags = tags.data(
+                    forceLayout.nodes()
+                );
+
+
+                var tagTown = function() {
+                    this
+                        .text(function (d) { return d.tag })
+                        .attr('text-anchor', 'middle')
+                        .attr('alignment-baseline', 'middle')
+                        .attr('style', function(d) { return d.tagStyle} )
+                    ;
+
+                    return this;
+                };
+
+                tags
+                    .enter()
+                    .append("text")
+                        .attr("text", 'tag')
+                        .call(tagTown)
+                        .call(mouseNodeAction)
+                ;
+
+                tags
+                    .call(mouseNodeAction)
+                    .transition()
+                    .duration(100)
+                        .call(tagTown)
+                ;
+
+                tags
                     .exit()
                     .remove();
 

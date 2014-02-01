@@ -136,7 +136,14 @@ datasets = ['kb|netdataset.plant.cn.191', 'kb|netdataset.plant.cn.192'];
                                         function (idx, node) {
                                             var nodeObj = nodes[node.name];
                                             if (nodeObj == undefined) {
-                                                nodeObj = nodes[node.id] = { name : node.name, activeDatasets : {}, id : node.id, radius : 10 };
+                                                nodeObj = nodes[node.id] = {
+                                                    name : node.name,
+                                                    activeDatasets : {},
+                                                    id : node.id,
+                                                    radius : 10,
+                                                    tag : node.name,
+                                                    tagStyle : 'font : 12px sans-serif',
+                                                };
                                             }
                                         }
                                     );
@@ -161,7 +168,9 @@ datasets = ['kb|netdataset.plant.cn.191', 'kb|netdataset.plant.cn.192'];
 
                                             var edgeName = [edge.datasetId, node1.name, node2.name].sort().join('-');//node1.name + '-' + node2.name;
                                             var edgeObj = edges[edgeName];
-console.log("SCALES " + datasets.indexOf(edge.datasetId) + "to " + linkScale(datasets.indexOf(edge.datasetId)));
+
+                                            var datasetIdx = datasets.indexOf(edge.datasetId);
+
                                             if (edgeObj == undefined) {
                                                 edgeObj = edges[edgeName] = {
                                                         source : node1,
@@ -171,7 +180,7 @@ console.log("SCALES " + datasets.indexOf(edge.datasetId) + "to " + linkScale(dat
                                                         description : edge.name + '<br>' + node1.name + ' to ' + node2.name + ' (' + edge.strength.toFixed(3) + ')',
                                                         //weight : 1,
                                                         colors : {},
-                                                        curveStrength : linkScale(datasets.indexOf(edge.datasetId)),
+                                                        curveStrength : linkScale(datasetIdx) * (datasetIdx % 2 ? -1 : 1),
                                                     };
                                             }
 
