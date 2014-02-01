@@ -339,10 +339,29 @@ define('kbaseTable',
                     .attr('id', 'tfoot');
 
                 for (var idx = 0; idx < struct.footer.length; idx++) {
-                    $tfoot.append(
-                        $('<td></td>')
-                            .append(struct.footer[idx])
-                    );
+                    var fcell = struct.footer[idx];
+
+                    var value = fcell;
+                    var style;
+                    var colspan;
+
+                    if (typeof fcell == 'object') {
+                        value = fcell.value;
+                        style = fcell.style;
+                        colspan = fcell.colspan;
+                    }
+
+                    var $td = $.jqElem('td')
+                        .append(value)
+                    ;
+                    if (style) {
+                        $td.attr('style', style);
+                    }
+                    if (colspan) {
+                        $td.attr('colspan', colspan);
+                    }
+
+                    $tfoot.append($td);
                 }
 
                 $tbl.append($tfoot);

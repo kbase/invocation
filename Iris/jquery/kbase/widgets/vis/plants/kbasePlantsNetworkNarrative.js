@@ -267,7 +267,7 @@ datasets = ['kb|netdataset.plant.cn.191', 'kb|netdataset.plant.cn.192'];
                 var $networkGraph = $.jqElem('div')
                     .css({width : 700, height : 600})
                     .attr('align', 'center')
-                    .kbaseForcedNetwork({linkDistance : 200});
+                    .kbaseForcedNetwork({linkDistance : 200, filter : true});
 
                 this.networkGraph($networkGraph);
 

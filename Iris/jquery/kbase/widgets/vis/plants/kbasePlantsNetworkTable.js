@@ -109,6 +109,15 @@ define('kbasePlantsNetworkTable',
                             });
                         };
 
+                        data.structure.footer = [
+                            {
+                                value : 'checkbox',
+                                label : 'This is a footer value',
+                                style : 'color : blue',
+                                colspan : data.structure.header.length,
+                            }
+                        ];
+
 
                         var colorCats = d3.scale.category20();
 
@@ -228,8 +237,8 @@ define('kbasePlantsNetworkTable',
                                                             edge.label = '<b>' + edge.description + '</b>'
                                                                 + '<hr>'
                                                                 + d3.keys(edge.activeDatasets).sort().join('<br>');
-                                                                edge.weight = d3.keys(edge.activeDatasets).length;
-                                                                //edge.weight = 4;
+                                                                //edge.weight = d3.keys(edge.activeDatasets).length;
+                                                                edge.weight = 1.5;
 
                                                             if (d3.keys(edge.activeDatasets).length > 1) {
                                                                 edge.color = 'black';
