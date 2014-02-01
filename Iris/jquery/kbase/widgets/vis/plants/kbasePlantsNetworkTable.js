@@ -109,14 +109,14 @@ define('kbasePlantsNetworkTable',
                             });
                         };
 
-                        data.structure.footer = [
+                        /*data.structure.footer = [
                             {
                                 value : 'checkbox',
                                 label : 'This is a footer value',
                                 style : 'color : blue',
                                 colspan : data.structure.header.length,
                             }
-                        ];
+                        ];*/
 
 
                         var colorCats = d3.scale.category20();

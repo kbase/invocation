@@ -127,7 +127,8 @@ define('kbaseForcedNetwork',
                                         $button.children().first().removeClass('fa-times');
                                     }
 
-                                    $button.trigger('click');
+                                    $force.options.filterVal = new RegExp(value, 'i');
+                                    $force.restart()();
                                 })
                         )
                         .append(
@@ -142,11 +143,11 @@ define('kbaseForcedNetwork',
                                         )
                                         .on('click', function(e) {
 
-                                            var value = $(this).parent().prev().val();
-
-                                            if ($(this).children().first().hasClass('fa-remove')) {
+                                            if ($(this).children().first().hasClass('fa-times')) {
                                                 $(this).parent().prev().val(undefined);
                                             }
+
+                                            var value = $(this).parent().prev().val();
 
                                             $force.options.filterVal = new RegExp(value, 'i');
                                             $force.restart()();
