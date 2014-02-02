@@ -98,18 +98,6 @@ define('kbaseForcedNetwork',
         appendUI : function ($elem) {
             this._super($elem);
 
-            if (this.options.filter) {
-                this.$elem.kbaseSearchControls(
-                    {
-                        context : this,
-                        searchCallback : function(e, value, $force) {
-                            $force.options.filterVal = new RegExp(value, 'i');
-                            $force.restart()();
-                        }
-                    }
-                );
-            }
-
             var mousedown = undefined;
             var chart = this.data('D3svg').select('.chart');
             var chartBounds = this.chartBounds();
@@ -213,6 +201,19 @@ define('kbaseForcedNetwork',
 
             if (this.dataset() == undefined) {
                 return;
+            }
+
+            if (this.options.filter) {
+                this.$elem.kbaseSearchControls(
+                    {
+                        context : this,
+                        searchCallback : function(e, value, $force) {
+                            $force.options.filterVal = new RegExp(value, 'i');
+                            $force.restart()();
+                        }
+                    }
+                );
+                this.$elem.data('searchControls').addClass('col-md-6');
             }
 
             var bounds = this.chartBounds();
@@ -464,7 +465,6 @@ define('kbaseForcedNetwork',
                                 return '100%';
                             }
                             else {
-                            console.log("SETS NODE OPACITY To 25%");
                                 return '25%';
                             }
                         }

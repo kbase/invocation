@@ -24,7 +24,8 @@ define('kbasePlantsNetworkTable',
             ],
 
             options: {
-                visibleRows : 5,
+                maxVisibleRowIndex : 5,
+                navControls : true,
                 extractHeaders : false,
             },
 
@@ -55,37 +56,37 @@ define('kbasePlantsNetworkTable',
                                     {
                                         value : 'dataset',
                                         label : 'Dataset',
-                                        style: "max-width : 200px; background-color : black; color : white",
+                                        style: "max-width : 190px; background-color : black; color : white",
                                     },
                                     {
                                         value : 'description',
                                         label : 'Description',
-                                        style: "min-width : 375px; background-color : black; color : white",
+                                        style: "min-width : 250px; background-color : black; color : white",
                                     },
                                     {
                                         value : 'num_nodes',
-                                        label : 'No. Of Nodes',
-                                        style: "max-width : 45px; background-color : black; color : white",
+                                        label : 'Nodes',
+                                        style: "min-width : 75px; background-color : black; color : white",
                                     },
                                     {
                                         value : 'num_edges',
-                                        label : 'No. Of Edges',
-                                        style: "max-width : 45px; background-color : black; color : white",
+                                        label : 'Edges',
+                                        style: "min-width : 75px; background-color : black; color : white",
                                     },
                                     {
                                         value : 'density',
                                         label : 'Density',
-                                        style: "max-width : 65px; background-color : black; color : white",
+                                        style: "min-width : 90px; background-color : black; color : white",
                                     },
                                     {
                                         value : 'type',
                                         label : 'Type',
-                                        style: "max-width : 170px; background-color : black; color : white",
+                                        style: "max-width : 125px; background-color : black; color : white",
                                     },
                                     {
                                         value : 'source',
                                         label : 'Source',
-                                        style: "max-width : 60px; background-color : black; color : white",
+                                        style: "min-width : 80px; background-color : black; color : white",
                                     }
                                 ],
                                 rows        : [],
@@ -97,15 +98,15 @@ define('kbasePlantsNetworkTable',
                                 style : 'background-color : black; color : white;',
                                 sortable : true,
                             },
-                            visibleRows : this.options.visibleRows,
-                            visControls : true,
+                            maxVisibleRowIndex : this.options.maxVisibleRowIndex,
+                            navControls : this.options.navControls,
                         };
 
                         if (this.networkGraph() != undefined) {
                             data.structure.header.unshift({
                                 value : 'checkbox',
                                 label : '',
-                                sortable : false,
+                                //sortable : false,
                             });
                         };
 
@@ -125,9 +126,12 @@ define('kbasePlantsNetworkTable',
                             input,
                             function (ridx, row) {
 
-                                row.checkbox = {
+                                var checkbox = {
+                                    externalSortValue : true,
                                     value : $checkbox.clone(),
-                                    setup : function($checkbox) {
+                                    sortValue : false,
+                                };
+                                checkbox.setup = function($checkbox, cell) {
                                             $checkbox.on('click',
                                                 function(e) {
 
@@ -136,6 +140,8 @@ define('kbasePlantsNetworkTable',
                                                     if ($self.networkGraph == undefined) {
                                                         return;
                                                     }
+
+                                                    cell.sortValue = $check.checked;
 
                                                     var dataset = $self.networkGraph().dataset();
 
@@ -256,7 +262,9 @@ define('kbasePlantsNetworkTable',
                                                 }
                                             )
                                         }
-                                };
+                                ;
+
+                                row.checkbox = checkbox;
 
                                 row.num_nodes = row.nodes.length;
                                 row.num_edges = row.edges.length;
@@ -275,6 +283,8 @@ define('kbasePlantsNetworkTable',
                         if (this.options.$terminal) {
                             this.options.$terminal.scroll();
                         }
+
+                        data.structure.rows[1].checkbox.bingo = 'banana';
 
 
                         this.setValue(input);

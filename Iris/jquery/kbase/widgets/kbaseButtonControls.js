@@ -39,6 +39,7 @@ define('kbaseButtonControls', ['jquery', 'bootstrap', 'kbwidget'], function( $ )
             controls : [],
             onMouseover : true,
             position : 'top',
+            type : 'floating'
         },
 
         init: function(options) {
@@ -55,23 +56,32 @@ define('kbaseButtonControls', ['jquery', 'bootstrap', 'kbwidget'], function( $ )
 
         appendUI : function ($elem) {
 
-            $elem
-                .css('position', 'relative')
-                .prepend(
-                    $('<div></div>')
-                        .addClass('btn-group')
-                        .attr('id', 'control-buttons')
-                        .css('right', '0px')
-                        .css(this.options.position, '0px')
-                        .css('position', 'absolute')
-                        .css('margin-right', '3px')
-                        .attr('z-index', 10000)
-                )
+            if (this.options.type == 'floating') {
+                $elem
+                    .css('position', 'relative');
+            }
+
+           var $controlButtons =
+                $('<div></div>')
+                    .addClass('btn-group btn-group-xs')
+                    .attr('id', 'control-buttons')
             ;
+
+            if (this.options.type == 'floating') {
+                $controlButtons
+                    .css('right', '0px')
+                    .css(this.options.position, '0px')
+                    .css('position', 'absolute')
+                    .css('margin-right', '3px')
+                    .attr('z-index', 10000)
+                ;
+            }
+
+            $elem.prepend($controlButtons);
 
             this._rewireIds($elem, this);
 
-            if (this.options.onMouseover) {
+            if (this.options.onMouseover && this.options.type == 'floating') {
                 $elem
                     .mouseover(
                         function(e) {
@@ -119,7 +129,7 @@ define('kbaseButtonControls', ['jquery', 'bootstrap', 'kbwidget'], function( $ )
                         }
                     }
 
-                    var btnClass = 'btn btn-default btn-xs';
+                    var btnClass = 'btn btn-default';
                     if (val.type) {
                         btnClass = btnClass + ' btn-' + val.type;
                     }

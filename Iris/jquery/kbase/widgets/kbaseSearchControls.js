@@ -39,6 +39,7 @@ define('kbaseSearchControls', ['jquery', 'bootstrap', 'kbwidget'], function( $ )
             controls : [],
             onMouseover : true,
             position : 'top',
+            type : 'floating',
         },
 
         init: function(options) {
@@ -57,15 +58,12 @@ define('kbaseSearchControls', ['jquery', 'bootstrap', 'kbwidget'], function( $ )
 
             var restoreMouseOver = this.options.onMouseover;
 
-            $elem.css('position', 'relative');
+            if (this.options.type == 'floating') {
+                $elem.css('position', 'relative');
+            }
             var $filterbox =
                 $.jqElem('div')
-                    .addClass('input-group col-md-6')
-                    .css('right', '0px')
-                    .css('top', '0px')
-                    .css('position', 'absolute')
-                    .css('margin-right', '3px')
-                    .attr('z-index', 10000)
+                    .addClass('input-group input-group-sm')
                     .append(
                         $.jqElem('input')
                             .attr('type', 'text')
@@ -123,6 +121,15 @@ define('kbaseSearchControls', ['jquery', 'bootstrap', 'kbwidget'], function( $ )
                             )
                     )
             ;
+
+            if (this.options.type == 'floating') {
+                $filterbox
+                    .css('right', '0px')
+                    .css('top', '0px')
+                    .css('position', 'absolute')
+                    .css('margin-right', '3px')
+                    .attr('z-index', 10000);
+            }
 
             this._rewireIds($filterbox, this);
 

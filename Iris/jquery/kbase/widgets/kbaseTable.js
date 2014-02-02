@@ -6,8 +6,8 @@
         {
             structure : {
                 header : [
-                    {'value' : 'a', 'sortable' : true},
-                    {'value' : 'b', 'sortable' : true, style : 'color : yellow'},
+                    'a',
+                    'b',
                     'c',
                     'd'
                 ],
@@ -34,17 +34,7 @@
                         'a' : 'a3',
                         'b' : 'b3',
                         'c' : 'c3',
-                        'd' : {
-                            value : 'd3',
-                            style : 'font-weight : bold; color : blue',
-                            class : ['blue', 'green'],
-                            mouseover : function(e) {
-                                $(this).css('border', '5px solid blue');
-                            },
-                            mouseout : function(e) {
-                                $(this).css('border', '');
-                            }
-                        }
+                        'd' : 'd3',
                     },
                 ],
                 footer : [
@@ -63,6 +53,7 @@ define('kbaseTable',
         'kbwidget',
         'kbaseDeletePrompt',
         'kbaseButtonControls',
+        'kbaseSearchControls',
         'jqueryui',
     ],
     function ($) {
@@ -74,7 +65,7 @@ define('kbaseTable',
 		  name: "kbaseTable",
 
         version: "1.0.0",
-        _accessors : ['numRows', 'sortButtons'],
+        _accessors : ['numRows', 'sortButtons', 'visRowString'],
         options: {
             sortable    : false,
             striped     : true,
@@ -118,7 +109,7 @@ define('kbaseTable',
                 }
 
                 if (typeof cell == 'object' && cell.setup != undefined) {
-                    cell.setup(value);
+                    cell.setup(value, cell);
                 }
 
                 return value;
@@ -142,59 +133,6 @@ define('kbaseTable',
             var $tbl = $('<table></table>')
                 .attr('id', 'table')
                 .addClass('table');
-
-
-            if (this.options.visControls) {
-                $tbl.kbaseButtonControls(
-                    {
-                        onMouseover : true,
-                        context : this,
-                        controls : [
-                            {
-                                icon : 'fa fa-minus',
-                                //'tooltip' : 'add a subdirectory',
-                                callback : function(e, $tbl) {
-
-                                    var currentVis = $tbl.options.visibleRows || 0;
-                                    currentVis--;
-
-                                    if (currentVis < 1) {
-                                        currentVis = 1;
-                                    }
-
-                                    $tbl.options.visibleRows = currentVis;
-
-                                    $tbl.displayRows();
-                                },
-                                id : 'addFileButton'
-                            },
-                            {
-                                'icon' : 'fa fa-plus',
-                                callback : function(e, $tbl) {
-                                    var currentVis = $tbl.options.visibleRows || 0;
-                                    currentVis++;
-
-                                    if (currentVis > $tbl.options.structure.rows.length) {
-                                        currentVis = $tbl.options.structure.rows.length;
-                                    }
-
-                                    $tbl.options.visibleRows = currentVis;
-
-                                    $tbl.displayRows();
-                                },
-
-                            },
-                        ]
-
-                    }
-                );
-
-                if (this.options.visibleRows == undefined) {
-                    if ($.isArray(this.options.structure.rows)) {
-                        this.options.visibleRows = this.options.structure.rows.length;
-                    }
-                }
-            }
 
             if (this.options.tblOptions) {
                 this.addOptions($tbl, this.options.tblOptions);
@@ -221,6 +159,8 @@ define('kbaseTable',
             if (struct.header) {
                 var $thead = $('<thead></thead>')
                     .attr('id', 'thead');
+
+                $thead.append(this.navControls(struct.header.length));
 
                 var $tr = $('<tr></tr>')
                     .attr('id', 'headerRow');
@@ -283,6 +223,7 @@ define('kbaseTable',
                                         $button.data('shouldHide', false);
                                         this.sortAndLayoutOn(h, 1);
                                         this.data('lastSortDir', 1);
+                                        this.data('lastSort', $button);
                                     }
                                     else if ($buttonIcon.hasClass('fa fa-sort-up')) {
                                         $buttonIcon.removeClass('fa fa-sort-up');
@@ -290,6 +231,7 @@ define('kbaseTable',
                                         $button.data('shouldHide', false);
                                         this.sortAndLayoutOn(h, -1);
                                         this.data('lastSortDir', -1);
+                                        this.data('lastSort', $button);
                                     }
                                     else if ($buttonIcon.hasClass('fa fa-sort-down')) {
                                         $buttonIcon.removeClass('fa fa-sort-down');
@@ -298,9 +240,9 @@ define('kbaseTable',
                                         this.sortAndLayoutOn(undefined);
                                         this.data('lastSortHeader', undefined);
                                         this.data('lastSortDir', undefined);
+                                        this.data('lastSort', undefined);
                                     }
 
-                                    this.data('lastSort', $button);
 
                                 }, this))
                             ;
@@ -339,7 +281,11 @@ define('kbaseTable',
 
             if (struct.footer) {
                 var $tfoot = $('<tfoot></tfoot>')
-                    .attr('id', 'tfoot');
+                    .attr('id', 'tfoot')
+                ;
+
+                var $tfootTR = $.jqElem('tr');
+                $tfoot.append($tfootTR);
 
                 for (var idx = 0; idx < struct.footer.length; idx++) {
                     var fcell = struct.footer[idx];
@@ -364,7 +310,7 @@ define('kbaseTable',
                         $td.attr('colspan', colspan);
                     }
 
-                    $tfoot.append($td);
+                    $tfootTR.append($td);
                 }
 
                 $tbl.append($tfoot);
@@ -376,6 +322,184 @@ define('kbaseTable',
             $elem.append($tbl);
 
             return $elem;
+
+        },
+
+        navControls : function(colspan) {
+
+            var $tbl = this;
+
+            var controlsTR = $.jqElem('tr')
+                .css('display', this.options.navControls ? undefined : 'none')
+                .append(
+                    $.jqElem('td')
+                        .attr('colspan', colspan)
+                        .css('background-color', 'lightgray')
+                        .append(
+                            $.jqElem('div')
+                                .addClass('pull-left')
+                                .addClass('input-group input-group-sm')
+                                .append(
+                                    $.jqElem('span')
+                                        .addClass('input-group-btn')
+                                        .append(
+                                            $.jqElem('button')
+                                                .addClass('btn btn-default')
+                                                .attr('id', 'pageLeftButton')
+                                                .append(
+                                                    $.jqElem('i')
+                                                        .attr('id', 'leftIcon')
+                                                        .addClass('fa fa-caret-left')
+                                                )
+                                                .on('click', function(e) {
+                                                    var maxRows = $tbl.options.maxVisibleRowIndex || $tbl.numRows();
+                                                    var minRows = $tbl.options.minVisibleRowIndex || 0;
+                                                    var visRows = maxRows - minRows;
+
+                                                    var newMin = minRows - visRows;
+                                                    if (newMin <= 0) {
+                                                        $(this).attr('disabled', true);
+                                                        newMin = 0;
+                                                    }
+                                                    var newMax = newMin + visRows;
+
+                                                    $tbl.options.minVisibleRowIndex = newMin;
+                                                    $tbl.options.maxVisibleRowIndex = newMax;
+
+                                                    $tbl.displayRows();
+
+                                                })
+                                        )
+                                )
+                                /*.append(
+                                    $.jqElem('span')
+                                        .attr('id', 'visRecords')
+                                        .kb_bind(this, 'visRowString')
+                                )*/
+                                .append(
+                                    $.jqElem('span')
+                                        .attr('id', 'visRecords')
+                                        .addClass('input-group-addon')
+                                        .kb_bind(this, 'visRowString')
+                                )
+                                .append(
+                                    $.jqElem('span')
+                                        .addClass('input-group-btn')
+                                        .append(
+                                            $.jqElem('button')
+                                                .addClass('btn btn-default')
+                                                .attr('id', 'pageRightButton')
+                                                .append(
+                                                    $.jqElem('i')
+                                                        .attr('id', 'rightIcon')
+                                                        .addClass('fa fa-caret-right')
+                                                )
+                                                .on('click', function(e) {
+                                                    var maxRows = $tbl.options.maxVisibleRowIndex || $tbl.numRows();
+                                                    var minRows = $tbl.options.minVisibleRowIndex || 0;
+                                                    var visRows = maxRows - minRows;
+
+                                                    var newMax = maxRows + visRows;
+                                                    if (newMax >= $tbl.numRows()) {
+                                                        newMax = $tbl.numRows();
+                                                        $(this).attr('disabled', true);
+                                                    }
+                                                    var newMin = newMax - visRows;
+
+                                                    $tbl.options.minVisibleRowIndex = newMin;
+                                                    $tbl.options.maxVisibleRowIndex = newMax;
+
+                                                    $tbl.displayRows();
+
+                                                })
+                                        )
+                                )
+                        )
+                        .append(
+                            $.jqElem('div')
+                                .addClass('pull-left')
+                                .addClass('input-group input-group-sm')
+                                .append(
+                                    $.jqElem('span')
+                                        .addClass('input-group-btn')
+                                        .append(
+                                            $.jqElem('button')
+                                                .addClass('btn btn-default')
+                                                .attr('id', 'removeButton')
+                                                .append(
+                                                    $.jqElem('i')
+                                                        .attr('id', 'removeIcon')
+                                                        .addClass('fa fa-minus')
+                                                )
+                                                .on('click', function(e) {
+
+                                                    var currentVis = $tbl.options.minVisibleRowIndex || 0;
+                                                    currentVis--;
+
+                                                    if (currentVis < 1) {
+                                                        currentVis = 1;
+                                                    }
+
+                                                    $tbl.options.maxVisibleRowIndex = currentVis;
+
+                                                    $tbl.displayRows();
+                                                })
+                                        )
+                                )
+                                .append(
+                                    $.jqElem('span')
+                                        .addClass('input-group-btn')
+                                        .append(
+                                            $.jqElem('button')
+                                                .addClass('btn btn-default')
+                                                .attr('id', 'addButton')
+                                                .append(
+                                                    $.jqElem('i')
+                                                        .attr('id', 'addIcon')
+                                                        .addClass('fa fa-plus')
+                                                )
+                                                .on('click', function(e) {
+                                                    var currentVis = $tbl.options.maxVisibleRowIndex || 0;
+                                                    currentVis++;
+
+                                                    if (currentVis > $tbl.numRows()) {
+                                                        var visDiff = currentVis - $tbl.numRows();
+                                                        currentVis = $tbl.options.structure.rows.length;
+                                                        $tbl.options.minVisibleRowIndex -= visDiff;
+                                                        if ($tbl.options.minVisibleRowIndex < 0) {
+                                                            $tbl.options.minVisibleRowIndex = 0;
+                                                        }
+                                                    }
+
+                                                    $tbl.options.maxVisibleRowIndex = currentVis;
+
+                                                    $tbl.displayRows();
+                                                })
+                                        )
+                                )
+                        )
+                        .append(
+                            $.jqElem('div')
+                                .addClass('pull-right')
+                                .attr('id', 'searchDiv')
+                        )
+                )
+            ;
+
+            this._rewireIds(controlsTR, this);
+
+            this.data('searchDiv').kbaseSearchControls(
+                {
+                    onMouseover : false,
+                    type : 'inline',
+                    context : this,
+                    searchCallback : function(e, value, $tbl) {
+                        $tbl.refilter(value);
+                    }
+                }
+            );
+
+            return controlsTR;
 
         },
 
@@ -430,8 +554,18 @@ define('kbaseTable',
                             var keyA = a[h];
                             var keyB = b[h];
 
-                            keyA = typeof keyA == 'string' ? keyA.toLowerCase() : keyA;
-                            keyB = typeof keyB == 'string' ? keyB.toLowerCase() : keyB;
+                            if (keyA.sortValue != undefined) {
+                                keyA = keyA.sortValue;
+                            }
+                            else {
+                                keyA = typeof keyA == 'string' ? keyA.toLowerCase() : keyA;
+                            }
+                            if (keyB.sortValue != undefined) {
+                                keyB = keyB.sortValue;
+                            }
+                            else {
+                                keyB = typeof keyB == 'string' ? keyB.toLowerCase() : keyB;
+                            }
 
                                  if (keyA < keyB) { return 0 - dir }
                             else if (keyA > keyB) { return dir }
@@ -487,9 +621,10 @@ define('kbaseTable',
                 }
             }
 
+            this.numRows(numRows);
+
             this.displayRows();
 
-            this.numRows(numRows);
         },
 
         displayRows : function() {
@@ -497,11 +632,28 @@ define('kbaseTable',
                 .find('tr')
                 .css('display', '');
 
-            if (this.options.visibleRows != undefined) {
-                this.data('tbody')
-                    .find('tr:gt(' + (this.options.visibleRows - 1) + ')')
-                    .css('display', 'none');
+            var maxRows = this.options.maxVisibleRowIndex || this.numRows();
+            if (maxRows > this.numRows()) {
+                maxRows = this.numRows();
             }
+
+            var minRows = this.options.minVisibleRowIndex || 0;
+
+            this.data('tbody')
+                .find('tr:lt(' + minRows + ')')
+                .css('display', 'none');
+
+            this.data('tbody')
+                .find('tr:gt(' + (maxRows - 1) + ')')
+                .css('display', 'none');
+
+            this.visRowString('Rows ' + (minRows + 1) + ' to ' + maxRows + ' of ' + this.numRows());
+
+            this.data('pageLeftButton').attr('disabled', minRows == 0);
+            this.data('pageRightButton').attr('disabled', maxRows == this.numRows());
+
+            this.data('removeButton').attr('disabled', maxRows - minRows == 1);
+            this.data('addButton').attr('disabled', maxRows == this.numRows());
         },
 
         addOptions : function ($cell, options) {
@@ -609,7 +761,11 @@ define('kbaseTable',
                         var $td = $.jqElem(type);
 
                         var label = callback(rowData[h], h, rowData, this);
-                        filterString += rowData[h];
+                        filterString += label;
+
+                        if (! rowData[h].externalSortValue) {
+                            rowData[h].sortValue = label;
+                        }
 
                         $td.append(label);
 
