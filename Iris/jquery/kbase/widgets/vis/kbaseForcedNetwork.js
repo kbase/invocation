@@ -29,6 +29,8 @@ define('kbaseForcedNetwork',
             nodeStrokeWeight : 1,
             nodeRadius : 10,
 
+            filteredNodeColor : '#BFBFBF',
+
             nodeHighlightColor : 'yellow',
             nodeHighlightStrokeWeight : 3,
             edgeHighlightColor : 'yellow',
@@ -267,42 +269,18 @@ define('kbaseForcedNetwork',
                      tags.attr("x", function(d) { return d.x + (d.tagOffsetX || 0); })
                          .attr("y", function(d) { return d.y + (d.tagOffsetY || 0); });
 
-                    tags.attr(
-                        'display',
-                        function(d) {
-                            if ($force.options.filterVal == undefined || d.tag.match($force.options.filterVal)) {
-                                return undefined;
-                            }
-                            else {
-                                return 'none';
-                            }
-                        }
-                    );
-                    nodes.attr(
-                        'display',
-                        function(d) {
-                            if ($force.options.filterVal == undefined || d.tag.match($force.options.filterVal)) {
-                                return undefined;
-                            }
-                            else {
-                                return 'none';
-                            }
-                        }
-                    );
-
-                    links.attr(
-                        'display',
-                        function(d) {
-
-                            if ($force.options.filterVal != undefined) {
-                                if (! d.source.tag.match($force.options.filterVal) || ! d.target.tag.match($force.options.filterVal)) {
-                                    return 'none';
+                     tags.attr(
+                        'fill-opacity',
+                            function(d) {
+                                if ($force.options.filterVal == undefined || d.tag.match($force.options.filterVal)) {
+                                    return '100%';
+                                }
+                                else {
+                                    return '25%';
                                 }
                             }
-
-                            return undefined;
-                        }
-                    );
+                        )
+                    ;
 
                 };
 
@@ -386,6 +364,19 @@ define('kbaseForcedNetwork',
                         }
                     })
                     .attr('fill', 'none')
+                    .attr(
+                        'stroke-opacity',
+                        function(d) {
+
+                            if ($force.options.filterVal != undefined) {
+                                if (! d.source.tag.match($force.options.filterVal) || ! d.target.tag.match($force.options.filterVal)) {
+                                    return '25%';
+                                }
+                            }
+
+                            return '100%';
+                        }
+                    )
                     ;
                     return this;
                 };
@@ -451,7 +442,7 @@ define('kbaseForcedNetwork',
 
                         start();
                     })
-                    //.on('mousedown', function(d) { d.fixed = true } )
+                    .on('mousedown', function(d) { d.fixed = false } )
                     .on('dblclick', function(d) { d.fixed = false } )
                     .on('mouseup',
                         function(d) {
@@ -464,6 +455,31 @@ define('kbaseForcedNetwork',
                             }
                         }
                     )
+                    .attr(
+                        'fill-opacity',
+                        function(d) {
+                            if ($force.options.filteredNodeColor != undefined
+                                || $force.options.filterVal == undefined
+                                || d.tag.match($force.options.filterVal)) {
+                                return '100%';
+                            }
+                            else {
+                            console.log("SETS NODE OPACITY To 25%");
+                                return '25%';
+                            }
+                        }
+                    )
+                    .attr(
+                        'stroke-opacity',
+                        function(d) {
+                            if ($force.options.filterVal == undefined || d.tag.match($force.options.filterVal)) {
+                                return '100%';
+                            }
+                            else {
+                                return '25%';
+                            }
+                        }
+                    )
                     .call(forceLayout.drag);
                     return this;
                 };
@@ -471,8 +487,17 @@ define('kbaseForcedNetwork',
                 var nodeTown = function() {
                     this
                         .attr('r', function(d) { return d.radius || $force.options.nodeRadius })
-                        .attr('fill', function(d) {
-                            return d.color || $force.options.nodeColor
+                        .attr('fill', function (d) {
+                            if (
+                                $force.options.filteredNodeColor != undefined
+                                && $force.options.filterVal != undefined
+                                && ! d.tag.match($force.options.filterVal)
+                            ) {
+                                return $force.options.filteredNodeColor;
+                            }
+                            else {
+                                return d.color || $force.options.nodeColor;
+                            }
                         })
                         .attr('stroke', function(d) {
                             if (d.highlighted == 2) {

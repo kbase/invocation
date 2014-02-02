@@ -116,7 +116,7 @@ define('kbasePlantsNetworkNarrative',
 
                                 }
                             );
-datasets = ['kb|netdataset.plant.cn.191', 'kb|netdataset.plant.cn.192'];
+//datasets = ['kb|netdataset.plant.cn.191', 'kb|netdataset.plant.cn.192'];
                             $self.networkClient().buildInternalNetwork(
                                 datasets,
                                 cdses,

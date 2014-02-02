@@ -267,6 +267,7 @@ define('kbasePlantsNetworkTable',
                         );
 
                         var $tbl = $.jqElem('div').kbaseTable(data);
+                        $tbl.sort('num_nodes', -1);
                         $tbl.$elem.css('font-size', '85%');
                         this.setOutput($tbl.$elem);
                         this.$elem.append($tbl.$elem);

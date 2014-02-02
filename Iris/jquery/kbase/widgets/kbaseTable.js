@@ -74,7 +74,7 @@ define('kbaseTable',
 		  name: "kbaseTable",
 
         version: "1.0.0",
-        _accessors : ['numRows'],
+        _accessors : ['numRows', 'sortButtons'],
         options: {
             sortable    : false,
             striped     : true,
@@ -94,7 +94,8 @@ define('kbaseTable',
 
             row_callback : function (cell, header, row, $kb) {
                 return $kb.default_row_callback(cell);
-            }
+            },
+            sortButtons : {},
         },
 
         default_row_callback : function (cell) {
@@ -304,6 +305,8 @@ define('kbaseTable',
                                 }, this))
                             ;
 
+                            this.sortButtons()[header.value] = $button;
+
                             $th.append($button);
                             $th.bind('mouseover', $.proxy(function(e) {
                                 $button.css('display', 'inline');
@@ -374,6 +377,38 @@ define('kbaseTable',
 
             return $elem;
 
+        },
+
+        sort : function(header, direction) {
+
+            var $sortButton = this.sortButtons()[header];
+
+            if (direction == -1 || direction == 1 && $sortButton != undefined) {
+
+                var lsh = this.data('lastSortHeader');
+                var lsd = this.data('lastSortDir');
+
+                if (header == lsh && direction == lsd) {
+                    return;
+                }
+                else if (header == lsh) {
+                    if (direction == 1 && lsh == -1) {
+                        $sortButton.trigger('click');
+                        $sortButton.trigger('click');
+                    }
+                    else if (direction == -1 && lsh == 1) {
+                        $sortButton.trigger('click');
+                    }
+                }
+                else {
+                    $sortButton.trigger('click');
+                    if (direction == -1) {
+                        $sortButton.trigger('click');
+                    }
+                }
+
+                $sortButton.css('display', 'inline');
+            }
         },
 
         refilter : function (filter) {
