@@ -37,6 +37,7 @@ define('kbaseVisWidget',
             scaleAxes  : false,
 
             transitionTime : 100,
+            ulIcon         : 'img/labs_icon.png',
         },
 
         shouldScaleAxis : function (axis) {
@@ -271,19 +272,21 @@ define('kbaseVisWidget',
                 return;
             }
 
-            var ulDataset = ['img/labs_icon.png'];
+            var ulDataset = [this.options.ulIcon];
 
-            var ulLabel = this.data('D3svg').select('.UL').selectAll('.ULLabel');
+            if (this.options.ulIcon) {
+                var ulLabel = this.data('D3svg').select('.UL').selectAll('.ULLabel');
 
-            ulLabel
-                .data(ulDataset)
-                .enter()
-                    .append('image')
-                        .attr('x', inset / 2)
-                        .attr('y', inset / 2)
-                        .attr('width', imgSize.width)
-                        .attr('height', imgSize.height)
-                        .attr('xlink:href', function(d) { return d})
+                ulLabel
+                    .data(ulDataset)
+                    .enter()
+                        .append('image')
+                            .attr('x', inset / 2)
+                            .attr('y', inset / 2)
+                            .attr('width', imgSize.width)
+                            .attr('height', imgSize.height)
+                            .attr('xlink:href', function(d) { return d})
+            }
         },
 
         setDataset : function(newDataset) {
