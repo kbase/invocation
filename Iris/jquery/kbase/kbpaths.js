@@ -49,6 +49,7 @@ define('kbpaths',[], function (paths) {
 
         KbaseNetworkServiceClient : '../../../js/KbaseNetworkServiceClient',
         IdMapClient : '../../../js/IdMapClient',
+        CDMI_API : '../../../js/CDMI_API',
     },
     shim: {
         bootstrap:    { deps: ["jquery"] },
