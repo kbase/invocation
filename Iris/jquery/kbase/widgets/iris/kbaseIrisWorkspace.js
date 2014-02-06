@@ -44,7 +44,7 @@
                                             e.stopPropagation();
                                             this.addTab(
                                                 {
-                                                    tab : 'Iris Terminal',
+                                                    tab : 'IRIS Terminal',
                                                     content : $term.$elem,
                                                     canDelete : false,
                                                     show : true,
