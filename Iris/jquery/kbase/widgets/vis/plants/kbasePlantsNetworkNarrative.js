@@ -89,17 +89,17 @@ define('kbasePlantsNetworkNarrative',
                 else if (this.options.input) {
                     this.setInput(this.options.input);
                 }
-                else if (this.options.gwas) {
-                    this.setInput(this.options.gwas);
-                }
                 else if (this.options.external_ids) {
-                    this.setInput(this.options.external_ids.split(/\s+/));
+                    this.setExternalInput(this.options.external_ids.split(/\s+/));
+                }
+                else if (this.options.gwas) {
+                    this.setGwasInput(this.options.gwas);
                 }
                 else if (this.options.locus_ids) {
-                    this.setInput(this.options.locus_ids.split(/\s+/));
+                    this.setLocusInput(this.options.locus_ids.split(/\s+/));
                 }
                 else if (this.options.cds_ids) {
-                    this.setInput(this.options.cds_ids.split(/\s+/));
+                    this.setCDSInput(this.options.cds_ids.split(/\s+/));
                 }
 
                 return this;
