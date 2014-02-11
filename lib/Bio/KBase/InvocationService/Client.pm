@@ -38,6 +38,7 @@ sub new
 	url => $url,
     };
 
+    #
     # This module requires authentication.
     #
     # We create an auth token, passing through the arguments that we were (hopefully) given.
@@ -45,12 +46,11 @@ sub new
     {
 	my $token = Bio::KBase::AuthToken->new(@args);
 	
-	if ($token->error_message)
+	if (!$token->error_message)
 	{
-	    die "Authentication failed: " . $token->error_message;
+	    $self->{token} = $token->token;
+	    $self->{client}->{token} = $token->token;
 	}
-	$self->{token} = $token->token;
-	$self->{client}->{token} = $token->token;
     }
 
     my $ua = $self->{client}->ua;	 
@@ -134,8 +134,9 @@ sub start_session
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
+					       code => $result->content->{error}->{code},
 					       method_name => 'start_session',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return wantarray ? @{$result->result} : $result->result->[0];
@@ -242,8 +243,9 @@ sub list_files
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
+					       code => $result->content->{error}->{code},
 					       method_name => 'list_files',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return wantarray ? @{$result->result} : $result->result->[0];
@@ -326,8 +328,9 @@ sub remove_files
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
+					       code => $result->content->{error}->{code},
 					       method_name => 'remove_files',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return;
@@ -413,8 +416,9 @@ sub rename_file
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
+					       code => $result->content->{error}->{code},
 					       method_name => 'rename_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return;
@@ -500,8 +504,9 @@ sub copy
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
+					       code => $result->content->{error}->{code},
 					       method_name => 'copy',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return;
@@ -584,8 +589,9 @@ sub make_directory
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
+					       code => $result->content->{error}->{code},
 					       method_name => 'make_directory',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return;
@@ -668,8 +674,9 @@ sub remove_directory
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
+					       code => $result->content->{error}->{code},
 					       method_name => 'remove_directory',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return;
@@ -754,8 +761,9 @@ sub change_directory
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
+					       code => $result->content->{error}->{code},
 					       method_name => 'change_directory',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return wantarray ? @{$result->result} : $result->result->[0];
@@ -841,8 +849,9 @@ sub put_file
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
+					       code => $result->content->{error}->{code},
 					       method_name => 'put_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return;
@@ -927,8 +936,9 @@ sub get_file
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
+					       code => $result->content->{error}->{code},
 					       method_name => 'get_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return wantarray ? @{$result->result} : $result->result->[0];
@@ -1023,8 +1033,9 @@ sub run_pipeline
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
+					       code => $result->content->{error}->{code},
 					       method_name => 'run_pipeline',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return wantarray ? @{$result->result} : $result->result->[0];
@@ -1119,8 +1130,9 @@ sub run_pipeline2
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
+					       code => $result->content->{error}->{code},
 					       method_name => 'run_pipeline2',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return wantarray ? @{$result->result} : $result->result->[0];
@@ -1197,8 +1209,9 @@ sub exit_session
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
+					       code => $result->content->{error}->{code},
 					       method_name => 'exit_session',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return;
@@ -1280,8 +1293,9 @@ sub valid_commands
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
+					       code => $result->content->{error}->{code},
 					       method_name => 'valid_commands',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return wantarray ? @{$result->result} : $result->result->[0];
@@ -1349,8 +1363,9 @@ sub installed_modules
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
+					       code => $result->content->{error}->{code},
 					       method_name => 'installed_modules',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return wantarray ? @{$result->result} : $result->result->[0];
@@ -1434,8 +1449,9 @@ sub get_tutorial_text
     if ($result) {
 	if ($result->is_error) {
 	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
-					       code => $result->content->{code},
+					       code => $result->content->{error}->{code},
 					       method_name => 'get_tutorial_text',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
 					      );
 	} else {
 	    return wantarray ? @{$result->result} : $result->result->[0];

@@ -1,6 +1,6 @@
 TOP_DIR = ../..
 include $(TOP_DIR)/tools/Makefile.common
-DEPLOY_RUNTIME ?= /kb/runtime
+DEPLOY_RUNTIME ?= /kbase/runtimes/20140109-prod
 TARGET ?= /kb/deployment
 
 BASE_NAME = InvocationService
