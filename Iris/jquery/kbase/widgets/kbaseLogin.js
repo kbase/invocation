@@ -847,14 +847,14 @@ define('kbaseLogin',
                                     )
                             )
                     ,   //body
-                    footer : $.jqElem('span')
+                    footer : $('<span></span')
                         .append(
                             $('<a></a>')
                                 .attr('href', 'https://gologin.kbase.us/ResetPassword')
                                 .attr('target', '_blank')
                                 .text('Forgot password?')
                         )
-                        .append(' | ')
+                        .append('&nbsp;|&nbsp;')
                         .append(
                             $('<a></a>')
                                 .attr('href', ' https://gologin.kbase.us/OAuth?response_type=code&step=SignUp&redirect_uri=' + encodeURIComponent(location.href))
