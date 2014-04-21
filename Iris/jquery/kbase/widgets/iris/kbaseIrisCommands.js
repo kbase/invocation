@@ -163,7 +163,7 @@ define('kbaseIrisCommands',
                             }
                         );
 
-                        res = res.sort(this.sortByKey('name'));
+                        res = res.sort(this.sortByKey('title'));
 
                         var commands = [];
                         $.each(
