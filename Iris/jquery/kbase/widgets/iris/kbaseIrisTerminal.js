@@ -664,7 +664,7 @@ define('kbaseIrisTerminal',
                     +"To find out what's new, type "
                     )
                     .append(this.create_run_link('whatsnew'))
-                    .append(" (v0.0.7 - 01/XX/2014)<br>\n"),
+                    .append(" (v0.0.8 - XX/XX/2014)<br>\n"),
                     'html'
             );
 

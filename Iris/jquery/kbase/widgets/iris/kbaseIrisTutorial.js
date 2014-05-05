@@ -17,8 +17,8 @@ define('kbaseIrisTutorial',
 
         version: "1.0.0",
         options: {
-            configURL : 'http://www.kbase.us/docs/tutorials.cfg',
-            tutorial : 'http://www.kbase.us/docs/getstarted/getstarted_iris/getstarted_iris.html',
+            configURL : 'http://kbase.us/docs/tutorials.cfg',
+            tutorial : 'http://kbase.us/docs/getstarted/getstarted_iris/getstarted_iris.html',
         },
 
         format_tutorial_url : function (doc_format_string, repo, filespec) {

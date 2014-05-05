@@ -1,4 +1,4 @@
-<h3>v0.0.7 - 01/XX/2014</h3>
+<h3>v0.0.8 - XX/XX/2014</h3>
 <ul>
     <li>The <b>view</b> command now scales an image to fit within the terminal window. Click on the image to download it full size.</li>
     <li>Clicking the right arrow button on the file browser now no longer prepends a leading slash to the file name.</li>
@@ -7,7 +7,12 @@
     <li>Added visualization widgets. Type <b>widget</b> <i>widgetname</i> <i>jsondata</i> to display. Available visualization widgets are:
         <b>barchart</b>, <b>forcednetwork</b>, <b>heatmap</b>, <b>linechart</b>, <b>piechart</b>, <b>scatterplot</b>. To see sample data formats,
         type this in any directory: <b>execute @W#sharediris::get_chart_data#i</b>. That command will create 6 json files with sample
-        data that can be fed into a visualization.</li>
+        data that can be fed into a visualization.
+    </li>
+</ul>
+<h3>v0.0.7 - 02/06/2014</h3>
+<ul>
+    <li>Resolved an issue preventing tutorial loads</li>
 </ul>
 <h3>v0.0.6 - 12/13/2013</h3>
 <ul>
@@ -30,7 +35,7 @@
     <li>Added <b>variables</b> command to list user defined session variables</li>
     <li>Added <b>download</b> <i>filename</i> command to download a file from the command line</li>
     <li>Added <b>edit</b> <i>filename</i> command to launch the file editor from the command line</li>
-    <li>Added <b>environment</b> and <b>setenv</b> <i>key=value</i> syntax to customize Iris behavior</li>
+    <li>Added <b>environment</b> and <b>setenv</b> <i>key=value</i> syntax to customize IRIS behavior</li>
     <li>Added <b>end</b> command to jump to end of terminal input</li>
     <li>Added <b>record</b> command. Save all your actions from that point on as an executable script. Save it with <b>save</b> <i>nameofscript</i>.
     It can then be executed with <b>execute</b> <i>nameofscript</i></li>
@@ -67,8 +72,8 @@
         Help for commands - click on the <b>?</b> next to the command name in the list to the left for usage info.
     </li>
     <li>
-        Iris now supports uploading huge files (up to at least multiple gigabytes), and uploads are resumable if there's a failure.<br>
-        Likewise, Iris now supports real file downloads to get your processed information back out of the system.<br>
+        IRIS now supports uploading huge files (up to at least multiple gigabytes), and uploads are resumable if there's a failure.<br>
+        Likewise, IRIS now supports real file downloads to get your processed information back out of the system.<br>
         If you have a stalled upload job, just mouseover it in the process list to resume it or cancel the upload.<br><br>
         Finally, you can also upload via the command line - <b>upload</b> <i>filename</i>
     </li>
@@ -83,7 +88,7 @@
             <li><i class = 'icon-arrow-right'></i> Add this file to your terminal input.</li>
         </ul>
     <li>
-        Iris has a simple file editor - in the file browser, mouse over a file name and click the pencil to tweak (small) files.
+        IRIS has a simple file editor - in the file browser, mouse over a file name and click the pencil to tweak (small) files.
     </li>
     <li>
         Images are viewable. Type <b>view</b> <i>filename</i>
@@ -92,7 +97,7 @@
         Lots of behind the scenes infrastructure improvements.
     </li>
     <li>
-        Iris supports natural language questions. Type <b>questions</b> to bring up a list of natural language prompts.<br>
+        IRIS supports natural language questions. Type <b>questions</b> to bring up a list of natural language prompts.<br>
         You can also type them on the command line and hit arrow-right to attempt an auto completion. Further, you can arrow-right
         to select the next variable in the sequence.
     </li>
