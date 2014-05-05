@@ -108,6 +108,7 @@ sub process_cmd_file
 	chomp;
 	s/\s*$//;
 	s/^\s*//;
+	next if $_ eq '';
 	
 	my($cmd, $rest) = /^(\S+)\s+(.*)/;
 
