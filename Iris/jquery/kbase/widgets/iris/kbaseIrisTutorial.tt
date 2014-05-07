@@ -11,10 +11,8 @@
 
         version: "1.0.0",
         options: {
-            configURL : '[% tutorials_cfg_url %],
-		/* http://kbase.us/docs/tutorials.cfg', */
+            configURL : '[% tutorials_cfg_url %]',
             tutorial : '[% getting_started_iris_url %]',
-		/* http://kbase.us/docs/getstarted/getstarted_iris/getstarted_iris.html', */
         },
 
         format_tutorial_url : function (doc_format_string, repo, filespec) {
