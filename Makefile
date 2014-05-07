@@ -21,10 +21,14 @@ IRIS_WEBROOT = $(SERVICE_DIR)/webroot/Iris
 #
 # For deployment, this will be overridden by the value from the deployment config file.
 #
-SERVICE_URL = http://localhost:$(SERVICE_PORT)
+# SERVICE_URL = http://localhost:$(SERVICE_PORT)
+SERVICE_URL = http://140.221.85.86/services/invocation
+TUTORIALS_CFG_URL = http://140.221.85.86/docs/tutorials.cfg
+GETTING_STARTED_IRIS_URL = http://kbase.us/docs/getstarted/getstarted_iris/getstarted_iris.html
 
 TPAGE_ARGS = --define kb_top=$(TARGET) --define kb_runtime=$(DEPLOY_RUNTIME) --define kb_service_name=$(SERVICE) \
-	--define kb_service_port=$(SERVICE_PORT) --define kb_service_url=$(SERVICE_URL)
+	--define kb_service_port=$(SERVICE_PORT) --define kb_service_url=$(SERVICE_URL) \
+	--define tutorials_cfg_url=$(TUTORIALS_CFG_URL) --define getting_started_iris_url=$(GETTING_STARTED_IRIS_URL)
 
 all: build-libs bin
 
@@ -64,6 +68,7 @@ deploy-iris:
 	rsync -arv Iris/. $(IRIS_WEBROOT)
 	cp lib/$(BASE_NAME).js $(IRIS_WEBROOT)/$(BASE_NAME).js
 	$(TPAGE) $(TPAGE_ARGS) iris-index.html.tt > $(IRIS_WEBROOT)/iris.html
+	$(TPAGE) $(TPAGE_ARGS) Iris/jquery/kbase/widgets/iris/kbaseIrisTutorial.tt > $(IRIS_WEBROOT)/jquery/kbase/widgets/iris/kbaseIrisTutorial.js
 	cp Iris/splash.html $(IRIS_WEBROOT)/index.html
 
 deploy-monit:
