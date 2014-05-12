@@ -94,7 +94,7 @@ define('kbaseIrisTerminal',
                         args[0],
                         $.proxy(
                             function (newsid) {
-                                var auth = {'kbase_sessionid' : sid, success : true, unauthenticated : true};
+                                var auth = {'kbase_sessionid' : newsid, success : true, unauthenticated : true};
 
                                 if (this.sessionId()) {
                                     this.terminal.empty();
@@ -252,7 +252,7 @@ define('kbaseIrisTerminal',
                                             .attr('href', '#')
                                             .text(question)
                                             .bind('click',
-                                                jQuery.proxy(
+                                                $.proxy(
                                                     function (evt) {
                                                         evt.preventDefault();
                                                         this.input_box.val(question);
@@ -278,6 +278,1173 @@ define('kbaseIrisTerminal',
                     return true;
                 }
             },
+            {
+                name : 'tutorial list',
+                auth : false,
+                callback : function(args, command, $widget, $deferred) {
+
+                    var list = this.tutorial.list();
+
+                    if (list.length == 0) {
+                        $widget.setError(
+                            $.jqElem('span').append("Could not load tutorials.<br>\n"
+                            + "Type <i>tutorial list</i> to see available tutorials.")
+                        );
+                        $deferred.reject();
+                        return $promise;
+                    }
+
+                    var $output = $widget.data('output');
+                    $output.empty();
+
+
+                    $.each(
+                        list,
+                        $.proxy( function (idx, val) {
+                            $output.append(
+                                $('<a></a>')
+                                    .attr('href', '#')
+                                    .append(val.title)
+                                    .bind('click', $.proxy( function (e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        $widget.setError($.jqElem('span').append('Set tutorial to <b>' + val.title + '</b><br>'));
+                                        this.tutorial.retrieveTutorial(val.url);
+                                        if (! $widget.isHidden()) { this.scroll() };
+                                        this.input_box.focus();
+                                    }, this))
+                                .append('<br>')
+                            );
+
+                        }, this)
+                    );
+
+                    $deferred.resolve();
+
+                    if (! $widget.isHidden()) { this.scroll() };
+                    return true;
+                }
+            },
+            {
+                name : 'show_tutorial',
+                auth : false,
+                callback : function(args, command, $widget, $deferred) {
+                    var $page = this.tutorial.contentForCurrentPage();
+                    $widget.setValue($page);
+
+                    if ($page == undefined) {
+                        $widget.setError("Could not load tutorial");
+                        $deferred.reject();
+                        return $promise;
+                    }
+
+                    $page = $page.clone();
+
+                    var headerCSS = { 'text-align' : 'left', 'font-size' : '100%' };
+                    $page.find('h1').css( headerCSS );
+                    $page.find('h2').css( headerCSS );
+                    if (this.tutorial.currentPage > 0) {
+                        $page.append("<br>Type <i>back</i> to move to the previous step in the tutorial.");
+                    }
+                    if (this.tutorial.currentPage < this.tutorial.pages.length - 1) {
+                        $page.append("<br>Type <i>next</i> to move to the next step in the tutorial.");
+                    }
+                    $page.append("<br>Type <i>tutorial list</i> to see available tutorials.");
+
+                    $widget.setOutput($page);
+                    $deferred.resolve();
+                    if (! $widget.isHidden()) { this.scroll() };
+
+                    return true;
+                }
+            },
+            {
+                name : 'commands',
+                auth : false,
+                callback : function(args, command, $widget, $deferred) {
+
+                    this.client().valid_commands(
+                        $.proxy(
+                            function (cmds) {
+
+                                var data = {
+                                    structure : {
+                                        header      : [],
+                                        rows        : [],
+                                    },
+                                    sortable    : true,
+                                    hover       : false,
+                                };
+
+                                jQuery.each(
+                                    cmds,
+                                    function (idx, group) {
+                                        data.structure.rows.push( [ { value : group.title, colspan : 2, style : 'font-weight : bold; text-align : center' } ] );
+
+                                        for (var ri = 0; ri < group.items.length; ri += 2) {
+                                            data.structure.rows.push(
+                                                [
+                                                    group.items[ri].cmd,
+                                                    group.items[ri + 1] != undefined
+                                                        ? group.items[ri + 1].cmd
+                                                        : ''
+                                                ]
+                                            );
+                                        }
+                                    }
+                                );
+
+                                var $tbl = $.jqElem('div').kbaseTable(data);
+
+                                $widget.setOutput($tbl.$elem);
+                                $widget.setValue(cmds);
+                                $deferred.resolve();
+                                console.log("IS HIDDEN : " + $widget.isHidden());
+                                if (! $widget.isHidden()) { console.log("SCROLL IT");this.scroll() };
+
+                            },
+                           this
+                        )
+                    );
+                    return true;
+                }
+            },
+            {
+                name : 'clear',
+                auth : false,
+                callback : function(args, command, $widget, $deferred) {
+                    while (this.subWidgets().length) {
+                        this.removeWidget(this.subWidgets()[0]);
+                    }
+
+                    this.trigger('clearIrisProcesses');
+                    this.terminal.empty();
+                    $deferred.resolve();
+
+                    return true;
+                }
+            },
+            {
+                name : 'end',
+                auth : false,
+                callback : function(args, command, $widget, $deferred) {
+                    this.terminal.animate({scrollTop: this.terminal.prop('scrollHeight') - this.terminal.height()}, 0);
+                    $deferred.resolve();
+                    return true;
+                }
+            },
+            {
+                name        : 'cd',
+                auth        : true,
+                regex       : new RegExp(/^cd\s*(.*)/),
+                callback    : function(args, command, $widget, $deferred) {
+                    args = args[0].split(/\s+/);
+                    if (args.length != 1) {
+                        $widget.setError("Invalid cd syntax.");
+                        $deferred.reject();
+                        return true;
+                    }
+                    else if (args[0] == '') {
+                        dir = '/';
+                    }
+                    dir = args[0];
+
+                    this.client().change_directory(
+                        this.sessionId(),
+                        this.cwd,
+                        dir,
+                        $.proxy(
+                            function (path) {
+                                this.cwd = path;
+                                $widget.setError($.jqElem('span').html("changed directory into <b>" + path + '</b>'));
+                                $deferred.resolve();
+                            },
+                            this
+                        ),
+                        $.proxy(
+                            function (err) {
+                                var m = err.error.message.replace("/\n", "<br>\n");
+                                $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
+                                $deferred.reject();
+                            },
+                            this
+                        )
+                    );
+                    return true;
+                }
+            },
+            {
+                name        : 'cp',
+                auth        : true,
+                regex       : new RegExp(/^cp\s*(.*)/),
+                callback    : function(args, command, $widget, $deferred) {
+
+                    args = args[0].split(/\s+/)
+                    if (args.length != 2) {
+                        $widget.setError("Invalid cp syntax.");
+                        $deferred.reject();
+                        return true;
+                    }
+                    var from = args[0];
+                    var to   = args[1];
+                    this.client().copy(
+                        this.sessionId(),
+                        this.cwd,
+                        from,
+                        to,
+                        $.proxy(
+                            function () {
+                                this.refreshFileBrowser();
+                                $widget.setError($.jqElem('span').html("Copied <b>" + from + "</b> to <b>" + to + '</b>'));
+                                $deferred.resolve();
+                            },this
+                        ),
+                        $.proxy(
+                            function (err) {
+                                var m = err.error.message.replace("\n", "<br>\n");
+                                $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
+                                $deferred.reject();
+                            },
+                            this
+                        )
+                    );
+                    return true;
+                }
+            },
+            {
+                name        : 'mv',
+                auth        : true,
+                regex       : new RegExp(/^mv\s*(.*)/),
+                callback    : function(args, command, $widget, $deferred) {
+                    args = args[0].split(/\s+/)
+                    if (args.length != 2) {
+                        $widget.setError("Invalid mv syntax.");
+                        $deferred.reject();
+                        return true;
+                    }
+
+                    from = args[0];
+                    to   = args[1];
+                    this.client().rename_file(
+                        this.sessionId(),
+                        this.cwd,
+                        from,
+                        to,
+                        $.proxy(
+                            function () {
+                                this.refreshFileBrowser();
+                                $widget.setError($.jqElem('span').html("Moved <b>" + from + "</b> to <b>" + to + '</b>'));
+                                $deferred.resolve();
+                            },this
+                        ),
+                        $.proxy(
+                            function (err) {
+                                var m = err.error.message.replace("\n", "<br>\n");
+                                $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
+                                $deferred.reject();
+                            },
+                            this
+                        ));
+                    return true;
+                }
+            },
+            {
+                name        : 'mkdir',
+                auth        : true,
+                regex       : new RegExp(/^mkdir\s*(.*)/),
+                callback    : function(args, command, $widget, $deferred) {
+                    args = args[0].split(/\s+/)
+                    if (args[0].length < 1){
+                        $widget.setError("Invalid mkdir syntax.");
+                        $deferred.reject();
+                        return true;
+                    }
+                    $.each(
+                        args,
+                        $.proxy(function (idx, dir) {
+                            this.client().make_directory(
+                                this.sessionId(),
+                                this.cwd,
+                                dir,
+                                $.proxy(
+                                    function () {
+                                        this.refreshFileBrowser();
+                                        $widget.setError($.jqElem('span').html("Made directory <b>" + dir + '</b>'));
+                                        $deferred.resolve();
+                                    },this
+                                ),
+                                $.proxy(
+                                    function (err) {
+                                        var m = err.error.message.replace("\n", "<br>\n");
+                                        $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
+                                        $deferred.reject();
+                                    },
+                                    this
+                                )
+                            );
+                        }, this)
+                    )
+                    return true;
+                }
+            },
+            {
+                name        : 'rmdir',
+                auth        : true,
+                regex       : new RegExp(/^rmdir\s*(.*)/),
+                callback    : function(args, command, $widget, $deferred) {
+                    args = args[0].split(/\s+/)
+                    if (args[0].length < 1) {
+                        $widget.setError("Invalid rmdir syntax.");
+                        $deferred.reject();
+                        return true;
+                    }
+                    $.each(
+                        args,
+                        $.proxy( function(idx, dir) {
+                            this.client().remove_directory(
+                                this.sessionId(),
+                                this.cwd,
+                                dir,
+                                $.proxy(
+                                    function () {
+                                        this.refreshFileBrowser();
+                                        $widget.setError($.jqElem('span').html("Removed directory <b>" + dir + '</b>'));
+                                        $deferred.resolve();
+                                    },this
+                                ),
+                                $.proxy(
+                                    function (err) {
+                                        var m = err.error.message.replace("\n", "<br>\n");
+                                        $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
+                                        $deferred.reject();
+                                    },
+                                    this
+                                )
+                            );
+                        }, this)
+                    );
+                    return true;
+                }
+            },
+            {
+                name        : 'rm',
+                auth        : true,
+                regex       : new RegExp(/^rm\s+(.*)/),
+                callback    : function(args, command, $widget, $deferred) {
+                    args = args[0].split(/\s+/);
+                    if (args[0].length < 1) {
+                        $widget.setError("Invalid rm syntax.");
+                        $deferred.reject();
+                        return true;
+                    }
+                    $.each(
+                        args,
+                        $.proxy(function (idx, file) {
+                            this.client().remove_files(
+                                this.sessionId(),
+                                this.cwd,
+                                file,
+                                $.proxy(
+                                    function () {
+                                        this.refreshFileBrowser();
+                                        $widget.setError($.jqElem('span').html("Removed file <b>" + file + '</b>'));
+                                        $deferred.resolve();
+                                    },this
+                                ),
+                                $.proxy(
+                                    function (err) {
+                                        var m = err.error.message.replace("\n", "<br>\n");
+                                        $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
+                                        $deferred.reject();
+                                    },
+                                    this
+                                )
+                            );
+                        }, this)
+                    );
+                    return true;
+                }
+            },
+            {
+                name        : 'comment',
+                auth        : true,
+                regex       : new RegExp(/^#\s*((?:.|\n)+)/),
+                callback    : function(args, command, $widget, $deferred) {
+                    $widget.setIsComment(true);
+                    $widget.setInput(args[0]);
+
+                    $widget.setOutput('');
+                    $widget.setError('');
+                    $widget.subWidgets([]);
+
+                    $deferred.resolve();
+
+                    return true;
+                }
+            },
+            {
+                name : 'record',
+                auth : true,
+                callback : function(args, command, $widget, $deferred) {
+                    $widget.setError("recording actions");
+                    this.recording = true;
+                    if (! $widget.isHidden()) { this.scroll() };
+                    $deferred.resolve();
+                    return true;
+                }
+            },
+            {
+                name        : 'save',
+                regex       : new RegExp(/^save\s*(.+)/),
+                auth        : true,
+                callback    : function(args, command, $widget, $deferred) {
+                args = args[0].split(/\s+/);
+                if (args.length != 1) {
+                    $widget.setError("Invalid save syntax. Please specify a file name.");
+                    $deferred.reject();
+                    return true;
+                }
+
+                if (this.record == undefined) {
+                    $widget.setError("Error : Not recording. Cannot save.");
+                    $deferred.reject();
+                    return true;
+                }
+
+                file = args[0];
+
+                this.client().put_file(
+                    this.sessionId(),
+                    file,
+                    //JSON.stringify(this.record),
+                    this.record.join('\n'),
+                    this.cwd,
+                    $.proxy(function() {
+                        $widget.setOutput('Recording saved as ' + file);
+                        this.recording = false;
+                        this.record = undefined;
+                        $deferred.resolve();
+                    }, this),
+                    $.proxy( function(err) {
+                        $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
+                        $deferred.reject();
+                    }, this)
+                );
+
+                return true;
+                }
+            },
+            {
+                name : 'history',
+                auth : true,
+                callback : function(args, command, $widget, $deferred) {
+                    var data = {
+                        structure : {
+                            header      : [],
+                            rows        : [],
+                        },
+                        sortable    : true,
+                    };
+
+                    jQuery.each(
+                        this.commandHistory,
+                        $.proxy(
+                            function (idx, val) {
+                                data.structure.rows.push(
+                                    [
+                                        idx,
+                                        {
+                                            value : $.jqElem('a')
+                                                .attr('href', '#')
+                                                .text(val)
+                                                .bind('click',
+                                                    $.proxy( function (evt) {
+                                                        evt.preventDefault();
+                                                        this.appendInput(val + ' ');
+                                                    }, this)
+                                                ),
+                                            style : 'padding-left : 10px',
+                                        }
+                                    ]
+                                );
+                            },
+                            this
+                        )
+                    );
+
+                    var $tbl = $.jqElem('div').kbaseTable(data);
+
+                    $widget.setOutput($tbl.$elem);
+                    $widget.setValue(this.commandHistory);
+                    $deferred.resolve();
+                    return true;
+                }
+            },
+            {
+                name : 'snapshot',
+                auth : true,
+                regex       : new RegExp(/^snapshot\s*(.*)/),
+                callback : function(args, command, $widget, $deferred) {
+                    args = args[0].split(/\s+/);
+                    if (! args[0].length || args.length != 1) {
+                        $widget.setError("Invalid snapshot syntax. Please specify a file name.");
+                        $deferred.reject();
+                        return true;
+                    }
+                    file = args[0];
+
+                    if (! this.selectedWidgets.length) {
+                        $widget.setError('No widgets selected for snapshot');
+                        $deferred.reject();
+                        return true;
+                    }
+
+                    var snappedWidgets = [];
+                    $.each(
+                        this.selectedWidgets,
+                        function (idx, $widget) {
+                            snappedWidgets.push($widget.freeze());
+                        }
+                    );
+
+                    var snappedFiles = [];
+
+                    $.each(
+                        this.fileBrowsers,
+                        function (idx, $fb) {
+
+                            $.each(
+                                $fb.selectedFiles(),
+                                function (file, isSelected) {
+                                    if (isSelected) {
+                                        snappedFiles.push(file);
+                                    }
+                                }
+                            )
+                        }
+                    );
+
+                    snapshot = {
+                        widgets : snappedWidgets,
+                        files : snappedFiles,
+                    };
+
+                    this.client().put_file(
+                        this.sessionId(),
+                        file,
+                        JSON.stringify(snapshot),
+                        this.cwd,
+                        $.proxy(function() {
+                            $widget.setOutput('Snapshot saved as ' + file);
+                            var selectedWidgets = this.selectedWidgets;
+                            $.each(
+                                selectedWidgets,
+                                function (idx, $widget) {
+
+                                    $widget.setIsSelected(false);
+                                }
+                            );
+                            $.each(
+                                this.fileBrowsers,
+                                function (idx, $fb) {
+
+                                    var selectedFiles = $fb.selectedFiles();
+                                    $.each(
+                                        selectedFiles,
+                                        function (file, isSelected) {
+                                            if (isSelected) {
+                                                $fb.toggleSelection(file);
+                                            }
+                                        }
+                                    )
+                                }
+                            );
+                            $deferred.resolve();
+                        }, this),
+                        $.proxy( function(err) {
+                            $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
+                            $deferred.reject();
+                        }, this)
+                    );
+
+                    return true;
+
+                }
+            },
+            {
+                name : 'thaw',
+                auth : true,
+                regex       : new RegExp(/^thaw\s*(.+)/),
+                callback : function(args, command, $widget, $deferred) {
+                    args = args[0].split(/\s+/);
+                    if (args.length != 1) {
+                        $widget.setError("Invalid that syntax. Please specify a file name.");
+                        $deferred.reject();
+                        return true;
+                    }
+                    file = args[0];
+
+                    $widget.$elem.css('background-color', '#DDDDDD');
+
+                    this.client().get_file(
+                        this.sessionId(),
+                        file,
+                        this.cwd,
+                        $.proxy(function(res) {
+                            var snapshot = JSON.parse(res);
+                            $.each(
+                                snapshot.widgets,
+                                $.proxy(function (idx, wdgt) {
+                                    //re-use the previously created widget for the thaw factory.
+                                    var $thawedWidget = $widget.thaw(wdgt);
+                                    $widget.appendWidget($thawedWidget);
+                                }, this)
+                            );
+
+                            $deferred.resolve();
+                        }, this),
+                        $.proxy( function(err) {
+                            $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
+                            $deferred.reject();
+                        }, this)
+                    );
+
+                    return true;
+
+                }
+            },
+            {
+                name : 'setenv',
+                auth : true,
+                regex       : new RegExp(/^setenv\s+(\S+)\s*=\s*(\S+)/),
+                callback : function(args, command, $widget, $deferred) {
+                    if (this.envKeys[args[0]]) {
+                        this.options[args[0]] = args[1] == 'undefined'
+                            ? undefined
+                            : args[1];
+                        $widget.setOutput($.jqElem('span').html('<b>' + args[0] + '</b> set to <b>' + args[1] + '</b>'));
+                        $widget.setValue(args[1]);
+                    }
+                    else {
+                        $widget.setError($.jqElem('span').html("Cannot set environment variable <b>" + args[0] + "</b>: Unknown"));
+                    }
+                    $deferred.resolve();
+                    if (! $widget.isHidden()) { this.scroll() };
+                    return true;
+                }
+            },
+            {
+                name : 'environment',
+                auth : true,
+                callback : function(args, command, $widget, $deferred) {
+
+                    var keyedVars = [];
+                    $.each(
+                        Object.keys(this.envKeys).sort(),
+                        $.proxy( function (idx, key) {
+                            keyedVars.push(
+                                {
+                                    variable : key,
+                                    value : this.options[key] == undefined
+                                        ? '<i>undefined</i>'
+                                        : this.options[key]
+                                }
+                            );
+                        }, this)
+                    );
+
+                    var data = {
+                        structure : {
+                            header      : ['variable', 'value'],
+                            rows        : keyedVars,
+                        },
+                        sortable    : true,
+                        hover       : false,
+                    };
+
+                    var $tbl = $.jqElem('div').kbaseTable(data);
+                    $widget.setOutput($tbl.$elem);
+                    $widget.setValue(keyedVars);
+                    $deferred.resolve();
+                    if (! $widget.isHidden()) { this.scroll() };
+                    return true;
+                }
+            },
+            {
+                name : 'alias',
+                auth : true,
+                regex       : new RegExp(/^alias\s+(\S+)\s*=\s*(\S+)/),
+                callback : function(args, command, $widget, $deferred) {
+                    this.aliases[args[0]] = args[1];
+                    $widget.setOutput($.jqElem('span').html('<b>' + args[0] + '</b> set to <b>' + args[1] + '</b>'));
+                    $deferred.resolve();
+                    return true;
+                }
+            },
+            {
+                name : 'upload',
+                auth : true,
+                regex       : new RegExp(/^upload\s*(\S+)?$/),
+                callback : function(args, command, $widget, $deferred) {
+                    var file = args[0];
+                    if (this.fileBrowsers.length) {
+                        var $fb = this.fileBrowsers[0];
+                        if (file) {
+                            $fb.data('override_filename', file);
+                        }
+                        $fb.data('active_directory', this.cwd);
+                        $fb.uploadFile();
+                        //XXX NOT QUITE ACCURATE...NEEDS TO WAIT FOR UPLOADFILE TO FINISH
+                        $deferred.resolve();
+                    }
+                    return true;
+                }
+            },
+            {
+                name : 'download',
+                auth : true,
+                regex       : new RegExp(/^download\s*(\S+)?$/),
+                callback : function(args, command, $widget, $deferred) {
+                    var file = args[0];
+                    if (this.fileBrowsers.length) {
+                        var $fb = this.fileBrowsers[0];
+                        $fb.data('active_directory', this.cwd);
+                        $fb.openFile(file);
+                        $deferred.resolve();
+                    }
+                    return true;
+                }
+            },
+            {
+                name : 'edit',
+                auth : true,
+                regex       : new RegExp(/^edit\s*(\S+)?$/),
+                callback : function(args, command, $widget, $deferred) {
+                    var file = args[0];
+                    if (this.fileBrowsers.length) {
+                        var $fb = this.fileBrowsers[0];
+                        $fb.data('active_directory', this.cwd);
+                        if ($fb.editFileCallback()) {
+                            $fb.editFileCallback()(file, $fb);
+                        }
+                        else {
+                            $widget.setError("Cannot edit : no editor");
+                        }
+
+                        $deferred.resolve();
+                    }
+                    return true;
+                }
+            },
+            {
+                name : 'view',
+                auth : true,
+                regex       : new RegExp(/^view\s+(\S+)$/),
+                callback : function(args, command, $widget, $deferred) {
+                    var file = args[0];
+
+                    var $img = $.jqElem('img')
+                        .attr('src', this.fileBrowsers[0].urlForFile(file))
+                        .css('max-width', '90%');
+
+                    var $link = $.jqElem('a')
+                        .append($img)
+                        .attr('href', this.fileBrowsers[0].urlForFile(file))
+                        .css('border', '0px');
+
+                    $widget.setOutput(
+                        $link
+                    );
+
+
+                    setTimeout($.proxy(function() {this.scroll()}, this), 500);
+                    $deferred.resolve();
+
+                    return true;
+
+
+                }
+            },
+            {
+                name : 'ls',
+                auth : true,
+                regex       : new RegExp(/^ls\s*(.*)/),
+                callback : function(args, command, $widget, $deferred) {
+                    var d;
+                    var obj = this;
+                    if (args.length == 0) {
+                        d = ".";
+                    }
+                    else {
+                        d = args[0];
+                    }
+
+                    //okay, add in regex support
+                    var regex = undefined;
+                    if (d.match(/[*+?\s.]/)) {
+                        d = d.replace(/\s+/g, '|');
+                        d = d.replace(/\./g, '\.');
+                        d = d.replace(/([*+?])/g, '.$1');
+                        regex = new RegExp('^(' + d + ')$');
+                        d = '.';
+                    }
+
+                    this.client().list_files(
+                        this.sessionId(),
+                        this.cwd,
+                        d,
+                        $.proxy(
+                            function (filelist) {
+                                var dirs = filelist[0];
+                                var files = filelist[1];
+
+                                var allFiles = [];
+
+                                $.each(
+                                    dirs,
+                                    function (idx, val) {
+
+                                        if (regex != undefined && ! val.name.match(regex)) {
+                                            return;
+                                        }
+
+                                        allFiles.push(
+                                            {
+                                                size    : '(directory)',
+                                                mod_date: val.mod_date,
+                                                name    : val.name,
+                                                nameTD  : val.name,
+                                            }
+                                        );
+                                    }
+                                );
+
+                                $.each(
+                                    files,
+                                    $.proxy( function (idx, val) {
+
+                                        if (regex != undefined && ! val.name.match(regex)) {
+                                            return;
+                                        }
+
+                                        allFiles.push(
+                                            {
+                                                size    : val.size,
+                                                mod_date: val.mod_date,
+                                                name    : val.name,
+                                                nameTD  :
+                                                    $.jqElem('a')
+                                                        .text(val.name)
+                                                        //uncomment these two lines to click and open in new window
+                                                        //.attr('href', url)
+                                                        //.attr('target', '_blank')
+                                                        //comment out this block if you don't want the clicks to pop up via the api
+                                                        //*
+                                                        .attr('href', '#')
+                                                        .on(
+                                                            'click',
+                                                            $.proxy(
+                                                                function (e) {
+                                                                    e.preventDefault();e.stopPropagation();
+                                                                    this.open_file(val['full_path']);
+                                                                    return false;
+                                                                },
+                                                                this
+                                                            )
+                                                        ),
+                                                        //*/,
+                                                url     : this.options.invocationURL + "/download/" + val.full_path + "?session_id=" + this.sessionId()
+                                            }
+                                        );
+
+                                    }, this)
+                                );
+
+                                var data = {
+                                    structure : {
+                                        header      : [],
+                                        rows        : [],
+                                    },
+                                    sortable    : true,
+                                    bordered    : false
+                                };
+
+                                $.each(
+                                    allFiles.sort(this.sortByKey('name', 'insensitively')),
+                                    $.proxy( function (idx, val) {
+                                        data.structure.rows.push(
+                                            [
+                                                val.size,
+                                                val.mod_date,
+                                                { value : val.nameTD }
+                                            ]
+                                        );
+                                    }, this)
+                                );
+
+                                var $tbl = $.jqElem('div').kbaseTable(data);
+
+                                if (data.structure.rows.length) {
+                                    $widget.setOutput($tbl.$elem);
+                                    $widget.setValue(filelist);
+                                }
+                                else {
+                                    $widget.setError("no matching files found");
+                                }
+                                $deferred.resolve();
+                                if (! $widget.isHidden()) { this.scroll() };
+                             },
+                             this
+                         ),
+                         function (err)
+                         {
+                             var m = err.error.message.replace("\n", "<br>\n");
+                             $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m))
+                             $deferred.reject();
+                         }
+                        );
+                    return true;
+                }
+            },
+            {
+                name : 'search',
+                auth : true,
+                regex       : new RegExp(/^search\s+(\S+)\s+(\S+)(?:\s*(\S+)\s+(\S+)(?:\s*(\S+))?)?/),
+                callback : function(args, command, $widget, $deferred) {
+
+                    var parsed = this.options.grammar.evaluate(command);
+
+                    var searchVars = {};
+                    //'kbase.us/services/search-api/search/$category/$keyword?start=$start&count=$count&format=json',
+
+                    var searchURL = this.options.searchURL;
+
+                    searchVars.$category = args[0];
+                    searchVars.$keyword = args[1];
+                    searchVars.$start = args[2] || this.options.searchStart;
+                    searchVars.$count = args[3] || this.options.searchCount;
+                    var filter = args[4] || this.options.searchFilter[searchVars.$category];
+
+                    for (prop in searchVars) {
+                        searchURL = searchURL.replace(prop, searchVars[prop]);
+                    }
+
+                    $.support.cors = true;
+                    $.ajax(
+                        {
+                            type            : "GET",
+                            url             : searchURL,
+                            dataType        : "json",
+                            crossDomain     : true,
+                            xhrFields       : { withCredentials: true },
+                             xhrFields: {
+                                withCredentials: true
+                             },
+                             beforeSend : function(xhr){
+                                // make cross-site requests
+                                xhr.withCredentials = true;
+                             },
+                            success         : $.proxy(
+                                function (data,res,jqXHR) {
+                                    var $output = $.jqElem('span');
+                                    $output.append('<br>', 'html');
+                                    $output.append($('<i></i>').html("Command completed."));
+                                    $output.append('<br>', 'html');
+                                    $output.append(
+                                        $.jqElem('span')
+                                            .append($.jqElem('b').html(data.found))
+                                            .append(" records found.")
+                                    );
+                                    $output.append('<br>', 'html');
+                                    $output.append(this.search_json_to_table(data.body, filter));
+                                    $widget.setOutput($output);
+                                    $widget.setValue({
+                                        results : data.body,
+                                        filter : filter
+                                    });
+                                    var res = this.search_json_to_table(data.body, filter);
+
+                                    if (! $widget.isHidden()) { this.scroll() };
+                                    $deferred.resolve();
+
+                                },
+                                this
+                            ),
+                            error: $.proxy(
+                                function (jqXHR, textStatus, errorThrown) {
+
+                                    $widget.setError(errorThrown);
+                                    $deferred.reject();
+
+                                }, this
+                            ),
+                       }
+                    );
+
+                    return true;
+                }
+            },
+            {
+                name : 'execute',
+                auth : true,
+                regex       : new RegExp(/^execute\s+(.*)/),
+                callback : function(args, command, $widget, $deferred, opts) {
+                    if (args.length != 1) {
+                        $widget.setError("Invalid execute syntax.");
+                        $deferred.reject();
+                        return true;
+                    }
+                    this.client().get_file(
+                        this.sessionId(),
+                        args[0], this.cwd,
+                        $.proxy(
+                            function (script) {
+                                //XXX promise resolution here is...sketchy at best.
+                                //we obviously haven't finished running anything, so we shouldn't
+                                //necessarily resolve, but it would be resolved by the next call through
+                                //the run loop anyway. So bugger all if I know. I'll have to revisit.
+                                $deferred.resolve();
+
+                                //Sigh. Freakin' special case. This is the time that a run commmand
+                                //can spawn a new run, but NOT via tokenization. So we explicitly
+                                //toss the <hr> into the output, and nuke the following hr in the terminal
+                                //$widget.setOutput('abc');//$.jqElem('div'));
+                                //this.out_line($widget.output());
+                                if ($widget.$elem.next().prop('tagName') == 'HR') {
+                                    $widget.$elem.next().remove();
+                                }
+
+
+                                this.run(
+                                    script,
+                                    {
+                                        subCommand : true,
+                                        //$widget : $widget,
+                                        $containerWidget : $widget,
+                                        viaInvoke : opts.viaInvoke
+                                    }
+                                );
+                            },
+                            this
+                        ),
+                        $.proxy(function (e) {
+                            $widget.setError("No such script");
+                            $deferred.reject();
+                        }, this)
+                    );
+                    return true;
+                }
+            },
+            {
+                name : 'evaluate',
+                auth : true,
+                regex       : new RegExp(/^evaluate\s+(.*)/),
+                    callback : function(args, command, $widget, $deferred) {
+
+                    var script = args[0];
+                    if (script.length < 1) {
+                        $widget.setError("Invalid evalute syntax.");
+                        $deferred.reject();
+                        return true;
+                    }
+
+                    this.client().get_file(
+                        this.sessionId(),
+                        script, this.cwd,
+                        $.proxy(
+                            function (script) {
+                                this.evaluateScript(this, $widget, script, $deferred, $widget);
+                            },
+                            this
+                        ),
+                        $.proxy(function (e) {
+
+                            //dammit. No such script. see if we can evalute it.
+                            this.evaluateScript(this, $widget, script, $deferred, $widget);
+
+                        }, this)
+                    );
+
+                    return true;
+                }
+            },
+            {
+                name : 'assign variable',
+                auth : true,
+                regex       : new RegExp(/^(\$\S+)\s*=\s*(\S+)/),
+                    callback : function(args, command, $widget, $deferred) {
+                    if (args[1] == 'undefined') {
+                        delete this.variables[args[0]];
+                        $widget.setOutput($.jqElem('span').html('Deleted <b>' + args[0] + '</b>'));
+                    }
+                    else {
+                        this.variables[args[0]] = args[1];
+                        $widget.setOutput($.jqElem('span').html('<b>' + args[0] + '</b> set to <b>' + args[1] + '</b>'));
+                    }
+                    $deferred.resolve();
+                    return true;
+                }
+            },
+            {
+                name : 'variables',
+                auth : true,
+                callback : function(args, command, $widget, $deferred) {
+
+                    var keyedVars = [];
+                    $.each(
+                        Object.keys(this.variables).sort(),
+                        $.proxy( function (idx, key) {
+                            keyedVars.push(
+                                {
+                                    variable : key,
+                                    value : this.variables[key]
+                                }
+                            );
+                        }, this)
+                    );
+
+                    var data = {
+                        structure : {
+                            header      : ['variable', 'value'],
+                            rows        : keyedVars,
+                        },
+                        sortable    : true,
+                        hover       : false,
+                    };
+
+                    var $tbl = $.jqElem('div').kbaseTable(data);
+                    $widget.setOutput($tbl.$elem);
+                    $widget.setValue(keyedVars);
+                    $deferred.resolve();
+                    if (! $widget.isHidden()) { this.scroll() };
+                    return true;
+
+                }
+            },
+            {
+                name : '',
+                auth : true,
+                regex       : new RegExp(/^widget\s+(.*)/),
+                callback : function(args, command, $widget, $deferred) {
+                    var args = args[0].split(/\s+/)
+                    var obj = this;
+
+                    if (! args[0].length) {
+                        $widget.setError("incorrect add widget syntax");
+                        $deferred.reject();
+                        return true;
+                    }
+
+                    var $widget = this.addWidget(args[0], args.length > 1);
+
+                    if (args.length > 1) {
+                        $widget.setInput(args[1]);
+                    }
+
+                    $deferred.resolve();
+                    return true;
+                }
+            }
 
         ],
 
@@ -672,15 +1839,15 @@ define('kbaseIrisTerminal',
 
             this.input_box.on(
                 'keypress',
-                jQuery.proxy(function(event) { this.keypress(event); }, this)
+                $.proxy(function(event) { this.keypress(event); }, this)
             );
             this.input_box.on(
                 'keydown',
-                jQuery.proxy(function(event) { this.keydown(event) }, this)
+                $.proxy(function(event) { this.keydown(event) }, this)
             );
             this.input_box.on(
                 "onchange",
-                jQuery.proxy(function(event) { this.dbg("change"); }, this)
+                $.proxy(function(event) { this.dbg("change"); }, this)
             );
 
 
@@ -688,7 +1855,7 @@ define('kbaseIrisTerminal',
 
             $(window).bind(
                 "resize",
-                jQuery.proxy(
+                $.proxy(
                     function(event) { this.resize_contents(this.terminal) },
                     this
                 )
@@ -731,7 +1898,7 @@ define('kbaseIrisTerminal',
             this.client().get_file(
                 this.sessionId(),
                 "history", "/",
-                jQuery.proxy(
+                $.proxy(
                     function (txt) {
                         this.commandHistory = JSON.parse(txt);
                         if (this.commandHistory == undefined) {
@@ -741,7 +1908,7 @@ define('kbaseIrisTerminal',
                     },
                     this
                 ),
-                jQuery.proxy(function (e) {
+                $.proxy(function (e) {
                     this.dbg("error on history load : ");this.dbg(e);
 		    }, this)
             );
@@ -989,7 +2156,7 @@ define('kbaseIrisTerminal',
                     );
             jQuery.each(
                 completions,
-                jQuery.proxy(
+                $.proxy(
                     function (idx, val) {
 
                         var label = $.isArray(val)
@@ -1569,7 +2736,7 @@ define('kbaseIrisTerminal',
                                 dispatched = true;
                             }
                             else {
-                                dispatched = dispatch.callback.call(this, m, command, $widget, $deferred, $promise);
+                                dispatched = dispatch.callback.call(this, m, command, $widget, $deferred, $promise, opts);
                             }
                         }
                     }, this)
@@ -1584,1387 +2751,157 @@ define('kbaseIrisTerminal',
                     redispatching = true;
                 }
                 else {
-// XXX RE-ENABLE THIS ONE LATER!
-/*                    this.dbg("need to run a pipeline");
+                    // if we couldn't find anything in the dispatch table, then we need to run a pipeline.
+                    // first, we parse the command through the grammar and see if we can find anything. If so, use that.
+                    // if not, hand it off to run_pipeline.
                     if (! this.sessionId()) {
                         this.warn_not_logged_in($widget);
                         $deferred.resolve();
                         return $promise;
                     }
-*/
+
+                    var parsed = this.options.grammar.evaluate(command);
+
+                    if (parsed != undefined) {
+                        if (! parsed.fail && parsed.execute) {
+                            command = parsed.execute;
+
+                            if (parsed.explain) {
+                                $widget.setOutput(parsed.execute);
+                                $deferred.resolve();
+                                return true;
+                            }
+
+                        }
+                        else if (parsed.parsed.length && parsed.fail) {
+                            $widget.setError(parsed.error);
+                            $deferred.reject();
+                            return true;
+                        }
+                    }
+
+                    var pid = this.uuid();
+                    $widget.setPid(pid);
+
+                    var $pe = $.jqElem('div').text(command);
+                    $pe.kbaseButtonControls(
+                        {
+                            onMouseover : true,
+                            context : this,
+                            controls : [
+                                {
+                                    'icon' : 'fa fa-ban',
+                                    //'tooltip' : 'Cancel',
+                                    callback : function(e, $term) {
+                                        $widget.promise().xhr.abort();
+                                        $widget.$elem.remove();
+                                    }
+                                },
+                            ]
+
+                        }
+                    );
+
+                    if (! $widget.isHidden()) {
+                        this.trigger(
+                            'updateIrisProcess',
+                            {
+                                pid : pid,
+                                content : $pe
+                            }
+                        );
+                    }
+
+                    var promise = this.client().run_pipeline(
+                        this.sessionId(),
+                        command,
+                        [],
+                        this.options.maxOutput,
+                        this.cwd,
+                        $.proxy(
+                            function (runout) {
+
+                                if (runout) {
+
+                                    var output = runout[0];
+                                    var error  = runout[1];
+
+                                    this.refreshFileBrowser();
+
+                                    if (output.length > 0 && output[0].indexOf("\t") >= 0) {
+
+                                        var data = {
+                                            structure : {
+                                                header      : [],
+                                                rows        : [],
+                                            },
+                                            sortable    : false,
+                                            hover       : false,
+                                            resizable   : true,
+                                        };
+
+                                        $.each(
+                                            output,
+                                            function (idx, rowStr) {
+                                                var row = [];
+                                                data.structure.rows.push(row);
+                                                $.each(
+                                                    rowStr.split(/\t/),
+                                                    function (idx, val) {
+                                                        row.push(val);
+                                                    }
+                                                )
+                                            }
+                                        );
+
+                                        var $tbl = $.jqElem('div').kbaseTable(data);
+                                        $widget.setOutput($tbl.$elem);
+
+                                        $widget.setValue(output);
+                                    }
+                                    else {
+                                        $widget.setOutput(output.join(''));
+                                        $widget.setValue(output);
+                                    }
+
+                                    if (error.length) {
+
+                                        $widget.setError(error.join(''));
+                                        if (output.length) {
+                                            $deferred.resolve();
+                                        }
+                                        else {
+                                            $deferred.reject();
+                                        }
+                                    }
+                                    else {
+                                        $widget.setError('Command Completed');
+                                        $deferred.resolve();
+                                    }
+                                }
+                                else {
+                                    $widget.setError('Error running command.');
+                                    $deferred.reject();
+                                }
+                                if (! $widget.isHidden()) { this.scroll() };
+
+                                this.trigger( 'removeIrisProcess', pid );
+                            },
+                            this
+                        ),
+                        $.proxy( function(res) { this.trigger( 'removeIrisProcess', pid ); }, this)
+                    );
+
+                    $widget.promise(promise);
+                    this.live_widgets.push($widget);
+
+                    return true;
+
+
                 }
             } while (redispatching);
 
-            var m;
 
-            /*if (m = command.match(/^log[io]n\s*(.*)/)) {
-                var args = m[1].split(/\s+/);
-
-                this.dbg(args.length);
-                if (! args[0].match(/^\w/)) {
-                    $widget.setError('Invalid login syntax');
-                    $deferred.reject();
-                    return $promise;
-                }
-                sid = args[0];
-
-                //old login code. copy and pasted into iris.html.
-                this.client().start_session(
-                    sid,
-                    jQuery.proxy(
-                        function (newsid) {
-                            var auth = {'kbase_sessionid' : sid, success : true, unauthenticated : true};
-
-                            this.terminal.empty();
-                            this.trigger('logout', false);
-                            this.trigger('loggedOut');
-                            this.trigger('loggedIn', auth );
-
-                            // XXX not quite accurate...because the resolve needs to fire AFTER the loggedIn.
-                            $deferred.resolve();
-
-                        },
-                        this
-                    ),
-                    jQuery.proxy(
-                        function (err) {
-                            $widget.setError(
-                                "Error on session_start:<br>" + err.error.message.replace("\n", "<br>\n"),
-                                "html"
-                            );
-                            $deferred.reject();
-                        },
-                        this
-                    )
-                );
-                if (! isHidden) { this.scroll() };
-                return $promise;
-            }*/
-
-            /*if (m = command.match(/^authenticate\s*(.*)/)) {
-                var args = m[1].split(/\s+/)
-                if (args.length != 1) {
-                    $widget.setError("Invalid login syntax.");
-                    $deferred.resolve();
-                    return $promise;
-                }
-                sid = args[0];
-
-                this.trigger('loggedOut');
-                this.trigger('promptForLogin', {user_id : sid});
-
-                //XXX no promise resolution here, so we will not return the promise.
-                //this is the ONLY exception
-
-                return;
-            }*/
-
-            /*if (m = command.match(/^unauthenticate/)) {
-
-                this.trigger('logout');
-                if (! isHidden) { this.scroll() };
-
-                $deferred.resolve();
-
-                return $promise;
-            }*/
-
-            /*if (m = command.match(/^logout/)) {
-
-                this.trigger('logout', false);
-                this.trigger('loggedOut', false);
-                if (! isHidden) { this.scroll() };
-
-                $deferred.resolve();
-
-                return $promise;
-            }*/
-
-            /*if (m = command.match(/^whatsnew/)) {
-                $.ajax(
-                    {
-                        async : true,
-                        dataType: "text",
-                        url: "whatsnew.html",
-                        crossDomain : true,
-                        success: $.proxy(function (data, status, xhr) {
-                            $widget.setOutput($.jqElem('div').html(data));
-                            $deferred.resolve();
-                            if (! isHidden) { this.scroll() };
-                        }, this),
-                        error : $.proxy(function(xhr, textStatus, errorThrown) {
-                            $widget.setError($.jqElem('div').html(xhr.responseText));
-                            $deferred.reject();
-                            if (! isHidden) { this.scroll() };
-                        }, this),
-                        type: 'GET',
-                    }
-                );
-                return $promise;
-            }*/
-
-            /*if (command == "next") {
-                this.tutorial.goToNextPage();
-                command = "show_tutorial";
-            }
-
-            if (command == "back") {
-                this.tutorial.goToPrevPage();
-                command = "show_tutorial";
-            }
-
-            if (command == "tutorial") {
-                this.tutorial.currentPage = 0;
-                command = "show_tutorial";
-            }*/
-
-            if (command == 'tutorial list') {
-                var list = this.tutorial.list();
-
-                if (list.length == 0) {
-                    $widget.setError(
-                        $.jqElem('span').append("Could not load tutorials.<br>\n"
-                        + "Type <i>tutorial list</i> to see available tutorials.")
-                    );
-                    $deferred.reject();
-                    return $promise;
-                }
-
-                var $output = $widget.data('output');
-                $output.empty();
-
-
-                $.each(
-                    list,
-                    $.proxy( function (idx, val) {
-                        $output.append(
-                            $('<a></a>')
-                                .attr('href', '#')
-                                .append(val.title)
-                                .bind('click', $.proxy( function (e) {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    $widget.setError($.jqElem('span').append('Set tutorial to <b>' + val.title + '</b><br>'));
-                                    this.tutorial.retrieveTutorial(val.url);
-                                    if (! isHidden) { this.scroll() };
-                                    this.input_box.focus();
-                                }, this))
-                            .append('<br>')
-                        );
-
-                    }, this)
-                );
-
-                $deferred.resolve();
-
-                if (! isHidden) { this.scroll() };
-                return $promise;
-            }
-
-            if (command == 'show_tutorial') {
-                var $page = this.tutorial.contentForCurrentPage();
-                $widget.setValue($page);
-
-                if ($page == undefined) {
-                    $widget.setError("Could not load tutorial");
-                    $deferred.reject();
-                    return $promise;
-                }
-
-                $page = $page.clone();
-
-                var headerCSS = { 'text-align' : 'left', 'font-size' : '100%' };
-                $page.find('h1').css( headerCSS );
-                $page.find('h2').css( headerCSS );
-                if (this.tutorial.currentPage > 0) {
-                    $page.append("<br>Type <i>back</i> to move to the previous step in the tutorial.");
-                }
-                if (this.tutorial.currentPage < this.tutorial.pages.length - 1) {
-                    $page.append("<br>Type <i>next</i> to move to the next step in the tutorial.");
-                }
-                $page.append("<br>Type <i>tutorial list</i> to see available tutorials.");
-
-                $widget.setOutput($page);
-                $deferred.resolve();
-                if (! isHidden) { this.scroll() };
-
-                return $promise;
-            }
-
-            if (command == 'commands') {
-
-                this.client().valid_commands(
-                    jQuery.proxy(
-                        function (cmds) {
-
-                            var data = {
-                                structure : {
-                                    header      : [],
-                                    rows        : [],
-                                },
-                                sortable    : true,
-                                hover       : false,
-                            };
-
-                            jQuery.each(
-                                cmds,
-                                function (idx, group) {
-                                    data.structure.rows.push( [ { value : group.title, colspan : 2, style : 'font-weight : bold; text-align : center' } ] );
-
-                                    for (var ri = 0; ri < group.items.length; ri += 2) {
-                                        data.structure.rows.push(
-                                            [
-                                                group.items[ri].cmd,
-                                                group.items[ri + 1] != undefined
-                                                    ? group.items[ri + 1].cmd
-                                                    : ''
-                                            ]
-                                        );
-                                    }
-                                }
-                            );
-
-                            var $tbl = $.jqElem('div').kbaseTable(data);
-
-                            $widget.setOutput($tbl.$elem);
-                            $widget.setValue(cmds);
-                            $deferred.resolve();
-                            if (! isHidden) { this.scroll() };
-
-                        },
-                       this
-                    )
-                );
-                return $promise;
-            }
-
-            /*if (m = command.match(/^questions\s*(\S+)?/)) {
-
-                var questions = this.options.grammar.allQuestions(m[1]);
-
-                var data = {
-                    structure : {
-                        header      : [],
-                        rows        : [],
-                    },
-                    sortable    : true,
-                };
-
-                $.each(
-                    questions,
-                    $.proxy( function (idx, question) {
-                        data.structure.rows.push(
-                            [
-                                {
-                                    value :
-                                        $.jqElem('a')
-                                        .attr('href', '#')
-                                        .text(question)
-                                        .bind('click',
-                                            jQuery.proxy(
-                                                function (evt) {
-                                                    evt.preventDefault();
-                                                    this.input_box.val(question);
-                                                    this.selectNextInputVariable();
-                                                },
-                                                this
-                                            )
-                                        )
-                                }
-                            ]
-                        );
-
-                    }, this)
-                );
-
-                var $tbl = $.jqElem('div').kbaseTable(data);
-
-                $widget.setOutput($tbl.$elem);
-                $widget.setValue(questions);
-                $deferred.resolve();
-                if (! isHidden) { this.scroll() };
-
-                return $promise;
-            }*/
-
-            if (command == 'clear') {
-
-                while (this.subWidgets().length) {
-                    this.removeWidget(this.subWidgets()[0]);
-                }
-
-                this.trigger('clearIrisProcesses');
-                this.terminal.empty();
-                $deferred.resolve();
-
-                return $promise;
-            }
-
-            if (command == 'end') {
-                this.terminal.animate({scrollTop: this.terminal.prop('scrollHeight') - this.terminal.height()}, 0);
-                $deferred.resolve();
-                return $promise;
-            }
-
-            if (! this.sessionId()) {
-                this.warn_not_logged_in($widget);                $deferred.resolve();
-                return $promise;
-            }
-
-            if (m = command.match(/^save\s*(.+)/)) {
-                var args = m[1].split(/\s+/);
-                if (args.length != 1) {
-                    $widget.setError("Invalid save syntax. Please specify a file name.");
-                    $deferred.reject();
-                    return $promise;
-                }
-                file = args[0];
-
-                this.client().put_file(
-                    this.sessionId(),
-                    file,
-                    //JSON.stringify(this.record),
-                    this.record.join('\n'),
-                    this.cwd,
-                    $.proxy(function() {
-                        $widget.setOutput('Recording saved as ' + file);
-                        this.recording = false;
-                        this.record = undefined;
-                        $deferred.resolve();
-                    }, this),
-                    $.proxy( function(err) {
-                        $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
-                        $deferred.reject();
-                    }, this)
-                );
-
-                return $promise;
-
-            }
-
-            if (! opts.subCommand && this.commandHistory != undefined && ! opts.viaInvoke && ! isHidden) {
-                this.addCommandHistory(command);
-            }
-
-            if (command == 'record') {
-                $widget.setError("recording actions");
-                this.recording = true;
-                if (! isHidden) { this.scroll() };
-                $deferred.resolve();
-                return $promise;
-            }
-
-            if (m = command.match(/^snapshot\s*(.+)/)) {
-                var args = m[1].split(/\s+/);
-                if (args.length != 1) {
-                    $widget.setError("Invalid snapshot syntax. Please specify a file name.");
-                    $deferred.reject();
-                    return $promise;
-                }
-                file = args[0];
-
-                if (! this.selectedWidgets.length) {
-                    $widget.setError('No widgets selected for snapshot');
-                    $deferred.reject();
-                    return $promise;
-                }
-
-                var snappedWidgets = [];
-                $.each(
-                    this.selectedWidgets,
-                    function (idx, $widget) {
-                        snappedWidgets.push($widget.freeze());
-                    }
-                );
-
-                var snappedFiles = [];
-
-                $.each(
-                    this.fileBrowsers,
-                    function (idx, $fb) {
-
-                        $.each(
-                            $fb.selectedFiles(),
-                            function (file, isSelected) {
-                                if (isSelected) {
-                                    snappedFiles.push(file);
-                                }
-                            }
-                        )
-                    }
-                );
-
-                snapshot = {
-                    widgets : snappedWidgets,
-                    files : snappedFiles,
-                };
-
-                this.client().put_file(
-                    this.sessionId(),
-                    file,
-                    JSON.stringify(snapshot),
-                    this.cwd,
-                    $.proxy(function() {
-                        $widget.setOutput('Snapshot saved as ' + file);
-                        var selectedWidgets = this.selectedWidgets;
-                        $.each(
-                            selectedWidgets,
-                            function (idx, $widget) {
-
-                                $widget.setIsSelected(false);
-                            }
-                        );
-                        $.each(
-                            this.fileBrowsers,
-                            function (idx, $fb) {
-
-                                var selectedFiles = $fb.selectedFiles();
-                                $.each(
-                                    selectedFiles,
-                                    function (file, isSelected) {
-                                        if (isSelected) {
-                                            $fb.toggleSelection(file);
-                                        }
-                                    }
-                                )
-                            }
-                        );
-                        $deferred.resolve();
-                    }, this),
-                    $.proxy( function(err) {
-                        $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
-                        $deferred.reject();
-                    }, this)
-                );
-
-                return $promise;
-
-            }
-
-            if (m = command.match(/^thaw\s*(.+)/)) {
-                var args = m[1].split(/\s+/);
-                if (args.length != 1) {
-                    $widget.setError("Invalid that syntax. Please specify a file name.");
-                    $deferred.reject();
-                    return $promise;
-                }
-                file = args[0];
-
-                $widget.$elem.css('background-color', '#DDDDDD');
-
-                this.client().get_file(
-                    this.sessionId(),
-                    file,
-                    this.cwd,
-                    $.proxy(function(res) {
-                        var snapshot = JSON.parse(res);
-                        $.each(
-                            snapshot.widgets,
-                            $.proxy(function (idx, wdgt) {
-                                //re-use the previously created widget for the thaw factory.
-                                var $thawedWidget = $widget.thaw(wdgt);
-                                $widget.appendWidget($thawedWidget);
-                            }, this)
-                        );
-
-                        $deferred.resolve();
-                    }, this),
-                    $.proxy( function(err) {
-                        $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
-                        $deferred.reject();
-                    }, this)
-                );
-
-                return $promise;
-
-            }
-
-            if (command == 'history') {
-
-                var data = {
-                    structure : {
-                        header      : [],
-                        rows        : [],
-                    },
-                    sortable    : true,
-                };
-
-                jQuery.each(
-                    this.commandHistory,
-                    jQuery.proxy(
-                        function (idx, val) {
-                            data.structure.rows.push(
-                                [
-                                    idx,
-                                    {
-                                        value : $.jqElem('a')
-                                            .attr('href', '#')
-                                            .text(val)
-                                            .bind('click',
-                                                jQuery.proxy(
-                                                    function (evt) {
-                                                        evt.preventDefault();
-                                                        this.appendInput(val + ' ');
-                                                    },
-                                                    this
-                                                )
-                                            ),
-                                        style : 'padding-left : 10px',
-                                    }
-                                ]
-                            );
-                        },
-                        this
-                    )
-                );
-
-                var $tbl = $.jqElem('div').kbaseTable(data);
-
-                $widget.setOutput($tbl.$elem);
-                $widget.setValue(this.commandHistory);
-                $deferred.resolve();
-                return $promise;
-            }
-            else if (m = command.match(/^!(\d+)/)) {
-                command = this.commandHistory[m[1]];
-            }
-
-
-            if (m = command.match(/^cd\s*(.*)/)) {
-                var args = m[1].split(/\s+/)
-                if (args.length != 1) {
-                    $widget.setError("Invalid cd syntax.");
-                    $deferred.reject();
-                    return $promise;
-                }
-                dir = args[0];
-
-                this.client().change_directory(
-                    this.sessionId(),
-                    this.cwd,
-                    dir,
-                        jQuery.proxy(
-                            function (path) {
-                                this.cwd = path;
-                                $deferred.resolve();
-                            },
-                            this
-                        ),
-                    jQuery.proxy(
-                        function (err) {
-                            var m = err.error.message.replace("/\n", "<br>\n");
-                            $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
-                            $deferred.reject();
-                        },
-                        this
-                    )
-                );
-                return $promise;
-            }
-
-            if (m = command.match(/^(\$\S+)\s*=\s*(\S+)/)) {
-                if (m[2] == 'undefined') {
-                    delete this.variables[m[1]];
-                    $widget.setOutput('Deleted ' + m[1]);
-                }
-                else {
-                    this.variables[m[1]] = m[2];
-                    $widget.setOutput(m[1] + ' set to ' + m[2]);
-                }
-                $deferred.resolve();
-                return $promise;
-            }
-
-            if (command == 'variables') {
-
-                var keyedVars = [];
-                $.each(
-                    Object.keys(this.variables).sort(),
-                    $.proxy( function (idx, key) {
-                        keyedVars.push(
-                            {
-                                variable : key,
-                                value : this.variables[key]
-                            }
-                        );
-                    }, this)
-                );
-
-                var data = {
-                    structure : {
-                        header      : ['variable', 'value'],
-                        rows        : keyedVars,
-                    },
-                    sortable    : true,
-                    hover       : false,
-                };
-
-                var $tbl = $.jqElem('div').kbaseTable(data);
-                $widget.setOutput($tbl.$elem);
-                $widget.setValue(keyedVars);
-                $deferred.resolve();
-                if (! isHidden) { this.scroll() };
-                return $promise;
-
-            }
-
-            if (command == 'environment') {
-
-                var keyedVars = [];
-                $.each(
-                    Object.keys(this.envKeys).sort(),
-                    $.proxy( function (idx, key) {
-                        keyedVars.push(
-                            {
-                                variable : key,
-                                value : this.options[key] == undefined
-                                    ? '<i>undefined</i>'
-                                    : this.options[key]
-                            }
-                        );
-                    }, this)
-                );
-
-                var data = {
-                    structure : {
-                        header      : ['variable', 'value'],
-                        rows        : keyedVars,
-                    },
-                    sortable    : true,
-                    hover       : false,
-                };
-
-                var $tbl = $.jqElem('div').kbaseTable(data);
-                $widget.setOutput($tbl.$elem);
-                $widget.setValue(keyedVars);
-                $deferred.resolve();
-                if (! isHidden) { this.scroll() };
-                return $promise;
-
-            }
-
-            if (m = command.match(/^setenv\s+(\S+)\s*=\s*(\S+)/)) {
-                if (this.envKeys[m[1]]) {
-                    this.options[m[1]] = m[2] == 'undefined'
-                        ? undefined
-                        : m[2];
-                    $widget.setOutput(m[1] + ' set to ' + m[2]);
-                    $widget.setValue(m[2]);
-                }
-                else {
-                    $widget.setError("Cannot set environment variable <i>" + m[1] + "</i>: Unknown");
-                }
-                $deferred.resolve();
-                if (! isHidden) { this.scroll() };
-                return $promise;
-            }
-
-
-
-            if (m = command.match(/^alias\s+(\S+)\s*=\s*(\S+)/)) {
-                this.aliases[m[1]] = m[2];
-                $widget.setOutput(m[1] + ' set to ' + m[2]);
-                $deferred.resolve();
-                return $promise;
-            }
-
-            if (m = command.match(/^upload\s*(\S+)?$/)) {
-                var file = m[1];
-                if (this.fileBrowsers.length) {
-                    var $fb = this.fileBrowsers[0];
-                    if (file) {
-                        $fb.data('override_filename', file);
-                    }
-                    $fb.data('active_directory', this.cwd);
-                    $fb.uploadFile();
-                    //XXX NOT QUITE ACCURATE...NEEDS TO WAIT FOR UPLOADFILE TO FINISH
-                    $deferred.resolve();
-                }
-                return $promise;
-            }
-
-            if (m = command.match(/^download\s*(\S+)?$/)) {
-                var file = m[1];
-                if (this.fileBrowsers.length) {
-                    var $fb = this.fileBrowsers[0];
-                    $fb.data('active_directory', this.cwd);
-                    $fb.openFile(file);
-                    $deferred.resolve();
-                }
-                return $promise;
-            }
-
-            if (m = command.match(/^edit\s*(\S+)?$/)) {
-                var file = m[1];
-                if (this.fileBrowsers.length) {
-                    var $fb = this.fileBrowsers[0];
-                    $fb.data('active_directory', this.cwd);
-                    if ($fb.editFileCallback()) {
-                        $fb.editFileCallback()(file, $fb);
-                    }
-                    else {
-                        $widget.setError("Cannot edit : no editor");
-                    }
-
-                    $deferred.resolve();
-                }
-                return $promise;
-            }
-
-            if (m = command.match(/^#\s*((?:.|\n)+)/)) {
-                //$widget.$elem.remove();
-                $widget.setIsComment(true);
-                $widget.setInput(m[1]);
-
-                $widget.setOutput('');
-                $widget.setError('');
-                $widget.subWidgets([]);
-                //$widget.setOutput($.jqElem('i').text(m[1]));
-                //$widget.setValue(m[1]);
-                $deferred.resolve();
-                return $promise;
-            }
-
-            if (m = command.match(/^view\s+(\S+)$/)) {
-                var file = m[1];
-
-                var $img = $.jqElem('img')
-                    .attr('src', this.fileBrowsers[0].urlForFile(file))
-                    .css('max-width', '90%');
-
-                var $link = $.jqElem('a')
-                    .append($img)
-                    .attr('href', this.fileBrowsers[0].urlForFile(file))
-                    .css('border', '0px');
-
-                $widget.setOutput(
-                    $link
-                );
-
-
-                setTimeout($.proxy(function() {this.scroll()}, this), 500);
-                $deferred.resolve();
-
-                return $promise;
-
-
-            }
-
-            if (m = command.match(/^search\s+(\S+)\s+(\S+)(?:\s*(\S+)\s+(\S+)(?:\s*(\S+))?)?/)) {
-
-                var parsed = this.options.grammar.evaluate(command);
-
-                var searchVars = {};
-                //'kbase.us/services/search-api/search/$category/$keyword?start=$start&count=$count&format=json',
-
-                var searchURL = this.options.searchURL;
-
-                searchVars.$category = m[1];
-                searchVars.$keyword = m[2];
-                searchVars.$start = m[3] || this.options.searchStart;
-                searchVars.$count = m[4] || this.options.searchCount;
-                var filter = m[5] || this.options.searchFilter[searchVars.$category];
-
-                for (prop in searchVars) {
-                    searchURL = searchURL.replace(prop, searchVars[prop]);
-                }
-
-                $.support.cors = true;
-                $.ajax(
-                    {
-                        type            : "GET",
-                        url             : searchURL,
-                        dataType        : "json",
-                        crossDomain     : true,
-                        xhrFields       : { withCredentials: true },
-                         xhrFields: {
-                            withCredentials: true
-                         },
-                         beforeSend : function(xhr){
-                            // make cross-site requests
-                            xhr.withCredentials = true;
-                         },
-                        success         : $.proxy(
-                            function (data,res,jqXHR) {
-                                var $output = $.jqElem('span');
-                                $output.append('<br>', 'html');
-                                $output.append($('<i></i>').html("Command completed."));
-                                $output.append('<br>', 'html');
-                                $output.append(
-                                    $.jqElem('span')
-                                        .append($.jqElem('b').html(data.found))
-                                        .append(" records found.")
-                                );
-                                $output.append('<br>', 'html');
-                                $output.append(this.search_json_to_table(data.body, filter));
-                                $widget.setOutput($output);
-                                $widget.setValue({
-                                    results : data.body,
-                                    filter : filter
-                                });
-                                var res = this.search_json_to_table(data.body, filter);
-
-                                if (! isHidden) { this.scroll() };
-                                $deferred.resolve();
-
-                            },
-                            this
-                        ),
-                        error: $.proxy(
-                            function (jqXHR, textStatus, errorThrown) {
-
-                                $widget.setError(errorThrown);
-                                $deferred.reject();
-
-                            }, this
-                        ),
-                   }
-                );
-
-                return $promise;
-            }
-
-            if (m = command.match(/^cp\s*(.*)/)) {
-                var args = m[1].split(/\s+/)
-                if (args.length != 2) {
-                    $widget.setError("Invalid cp syntax.");
-                    $deferred.reject();
-                    return $promise;
-                }
-                from = args[0];
-                to   = args[1];
-                this.client().copy(
-                    this.sessionId(),
-                    this.cwd,
-                    from,
-                    to,
-                    $.proxy(
-                        function () {
-                            this.refreshFileBrowser();
-                            $deferred.resolve();
-                        },this
-                    ),
-                    jQuery.proxy(
-                        function (err) {
-                            var m = err.error.message.replace("\n", "<br>\n");
-                            $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
-                            $deferred.reject();
-                        },
-                        this
-                    )
-                );
-                return $promise;
-            }
-            if (m = command.match(/^mv\s*(.*)/)) {
-                var args = m[1].split(/\s+/)
-                if (args.length != 2) {
-                    $widget.setError("Invalid mv syntax.");
-                    $deferred.reject();
-                    return $promise;
-                }
-
-                from = args[0];
-                to   = args[1];
-                this.client().rename_file(
-                    this.sessionId(),
-                    this.cwd,
-                    from,
-                    to,
-                    $.proxy(
-                        function () {
-                            this.refreshFileBrowser();
-                            $deferred.resolve();
-                        },this
-                    ),
-                    jQuery.proxy(
-                        function (err) {
-                            var m = err.error.message.replace("\n", "<br>\n");
-                            $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
-                            $deferred.reject();
-                        },
-                        this
-                    ));
-                return $promise;
-            }
-
-            if (m = command.match(/^mkdir\s*(.*)/)) {
-                var args = m[1].split(/\s+/)
-                if (args[0].length < 1){
-                    $widget.setError("Invalid mkdir syntax.");
-                    $deferred.reject();
-                    return $promise;
-                }
-                $.each(
-                    args,
-                    $.proxy(function (idx, dir) {
-                        this.client().make_directory(
-                            this.sessionId(),
-                            this.cwd,
-                            dir,
-                            $.proxy(
-                                function () {
-                                    this.refreshFileBrowser();
-                                    $deferred.resolve();
-                                },this
-                            ),
-                            jQuery.proxy(
-                                function (err) {
-                                    var m = err.error.message.replace("\n", "<br>\n");
-                                    $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
-                                    $deferred.reject();
-                                },
-                                this
-                            )
-                        );
-                    }, this)
-                )
-                return $promise;
-            }
-
-            if (m = command.match(/^rmdir\s*(.*)/)) {
-                var args = m[1].split(/\s+/)
-                if (args[0].length < 1) {
-                    $widget.setError("Invalid rmdir syntax.");
-                    $deferred.reject();
-                    return $promise;
-                }
-                $.each(
-                    args,
-                    $.proxy( function(idx, dir) {
-                        this.client().remove_directory(
-                            this.sessionId(),
-                            this.cwd,
-                            dir,
-                            $.proxy(
-                                function () {
-                                    this.refreshFileBrowser();
-                                    $deferred.resolve();
-                                },this
-                            ),
-                            jQuery.proxy(
-                                function (err) {
-                                    var m = err.error.message.replace("\n", "<br>\n");
-                                    $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
-                                    $deferred.reject();
-                                },
-                                this
-                            )
-                        );
-                    }, this)
-                );
-                return $promise;
-            }
-
-            if (m = command.match(/^rm\s+(.*)/)) {
-                var args = m[1].split(/\s+/);
-                if (args[0].length < 1) {
-                    $widget.setError("Invalid rm syntax.");
-                    $deferred.reject();
-                    return $promise;
-                }
-                $.each(
-                    args,
-                    $.proxy(function (idx, file) {
-                        this.client().remove_files(
-                            this.sessionId(),
-                            this.cwd,
-                            file,
-                            $.proxy(
-                                function () {
-                                    this.refreshFileBrowser();
-                                    $deferred.resolve();
-                                },this
-                            ),
-                            jQuery.proxy(
-                                function (err) {
-                                    var m = err.error.message.replace("\n", "<br>\n");
-                                    $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m));
-                                    $deferred.reject();
-                                },
-                                this
-                            )
-                        );
-                    }, this)
-                );
-                return $promise;
-            }
-
-            if (m = command.match(/^execute\s+(.*)/)) {
-                var args = m[1].split(/\s+/);
-                if (args.length != 1) {
-                    $widget.setError("Invalid execute syntax.");
-                    $deferred.reject();
-                    return $promise;
-                }
-                this.client().get_file(
-                    this.sessionId(),
-                    args[0], this.cwd,
-                    jQuery.proxy(
-                        function (script) {
-                            //XXX promise resolution here is...sketchy at best.
-                            //we obviously haven't finished running anything, so we shouldn't
-                            //necessarily resolve, but it would be resolved by the next call through
-                            //the run loop anyway. So bugger all if I know. I'll have to revisit.
-                            $deferred.resolve();
-
-                            //Sigh. Freakin' special case. This is the time that a run commmand
-                            //can spawn a new run, but NOT via tokenization. So we explicitly
-                            //toss the <hr> into the output, and nuke the following hr in the terminal
-                            //$widget.setOutput('abc');//$.jqElem('div'));
-                            //this.out_line($widget.output());
-                            if ($widget.$elem.next().prop('tagName') == 'HR') {
-                                $widget.$elem.next().remove();
-                            }
-
-
-                            this.run(
-                                script,
-                                {
-                                    subCommand : true,
-                                    //$widget : $widget,
-                                    $containerWidget : $widget,
-                                    viaInvoke : opts.viaInvoke
-                                }
-                            );
-                        },
-                        this
-                    ),
-                    jQuery.proxy(function (e) {
-                        $widget.setError("No such script");
-                        $deferred.reject();
-                    }, this)
-                );
-                return $promise;
-            }
-
-            if (m = command.match(/^evaluate\s+(.*)/)) {
-
-                var script = m[1];
-                if (script.length < 1) {
-                    $widget.setError("Invalid evalute syntax.");
-                    $deferred.reject();
-                    return $promise;
-                }
-
-                this.client().get_file(
-                    this.sessionId(),
-                    script, this.cwd,
-                    jQuery.proxy(
-                        function (script) {
-                            this.evaluateScript(this, $widget, script, $deferred, $widget);
-                        },
-                        this
-                    ),
-                    jQuery.proxy(function (e) {
-
-                        //dammit. No such script. see if we can evalute it.
-                        this.evaluateScript(this, $widget, script, $deferred, $widget);
-
-                    }, this)
-                );
-
-                return $promise;
-            }
-
-            if (d = command.match(/^ls\s*(.*)/)) {
-                var args = d[1].split(/\s+/)
-                var obj = this;
-                if (args.length == 0) {
-                    d = ".";
-                }
-                else {
-                    d = d[1];
-                }
-
-                //okay, add in regex support
-                var regex = undefined;
-                if (d.match(/[*+?\s.]/)) {
-                    d = d.replace(/\s+/g, '|');
-                    d = d.replace(/\./g, '\.');
-                    d = d.replace(/([*+?])/g, '.$1');
-                    regex = new RegExp('^(' + d + ')$');
-                    d = '.';
-                }
-
-                this.client().list_files(
-                    this.sessionId(),
-                    this.cwd,
-                    d,
-                    jQuery.proxy(
-                        function (filelist) {
-                            var dirs = filelist[0];
-                            var files = filelist[1];
-
-                            var allFiles = [];
-
-                            $.each(
-                                dirs,
-                                function (idx, val) {
-
-                                    if (regex != undefined && ! val.name.match(regex)) {
-                                        return;
-                                    }
-
-                                    allFiles.push(
-                                        {
-                                            size    : '(directory)',
-                                            mod_date: val.mod_date,
-                                            name    : val.name,
-                                            nameTD  : val.name,
-                                        }
-                                    );
-                                }
-                            );
-
-                            $.each(
-                                files,
-                                $.proxy( function (idx, val) {
-
-                                    if (regex != undefined && ! val.name.match(regex)) {
-                                        return;
-                                    }
-
-                                    allFiles.push(
-                                        {
-                                            size    : val.size,
-                                            mod_date: val.mod_date,
-                                            name    : val.name,
-                                            nameTD  :
-                                                $.jqElem('a')
-                                                    .text(val.name)
-                                                    //uncomment these two lines to click and open in new window
-                                                    //.attr('href', url)
-                                                    //.attr('target', '_blank')
-                                                    //comment out this block if you don't want the clicks to pop up via the api
-                                                    //*
-                                                    .attr('href', '#')
-                                                    .on(
-                                                        'click',
-                                                        jQuery.proxy(
-                                                            function (e) {
-                                                                e.preventDefault();e.stopPropagation();
-                                                                this.open_file(val['full_path']);
-                                                                return false;
-                                                            },
-                                                            this
-                                                        )
-                                                    ),
-                                                    //*/,
-                                            url     : this.options.invocationURL + "/download/" + val.full_path + "?session_id=" + this.sessionId()
-                                        }
-                                    );
-
-                                }, this)
-                            );
-
-                            var data = {
-                                structure : {
-                                    header      : [],
-                                    rows        : [],
-                                },
-                                sortable    : true,
-                                bordered    : false
-                            };
-
-                            $.each(
-                                allFiles.sort(this.sortByKey('name', 'insensitively')),
-                                $.proxy( function (idx, val) {
-                                    data.structure.rows.push(
-                                        [
-                                            val.size,
-                                            val.mod_date,
-                                            { value : val.nameTD }
-                                        ]
-                                    );
-                                }, this)
-                            );
-
-                            var $tbl = $.jqElem('div').kbaseTable(data);
-
-                            if (data.structure.rows.length) {
-                                $widget.setOutput($tbl.$elem);
-                                $widget.setValue(filelist);
-                            }
-                            else {
-                                $widget.setError("no matching files found");
-                            }
-                            $deferred.resolve();
-                            if (! isHidden) { this.scroll() };
-                         },
-                         this
-                     ),
-                     function (err)
-                     {
-                         var m = err.error.message.replace("\n", "<br>\n");
-                         $widget.setError($.jqElem('span').append("Error received:<br>" + err.error.code + "<br>" + m))
-                         $deferred.reject();
-                     }
-                    );
-                return $promise;
-            }
-
-            if (w = command.match(/^widget\s+(.*)/)) {
-                var args = w[1].split(/\s+/)
-                var obj = this;
-
-                if (! args[0].length) {
-                    $widget.setError("incorrect add widget syntax");
-                    $deferred.reject();
-                    return $promise;
-                }
-
-                var $widget = this.addWidget(args[0], args.length > 1);
-
-                if (args.length > 1) {
-                    $widget.setInput(args[1]);
-                }
-
-                $deferred.resolve();
-                return $promise;
-            }
-
-
-            var parsed = this.options.grammar.evaluate(command);
-
-            if (parsed != undefined) {
-                if (! parsed.fail && parsed.execute) {
-                    command = parsed.execute;
-
-                    if (parsed.explain) {
-                        $widget.setOutput(parsed.execute);
-                        $deferred.resolve();
-                        return $promise;
-                    }
-
-                }
-                else if (parsed.parsed.length && parsed.fail) {
-                    $widget.setError(parsed.error);
-                    $deferred.reject();
-                    return $promise;
-                }
-            }
-
-            //command = command.replace(/\\\n/g, " ");
-            //command = command.replace(/\n/g, " ");
-
-            var pid = this.uuid();
-            $widget.setPid(pid);
-
-            var $pe = $.jqElem('div').text(command);
-            $pe.kbaseButtonControls(
-                {
-                    onMouseover : true,
-                    context : this,
-                    controls : [
-                        {
-                            'icon' : 'fa fa-ban-circle',
-                            //'tooltip' : 'Cancel',
-                            callback : function(e, $term) {
-                                $widget.promise().xhr.abort();
-                                $widget.$elem.remove();
-                            }
-                        },
-                    ]
-
-                }
-            );
-
-            if (! isHidden) {
-                this.trigger(
-                    'updateIrisProcess',
-                    {
-                        pid : pid,
-                        content : $pe
-                    }
-                );
-            }
-
-            //var commands = command.split(/[;\r\n]/) {
-
-            var promise = this.client().run_pipeline(
-                this.sessionId(),
-                command,
-                [],
-                this.options.maxOutput,
-                this.cwd,
-                jQuery.proxy(
-                    function (runout) {
-
-                        if (runout) {
-
-                            var output = runout[0];
-                            var error  = runout[1];
-
-                            this.refreshFileBrowser();
-
-                            if (output.length > 0 && output[0].indexOf("\t") >= 0) {
-
-                                var data = {
-                                    structure : {
-                                        header      : [],
-                                        rows        : [],
-                                    },
-                                    sortable    : false,
-                                    hover       : false,
-                                    resizable   : true,
-                                };
-
-                                $.each(
-                                    output,
-                                    function (idx, rowStr) {
-                                        var row = [];
-                                        data.structure.rows.push(row);
-                                        $.each(
-                                            rowStr.split(/\t/),
-                                            function (idx, val) {
-                                                row.push(val);
-                                            }
-                                        )
-                                    }
-                                );
-
-                                var $tbl = $.jqElem('div').kbaseTable(data);
-                                $widget.setOutput($tbl.$elem);
-
-                                $widget.setValue(output);
-                            }
-                            else {
-                                $widget.setOutput(output.join(''));
-                                $widget.setValue(output);
-                            }
-
-                            if (error.length) {
-
-                                $widget.setError(error.join(''));
-                                if (output.length) {
-                                    $deferred.resolve();
-                                }
-                                else {
-                                    $deferred.reject();
-                                }
-                            }
-                            else {
-                                $widget.setError('Command Completed');
-                                $deferred.resolve();
-                            }
-                        }
-                        else {
-                            $widget.setError('Error running command.');
-                            $deferred.reject();
-                        }
-                        if (! isHidden) { this.scroll() };
-
-                        this.trigger( 'removeIrisProcess', pid );
-                    },
-                    this
-                ),
-                $.proxy( function(res) { this.trigger( 'removeIrisProcess', pid ); }, this)
-            );
-
-            $widget.promise(promise);
-            this.live_widgets.push($widget);
-
-            return $promise;
         }
 
 
