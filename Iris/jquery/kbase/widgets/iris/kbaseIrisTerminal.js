@@ -167,6 +167,22 @@ define('kbaseIrisTerminal',
             return $a;
         },
 
+        create_ext_link : function(text, href) {
+
+            if (href == undefined) {
+                href = text;
+            }
+
+            var $a = $.jqElem('a')
+                .attr('title', text)
+                .attr('target', '_blank')
+                .attr('href', href)
+                .append(text)
+            ;
+
+            return $a;
+        },
+
         warn_not_logged_in : function($widget) {
             $widget.setError(
                 $.jqElem('span')
@@ -406,6 +422,8 @@ define('kbaseIrisTerminal',
                         this.run('((kbws-addtype ' + this.options.defaultFileType + '))');
                         this.out_line();
                         this.scroll();
+                        this.data('input_box').focus();
+
                     }, this ),
                     $.proxy( function (err) {
                         this.out_text(
@@ -415,7 +433,8 @@ define('kbaseIrisTerminal',
                     }, this )
                 );
 
-                this.input_box.focus();
+                //for some reason...this doesn't seem to work. It's weird.
+                this.data('input_box').focus();
             }
         },
 
@@ -478,6 +497,7 @@ define('kbaseIrisTerminal',
                         .attr('id', 'input_box')
                         .attr('style', 'width : 95%;')
                         .attr('height', '3')
+                        .attr('spellcheck', 'false')
                     )
                 .append(
                     $('<div></div>')
@@ -499,19 +519,21 @@ define('kbaseIrisTerminal',
 
             this.out_text(
                 $.jqElem('span')
-                .append(
-                    "Welcome to the interactive KBase terminal!<br>\n"
-                    +"Please click the ")
+                    .append(
+                        "Welcome to the interactive KBase terminal!<br>\n"
+                        +"Please click the ")
                     .append(this.create_run_link('Sign In', '((authenticate))'))
                     .append(" button in the upper right to get started.<br>\n"
-                    +"Type ")
-                    .append(this.create_run_link('commands'))
+                        + "Type ")
+                    .append( this.create_run_link('commands') )
                     .append(" for a list of commands.<br>\n"
-                    +"For usage information about a specific command, type the command name with -h or --help after it.<br>\n"
-                    +"Please visit <a href = 'http://www.kbase.us/for-users/get-started#iris' target = '_blank'>http://www.kbase.us/for-users/get-started#iris</a> or type ")
+                        +"For usage information about a specific command, type the command name with -h or --help after it.<br>\n"
+                        +"Please visit ")
+                    .append( this.create_ext_link(window.kbaseIrisConfig.tutorial.default_tutorial) )
+                    .append(" or type ")
                     .append(this.create_run_link('tutorial'))
                     .append(" for an Iris tutorial.<br>\n"
-                    +"To find out what's new, type "
+                        +"To find out what's new, type "
                     )
                     .append(this.create_run_link('whatsnew'))
                     .append(" (v0.0.8 - XX/XX/2014)<br>\n"),
@@ -1406,7 +1428,29 @@ define('kbaseIrisTerminal',
 
                         var m = [];
                         var use_callback = false;
-                        if (dispatch.regex) {
+
+                        //first thing first. See if we're looking for help. If so, display it.
+                        var help_regex = dispatch.help_regex;
+                        if (help_regex == undefined) {
+                            help_regex = dispatch.help_regex = new RegExp('^\\s*' + dispatch.name + '\\s+(-h|--help)\\s*$');
+                        }
+
+                        if (m = command.match(help_regex)) {
+
+                            var helpValue = dispatch.help || $.jqElem('span').html('help is not available for <i>' + dispatch.name + '</i>');
+
+                            if (typeof helpValue == 'function') {
+                            console.log(helpValue);
+                            console.log(helpValue.apply(this));
+                            console.log(helpValue.call(this));
+                                helpValue = helpValue.apply(this);
+                            }
+
+                            $widget.setOutput(helpValue);
+                            dispatched = true;
+                        }
+
+                        else if (dispatch.regex) {
                             if (m = command.match(dispatch.regex) ) {
                                 m.shift();  //toss out the full match. we don't use it.
                                 use_callback = true;

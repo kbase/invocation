@@ -52,7 +52,7 @@ define('kbaseIrisTutorial',
                 }
             }
 
-            return output.sort(this.sortByKey('title', 'insensitively'));
+            return output; //output.sort(this.sortByKey('title', 'insensitively'));
         },
 
         init : function (options) {
@@ -168,7 +168,9 @@ define('kbaseIrisTutorial',
                 return undefined;
             }
             else {
-                return this.pages[this.currentPage];
+                var content = this.pages[this.currentPage];
+                content.find('a').attr('target', '_blank');
+                return content;
             }
         },
 
