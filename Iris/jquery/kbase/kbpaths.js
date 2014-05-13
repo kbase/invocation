@@ -42,6 +42,16 @@ define('kbpaths',[], function (paths) {
         kbaseIrisWidget : 'iris/kbaseIrisWidget',
         kbaseIrisWorkspace : 'iris/kbaseIrisWorkspace',
 
+        kbaseIrisConfig   : 'iris/kbaseIrisConfig',
+        kbaseIrisTerminalDispatch : 'iris/config/kbaseIrisTerminalDispatch',
+        kbaseIrisTerminalDispatchTutorial : 'iris/config/kbaseIrisTerminalDispatchTutorial',
+        kbaseIrisTerminalDispatchAuth : 'iris/config/kbaseIrisTerminalDispatchAuth',
+        kbaseIrisTerminalDispatchFile : 'iris/config/kbaseIrisTerminalDispatchFile',
+        kbaseIrisTerminalDispatchHelp : 'iris/config/kbaseIrisTerminalDispatchHelp',
+        kbaseIrisTerminalDispatchEnv : 'iris/config/kbaseIrisTerminalDispatchEnv',
+        kbaseIrisTerminalDispatchScript : 'iris/config/kbaseIrisTerminalDispatchScript',
+        kbaseIrisTerminalDispatchHistory : 'iris/config/kbaseIrisTerminalDispatchHistory',
+
         RGBColor : '../../../js/RGBColor',
         geometry_point : '../../../js/geometry/point',
         geometry_rectangle : '../../../js/geometry/rectangle',

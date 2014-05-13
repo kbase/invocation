@@ -6,6 +6,7 @@ define('kbaseIrisTutorial',
     [
         'jquery',
         'kbwidget',
+        'kbaseIrisConfig',
     ],
     function ($) {
 
@@ -17,8 +18,8 @@ define('kbaseIrisTutorial',
 
         version: "1.0.0",
         options: {
-            configURL : 'http://kbase.us/docs/tutorials.cfg',
-            tutorial : 'http://kbase.us/docs/getstarted/getstarted_iris/getstarted_iris.html',
+            config_url          : window.kbaseIrisConfig.tutorial.config_url,
+            default_tutorial    : window.kbaseIrisConfig.tutorial.default_tutorial,
         },
 
         format_tutorial_url : function (doc_format_string, repo, filespec) {
@@ -61,16 +62,17 @@ define('kbaseIrisTutorial',
             this.currentPage = -1;
 
             $.getJSON(
-                this.options.configURL,
+                this.options.config_url,
                 $.proxy(function(data) {
+
                     this.repos = data.repos;
                     this.doc_format_string = data.doc_format_string;
-                    if (this.options.tutorial == undefined) {
-                        this.options.tutorial = data.default;
+                    if (this.options.default_tutorial == undefined) {
+                        this.options.default_tutorial = data.default;
                     }
 
-                    if (this.options.tutorial) {
-                        this.retrieveTutorial(this.options.tutorial);
+                    if (this.options.default_tutorial) {
+                        this.retrieveTutorial(this.options.default_tutorial);
                     }
 
                 }, this)
@@ -172,6 +174,42 @@ define('kbaseIrisTutorial',
 
         contentForCurrentPage : function () {
             return this.contentForPage(this.currentPage);
+        },
+
+        list_text : function (handler) {
+            return this.command_text('tutorial list', 'tutorial list', 'to see available tutorials.', handler);
+        },
+
+        next_text : function (handler) {
+            return this.command_text('next', 'next', 'to move to the next step in the tutorial.', handler);
+        },
+
+        back_text : function (handler) {
+            return this.command_text('back', 'back', 'to move to the previous step in the tutorial.', handler);
+        },
+
+        command_text : function (link, command, blurb, handler) {
+
+            if (handler == undefined) {
+                throw "Cannot create command_text w/o handler";
+            }
+
+            return $.jqElem('span')
+                .append("<br>")
+                .append("Type ")
+                .append(
+                    $.jqElem('i')
+                        .append(
+                            $.jqElem('a')
+                                .append(link)
+                                .on('click',
+                                    $.proxy(function(e) {
+                                        handler.run(command);
+                                    }, handler)
+                                )
+                        )
+                    )
+                .append(' ' + blurb)
         },
 
     });

@@ -1,5 +1,6 @@
 define('iris',
     [
+        'kbaseIrisConfig',
         'kbaseLogin',
         'kbaseIrisProcessList',
         'kbaseIrisTerminal',
