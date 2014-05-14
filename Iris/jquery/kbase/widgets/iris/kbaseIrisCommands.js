@@ -60,6 +60,14 @@ define('kbaseIrisCommands',
             }
 
             this.commandCategories = {};
+            this.knownIrisCommands = {};
+
+            $(document).on(
+                'addedIrisCommand.kbaseIris',
+                $.proxy(function (e, params) {
+                    this.addIrisCommand(e, params.command);
+                }, this)
+            );
 
             return this;
 
@@ -140,6 +148,11 @@ define('kbaseIrisCommands',
 
 
         appendUI : function($elem) {
+
+            if (this.client == undefined) {
+                return;
+            }
+
             this.client.valid_commands(
                 $.proxy(
                     function (res) {
@@ -163,6 +176,11 @@ define('kbaseIrisCommands',
                                 name    : 'shell',
                                 title   : 'Shell commands',
                                 items   : shell_tokens,
+                            },
+                            {
+                                name  : 'iris',
+                                title : 'Iris commands',
+                                items : []
                             }
                         );
 
@@ -211,17 +229,13 @@ define('kbaseIrisCommands',
                         var orderedRes = [];
                         if (this.options.order.length) {
                             //this stupid mod is O(n^2). But building up a queryable hash is more trouble than it's worth.
-                            console.log(this.options.order);
                             $.each(
                                 this.options.order,
                                 function (idx, key) {
-                                console.log("O KEY IS " + key);
                                     $.each(
                                         res,
                                         function (idx, val) {
-                                            console.log(key + ' vs ' + val.name);
                                             if (val.name == key) {
-                                            console.log("SPLICE IN " + val.name);
                                                 orderedRes.push.apply(orderedRes, res.splice(idx, 1));
                                                 return false;
                                             }
@@ -230,7 +244,6 @@ define('kbaseIrisCommands',
                                 }
                             )
                         }
-console.log(orderedRes);
 
                         res = res.sort(this.sortByKey('title'));
                         if (orderedRes.length) {
@@ -595,8 +608,39 @@ console.log(orderedRes);
             this._rewireIds($box.$elem, this);
 
             this._superMethod('appendUI', this.data('all-commands'), commands);
+            this.data('commands', commands);
 
             this.data('accordion').css('margin-bottom', '0px');
+
+            this.trigger('requestIrisCommands', {requester : this});
+
+        },
+
+        addIrisCommand : function (command) {
+
+            if (this.knownIrisCommands[command.cmd] != undefined) {
+                return;
+            }
+
+            this.knownIrisCommands[command.cmd] = 1;
+
+            var irisCommandsUL = this.data('irisCommandsUL');
+
+            if (irisCommandsUL == undefined) {
+                $.each(
+                    this.data('commands'),
+                    $.proxy(function (idx, val) {
+                        if (val.category == 'iris') {
+                            irisCommandsUL = this.data('irisCommandsUL', val.body);
+                        }
+                    }, this)
+                )
+            }
+
+            irisCommandsUL.append(
+                this.createLI(command.cmd, command.label)
+            );
+
 
         },
 

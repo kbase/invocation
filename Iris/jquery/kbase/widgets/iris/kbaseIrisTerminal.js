@@ -54,6 +54,15 @@ define('kbaseIrisTerminal',
         run_dispatch : [
             {
                 name : 'clear',
+                help        : function() {
+                    var h =
+                        $.jqElem('span')
+                            .append('Type ')
+                            .append(this.create_input_link('clear'))
+                            .append(' to clear your terminal history.')
+                    ;
+                    return h;
+                },
                 auth : false,
                 history : false,
                 callback : function(args, command, $widget, $deferred) {
@@ -70,6 +79,15 @@ define('kbaseIrisTerminal',
             },
             {
                 name : 'end',
+                help        : function() {
+                    var h =
+                        $.jqElem('span')
+                            .append('Type ')
+                            .append(this.create_input_link('end'))
+                            .append(' to jump to the end of your terminal scroll.')
+                    ;
+                    return h;
+                },
                 auth : false,
                 history : false,
                 callback : function(args, command, $widget, $deferred) {
@@ -81,6 +99,15 @@ define('kbaseIrisTerminal',
             {
                 name        : 'comment',
                 auth        : true,
+                help        : function() {
+                    var h =
+                        $.jqElem('span')
+                            .append('Type ')
+                            .append(this.create_input_link('#$comment'))
+                            .append(' to create a comment for later reference.')
+                    ;
+                    return h;
+                },
                 regex       : new RegExp(/^#\s*((?:.|\n)+)/),
                 callback    : function(args, command, $widget, $deferred) {
                     $widget.setIsComment(true);
@@ -98,6 +125,15 @@ define('kbaseIrisTerminal',
             {
                 name : 'widget',
                 auth : true,
+                help        : function() {
+                    var h =
+                        $.jqElem('span')
+                            .append('Type ')
+                            .append(this.create_input_link('widget $widgetname'))
+                            .append(' to add a widget with name <b>$widgetname</b>.')
+                    ;
+                    return h;
+                },
                 regex       : new RegExp(/^widget\s+(.*)/),
                 callback : function(args, command, $widget, $deferred) {
                     var args = args[0].split(/\s+/)
@@ -134,7 +170,7 @@ define('kbaseIrisTerminal',
                 .on('click',
                     $.proxy(function(e) {
                         var append = value + ' ';
-                        if (this.input_box.val().length && ! $term.input_box.val().match(/[\|;]\s*$/)) {
+                        if (this.input_box.val().length && ! this.input_box.val().match(/[\|;]\s*$/)) {
                             append = '| ' + append;
                         }
                         this.appendInput(append);
@@ -211,6 +247,41 @@ define('kbaseIrisTerminal',
 
         },
 
+        notifyOfIrisCommands : function(requester) {
+
+            var commands = [];
+
+            $.each(
+                this.run_dispatch,
+                function (idx, val) {
+                    commands.push({cmd : val.name, label : val.name})
+                }
+            );
+
+            commands = commands.sort(this.sortByKey('label'));
+
+            //XXX mild race condition. Events theoretically might show up in a different
+            //order. Should refactor to fire off notes with an array
+            //also of note, commands added later WILL propogate in via a note,
+            //but the list will not re-sort
+            $.each(
+                commands,
+                $.proxy(function (idx, cmd) {
+
+                    if (requester == undefined) {
+                        this.trigger(
+                            'addedIrisCommand',
+                            cmd
+                        );
+                    }
+                    else {
+                        requester.addIrisCommand(cmd);
+                    }
+                }, this)
+            );
+
+        },
+
         init: function(options) {
 
             this._super(options);
@@ -219,10 +290,14 @@ define('kbaseIrisTerminal',
             $.each(
                 window.kbaseIrisConfig.terminal.run_dispatch,
                 $.proxy(function (idx, cmd) {
-                    console.log("ADDS "  + cmd.name);
-                    this.add_to_dispatch(cmd);
+                    this.add_to_dispatch(cmd, 'silently');
                 }, this)
             );
+
+            // 99x/100 this will not do anything useful. It'll post addedIrisCommands notes, but nothing
+            // is probably alive yet to receive them. When a commands element wakes up and is loaded, it'll
+            // fire off an event asking for the list of commands, then update its display to reflect.
+            this.notifyOfIrisCommands();
 
             //for lack of a better place to put it, the plugin to set cursor position
             $.fn.setCursorPosition = function(position){
@@ -309,6 +384,13 @@ define('kbaseIrisTerminal',
                     )
                 )
             };
+
+            $(document).on(
+                'requestIrisCommands.kbaseIris',
+                $.proxy(function (e, params) {
+                    this.notifyOfIrisCommands(params.requester);
+                }, this)
+            );
 
             $(document).on(
                 'loggedInQuery.kbase',
@@ -1144,8 +1226,18 @@ define('kbaseIrisTerminal',
         // Executes a command
         //run: function(rawCmd, /*$widget*/, /*subCommand*/, $containerWidget, /*viaInvoke*/) {
 
-        add_to_dispatch : function(command) {
+        add_to_dispatch : function(command, silently) {
             this.run_dispatch.push(command);
+
+            if (! silently) {
+                this.trigger(
+                    'addedIrisCommand',
+                    {
+                        cmd   : command.name,
+                        label : command.name
+                    }
+                );
+            }
         },
 
         run: function (rawCmd, opts) {
@@ -1501,7 +1593,8 @@ define('kbaseIrisTerminal',
                         return $promise;
                     }
 
-                    // XXX! Duplicated up above on 2740. re-factor out!
+                    // XXX! Duplicated up above on 1471. re-factor out! BUT NOTE - the conditionals there are slightly different
+                    // since that also checks to see if the dispatch is refusing to be added to history
                     if (! opts.subCommand && this.commandHistory != undefined && ! opts.viaInvoke && ! $widget.isHidden()) {
                         this.addCommandHistory(command);
                     }
