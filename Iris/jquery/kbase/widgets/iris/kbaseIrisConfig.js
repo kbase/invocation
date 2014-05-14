@@ -13,8 +13,13 @@ define('kbaseIrisConfig',
                     run_dispatch    : [],
                 },
                 tutorial : {
-                    config_url : 'http://kbase.us/docs/tutorials.cfg',
+                    config_url       : 'http://kbase.us/docs/tutorials.cfg',
                     default_tutorial : 'http://kbase.us/docs/getstarted/getstarted_iris/getstarted_iris.html',
+                },
+                commands : {
+                    order   : [],
+                    include : [],
+                    exclude : [],
                 },
             }
         }

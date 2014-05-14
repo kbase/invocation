@@ -28,6 +28,7 @@ define('kbaseIrisCommands',
         'kbaseAccordion',
         'kbaseButtonControls',
         'kbaseBox',
+        'kbaseIrisConfig',
     ],
     function ($) {
 
@@ -45,6 +46,9 @@ define('kbaseIrisCommands',
             fontSize : '90%',
             overflow : true,
             sectionHeight : '300px',
+            order   : window.kbaseIrisConfig.commands.order,
+            include : window.kbaseIrisConfig.commands.include,
+            exclude : window.kbaseIrisConfig.commands.exclude,
         },
 
         init: function(options) {
@@ -52,7 +56,6 @@ define('kbaseIrisCommands',
             this._super(options);
 
             if (options.client) {
-
                 this.client = options.client;
             }
 
@@ -163,7 +166,76 @@ define('kbaseIrisCommands',
                             }
                         );
 
+
+
+                        //okay, now the squirrelly bits. If we've been given an include list, then only use those.
+                        if (this.options.include.length) {
+
+                            var include = {};
+                            $.each(
+                                this.options.include,
+                                function (idx, val) {
+                                    include[val] = 1;
+                                }
+                            )
+
+                            res = $.grep(
+                                res,
+                                function (val, idx) {
+                                    return include[val.name];
+                                }
+                            );
+                        }
+
+                        //BUT, if we've been given an exclude list, then don't include those.
+                        if (this.options.exclude.length) {
+
+                            var exclude = {};
+                            $.each(
+                                this.options.exclude,
+                                function (idx, val) {
+                                    exclude[val] = 1;
+                                }
+                            )
+
+                            res = $.grep(
+                                res,
+                                function (val, idx) {
+                                    return ! exclude[val.name];
+                                }
+                            );
+                        }
+
+                        //finally, we allow sorting.
+
+                        var orderedRes = [];
+                        if (this.options.order.length) {
+                            //this stupid mod is O(n^2). But building up a queryable hash is more trouble than it's worth.
+                            console.log(this.options.order);
+                            $.each(
+                                this.options.order,
+                                function (idx, key) {
+                                console.log("O KEY IS " + key);
+                                    $.each(
+                                        res,
+                                        function (idx, val) {
+                                            console.log(key + ' vs ' + val.name);
+                                            if (val.name == key) {
+                                            console.log("SPLICE IN " + val.name);
+                                                orderedRes.push.apply(orderedRes, res.splice(idx, 1));
+                                                return false;
+                                            }
+                                        }
+                                    )
+                                }
+                            )
+                        }
+console.log(orderedRes);
+
                         res = res.sort(this.sortByKey('title'));
+                        if (orderedRes.length) {
+                            res.unshift.apply(res, orderedRes);
+                        }
 
                         var commands = [];
                         $.each(
