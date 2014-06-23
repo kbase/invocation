@@ -515,6 +515,7 @@ sub run_pipeline
 	push(@cmds, [$cmd_path, map { s/\\t/\t/g; $_ } @$args]);
 	push @cmds, init => sub {
 	    $ENV{$_} = $env{$_} foreach keys %env;
+	    $ENV{HOME} = $self->_session_dir();
 	    chdir $dir or die $!;
 	};
 	my $have_output_redirect;
