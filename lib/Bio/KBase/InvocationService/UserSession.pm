@@ -90,7 +90,7 @@ sub _session_dir
     if ($self->ctx && $self->ctx->authenticated)
     {
 	$dir = File::Spec->catfile($self->impl->auth_storage_dir, $self->ctx->user_id);
-	print STDERR "Construct dir from storage=" . $self->impl->auth_storage_dir . " userid=" . $self->ctx->user_id . "\n";
+	# print STDERR "Construct dir from storage=" . $self->impl->auth_storage_dir . " userid=" . $self->ctx->user_id . "\n";
 
 	#
 	# If we come in here and somehow the directory isn't yet created, go ahead and create it.
@@ -102,7 +102,7 @@ sub _session_dir
     }
     else
     {
-	print STDERR "Construct dir from nonauth storage=" . $self->impl->nonauth_storage_dir . " sessionid=" . $self->session_id . "\n";
+	# print STDERR "Construct dir from nonauth storage=" . $self->impl->nonauth_storage_dir . " sessionid=" . $self->session_id . "\n";
 	$dir = File::Spec->catfile($self->impl->nonauth_storage_dir, $self->session_id);
 	#
 	# If we come in here and somehow the directory isn't yet created, go ahead and create it.
