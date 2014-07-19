@@ -12,6 +12,24 @@
         <script data-main = 'src/kbpaths'
             src = 'ext/requirejs/2.1.9/require.js'></script>
 
+        <script type = 'text/javascript'>
+            var kb_use_require = true;
+            var kb_norequire = function(deps, callback) {
+                callback(jQuery);
+            };
+            var kb_nodefine = function(module, deps, callback) {
+                callback(jQuery);
+            };
+            if (kb_use_require) {
+                kb_define = define;
+                kb_require = require;
+            }
+            else {
+                kb_define = kb_nodefine;
+                kb_require = kb_norequire;
+            }
+        </script>
+
         <script src="InvocationService.js" type="text/javascript" charset="utf-8"></script>
 
         <script type = 'text/javascript'>
