@@ -24,7 +24,9 @@ IRIS_WEBROOT = $(SERVICE_DIR)/webroot/Iris
 SERVICE_URL = http://localhost:$(SERVICE_PORT)
 
 TPAGE_ARGS = --define kb_top=$(TARGET) --define kb_runtime=$(DEPLOY_RUNTIME) --define kb_service_name=$(SERVICE) \
-	--define kb_service_port=$(SERVICE_PORT) --define kb_service_url=$(SERVICE_URL)
+	--define kb_service_port=$(SERVICE_PORT) --define kb_service_url=$(SERVICE_URL) \
+	--define kb_search_url=$(SEARCH_URL) --define kb_tutorial_cfg_url=$(TUTORIAL_CFG_URL) \
+	--define kb_default_tutorial_url=$(DEF_TUTORIAL_URL)
 
 all: build-libs bin
 
@@ -60,10 +62,21 @@ deploy-service: deploy-dir-service deploy-monit deploy-libs deploy-iris
 # Deploy the Iris interface.
 #
 deploy-iris:
+	@ git submodule init
+	@ git submodule update
 	mkdir -p $(IRIS_WEBROOT)/Iris
+	rm $(IRIS_WEBROOT)/$(BASE_NAME).js
+	rm -r $(IRIS_WEBROOT)/src
+	rm -r $(IRIS_WEBROOT)/ext
 	rsync -arv Iris/. $(IRIS_WEBROOT)
+	rm $(IRIS_WEBROOT)/$(BASE_NAME).js
+	rm -r $(IRIS_WEBROOT)/src
+	rm -r $(IRIS_WEBROOT)/ext
 	cp lib/$(BASE_NAME).js $(IRIS_WEBROOT)/$(BASE_NAME).js
-	$(TPAGE) $(TPAGE_ARGS) iris-index.html.tt > $(IRIS_WEBROOT)/iris.html
+	cp -r modules/ui-common/src $(IRIS_WEBROOT)/.
+	cp -r modules/ui-common/ext $(IRIS_WEBROOT)/.
+	#cp -r modules $(IRIS_WEBROOT)/..
+	$(TPAGE) $(TPAGE_ARGS) kbaseIrisConfig.js.tt > $(IRIS_WEBROOT)/src/widgets/iris/kbaseIrisConfig.js
 	cp Iris/splash.html $(IRIS_WEBROOT)/index.html
 
 deploy-monit:

@@ -4,18 +4,15 @@
 
     <head>
 
-        <link href="./jquery/ext/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
-        <link href="./jquery/ext/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" />
+        <link href="ext/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+        <link href="ext/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
 
         <link rel="stylesheet" href="iris.css" type="text/css" media="screen" title="main" charset="utf-8">
 
-        <script data-main = './jquery/kbase/kbpaths'
-            src = './jquery/ext/requirejs/2.1.9/require.js'></script>
+        <script data-main = 'src/kbpaths'
+            src = 'ext/requirejs/2.1.9/require.js'></script>
 
-        <script src = './js/MetaTool.js'></script>
-        <script src = './js/workspaceService/Client.js'></script>
-        <script src="../lib/InvocationService.js" type="text/javascript" charset="utf-8"></script>
+        <script src="InvocationService.js" type="text/javascript" charset="utf-8"></script>
 
         <script type = 'text/javascript'>
             <!--
@@ -123,25 +120,16 @@
                                                 }
                                             )
                             },
-                            plantsnetworktable : function() {
-
-                                return $.jqElem('div').kbaseIrisContainerWidget(
-                                                {
-                                                    inputType : 'file',
-                                                    widget : $.jqElem("div")
-                                                        .kbasePlantsNetworkTable({
-                                                            $terminal : $term
-                                                        })
-                                                }
-                                            )
-                            },
-                            plantsnetworknarrative : function() {
+                            tree : function() {
 
                                 return $.jqElem('div').kbaseIrisContainerWidget(
                                                 {
                                                     inputType : 'json',
                                                     widget : $.jqElem("div")
-                                                        .kbasePlantsNetworkNarrative()
+                                                        .css({width : 500, height : 500})
+                                                        .kbaseTreechart({
+                                                            scaleAxes : true
+                                                        })
                                                 }
                                             )
                             },

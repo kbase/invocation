@@ -43,6 +43,20 @@ $dispatch->add('/invoke', 'handle_invoke');
 $dispatch->add('/upload', 'handle_upload');
 $dispatch->add('/download/#*', 'handle_download');
 $dispatch->add('//download/#*', 'handle_download');
+$dispatch->add('/view/#*', 'handle_view');
+$dispatch->add('//view/#*', 'handle_view');
+
+{
+    package handle_view;
+    use strict;
+    use warnings;
+
+    sub get {
+	my ($req, $args) = @_;
+        return handle_download::get($req, $args, 1);
+    }
+
+}
 
 {
     package handle_download;
@@ -51,7 +65,7 @@ $dispatch->add('//download/#*', 'handle_download');
 
     sub get
     {
-	my($req, $args) = @_;
+	my($req, $args, $view) = @_;
 	my $session = $req->param("session_id");
 
     my $token = $req->header("Authorization") || $req->param('token');
@@ -94,13 +108,23 @@ $dispatch->add('//download/#*', 'handle_download');
 
     (my $fileName = $file) =~ s!^(?:.*)/([^/]+)$!$1!g;
 
+    my @headers = (
+        'Content-Length' => -s $path,
+    );
+
+    if ($view) {
+        my $mime = `file --mime-type $path`;
+        $mime =~ s/^[^:]+:\s*//;
+	chomp($mime);
+        push @headers, 'Content-type' => $mime;
+    }
+    else {
+        push @headers, 'Content-Disposition' => "attachment; filename=\"$fileName\"";
+    }
+
 	return [
 		200,
-		[
-			'Content-type' => 'application/force-download',
-			'Content-Disposition' => "attachment; filename=\"$fileName\"",
-			'Content-Length' => -s $path,
-		],
+		\@headers,
 		$fh
 	];
     }
@@ -232,7 +256,7 @@ $dispatch->add('//download/#*', 'handle_download');
 
 my $handler = sub {
     my($env) = @_;
-    print Dumper($env);
+    #print Dumper($env);
     my $req = Plack::Request->new($env);
     my $ret = $dispatch->dispatch($req);
     return $ret;

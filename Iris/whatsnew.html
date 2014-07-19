@@ -1,115 +1,41 @@
-<h3>v0.0.8 - XX/XX/2014</h3>
-<ul>
-    <li>The <b>view</b> command now scales an image to fit within the terminal window. Click on the image to download it full size.</li>
-    <li>Clicking the right arrow button on the file browser now no longer prepends a leading slash to the file name.</li>
-    <li>File Editor can now properly edit files in subdirectories.</li>
-    <li>Files can now be created via the <b>edit</b> <i>newfilename</i> command.</li>
-    <li>Added visualization widgets. Type <b>widget</b> <i>widgetname</i> <i>jsondata</i> to display. Available visualization widgets are:
-        <b>barchart</b>, <b>forcednetwork</b>, <b>heatmap</b>, <b>linechart</b>, <b>piechart</b>, <b>scatterplot</b>. To see sample data formats,
-        type this in any directory: <b>execute @W#sharediris::get_chart_data#i</b>. That command will create 6 json files with sample
-        data that can be fed into a visualization.
-    </li>
-    <li>Added <b>!!</b> command to repeat last command typed.</li>
-    <li>links from tutorials will now automatically appear in a new window.</li>
-    <li>Tutorial next/back/list commands are now clickable.</li>
-    <li>Disabled spell checking in commands input.</li>
-</ul>
-<h3>v0.0.7 - 02/06/2014</h3>
-<ul>
-    <li>Resolved an issue preventing tutorial loads</li>
-</ul>
-<h3>v0.0.6 - 12/13/2013</h3>
-<ul>
-    <li>Minor bug fixes.</li>
-    <ul>
-        <li>Resolved the issue regarding downloads occasionally not working.</li>
-        <li>Resolved the layout issue that would occasionally make the chevrons on the command list slide off the screen.</li>
-        <li>Fixed redirecting STDERR, as well as appending to files.</li>
-    </ul>
-</ul>
-<h3>v0.0.5 - 11/18/2013</h3>
-<ul>
-    <li>Scriptability - save your commands to a file (one command per line), then run it later with <b>execute</b> <i>nameofscript</i></li>
-    <li>Scriptability - Write a javascript program and run it later with <b>evaluate</b> <i>text of program</i> or
-        <b>evaluate</b> <i>name of program file</i>. The terminal object is accessible via $terminal, the current widget
-        via $widget. Run further iris commands via $terminal.invoke('....');
-    </li>
-    <li>Multiple commands can be run at once - delimited commands with semicolons. <b>echo a </b><u>;</u><b> echo b</b></li>
-    <li><b>ls</b> command can now accept standard shell wildcard syntax <b>ls</b> <i>*.txt</i>, or <b>ls</b> <i>sequences.*</i>, etc.</li>
-    <li>Added <b>variables</b> command to list user defined session variables</li>
-    <li>Added <b>download</b> <i>filename</i> command to download a file from the command line</li>
-    <li>Added <b>edit</b> <i>filename</i> command to launch the file editor from the command line</li>
-    <li>Added <b>environment</b> and <b>setenv</b> <i>key=value</i> syntax to customize IRIS behavior</li>
-    <li>Added <b>end</b> command to jump to end of terminal input</li>
-    <li>Added <b>record</b> command. Save all your actions from that point on as an executable script. Save it with <b>save</b> <i>nameofscript</i>.
-    It can then be executed with <b>execute</b> <i>nameofscript</i></li>
-    <li>Added new file button (<i class = 'icon-file'></i>) to file browser to add and optionally immediately edit a file</li>
-    <li>Added automatic communication with the workspace. Pass around "files" with <b>@W#<i>workpaceid:type:objectid-instance</i></b>,
-    such as: <b>all_entities_Genome &gt; @W#genome_obj_in_workspace</b>, will create an object with id 'genome_obj_in_workspace
-    in your current workspace. The workspace id, type, and instance number are optional (and must be : delimited, the instance is appended
-    with a hyphen). If this is an ID through standard script redirects (&lt; or &gt;), you don't need to specify IO. If it's a switch
-    (<b>some_script -i <i>name_of_file</i></b>) then append the io flag - @W#objid#i to read from the workspace or @W#objid#o to write to it.</li>
-    <li>Much nicer selection of variables with the right arrow key</li>
-    <li>Alphabetically sorted the groups of commands</li>
-    <li>Scrolling up while the UI is automatically scrolling down will now halt the scroll</li>
-    <li>Greatly improved performance of view command</li>
-    <li>Moved the interface to bootstrap v3.0</li>
-</ul>
-<h3>v0.0.4 - 09/23/2013</h3>
-<ul>
-    <li>Minor bug fixes</li>
-    <ul>
-        <li>Files can now be downloaded</li>
-        <li>Variables can now be re-assigned</li>
-        <li>Variables are cleared from session upon logout</li>
-        <li>Error messages no longer auto clean up</li>
-    </ul>
-</ul>
-<h3>v0.0.3 - 08/23/2013</h3>
-<ul>
-    <li>
-        User defined variables - <br>
-        <b>$genome = kb|g.1994</b><br>
-        <b>all_entities_Genome | grep $genome</b>
-    </li>
-    <li>
-        Help for commands - click on the <b>?</b> next to the command name in the list to the left for usage info.
-    </li>
-    <li>
-        IRIS now supports uploading huge files (up to at least multiple gigabytes), and uploads are resumable if there's a failure.<br>
-        Likewise, IRIS now supports real file downloads to get your processed information back out of the system.<br>
-        If you have a stalled upload job, just mouseover it in the process list to resume it or cancel the upload.<br><br>
-        Finally, you can also upload via the command line - <b>upload</b> <i>filename</i>
-    </li>
-    <li>
-        Enhanced file browser. Mouseover the items to interact with them.
-        <ul>
-            <li><i class = 'icon-plus'></i> Add a directory.</li>
-            <li><i class = 'icon-arrow-up'></i> Upload a file.</li>
-            <li><i class = 'icon-minus'></i> Delete a file or directory.</li>
-            <li><i class = 'icon-download-alt'></i> Download this file.</li>
-            <li><i class = 'icon-pencil'></i> Edit this file.</li>
-            <li><i class = 'icon-arrow-right'></i> Add this file to your terminal input.</li>
-        </ul>
-    <li>
-        IRIS has a simple file editor - in the file browser, mouse over a file name and click the pencil to tweak (small) files.
-    </li>
-    <li>
-        Images are viewable. Type <b>view</b> <i>filename</i>
-    </li>
-    <li>
-        Lots of behind the scenes infrastructure improvements.
-    </li>
-    <li>
-        IRIS supports natural language questions. Type <b>questions</b> to bring up a list of natural language prompts.<br>
-        You can also type them on the command line and hit arrow-right to attempt an auto completion. Further, you can arrow-right
-        to select the next variable in the sequence.
-    </li>
-    <li>
-        Improved command search functionality. Just start typing into the search box under the list of commands to filter down to what you want
-        to see.
-    </li>
-    <li>Add comments to your output by typing <b>#</b><i>your comment here</i></li>
-    <li>Terminate processes by mousing over the process list and clicking the cancel button.</li>
+<!DOCTYPE html>
 
-</ul>
+<html>
+
+    <head>
+
+        <link href="./jquery/ext/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+        <link href="./jquery/ext/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" />
+
+        <link rel="stylesheet" href="iris.css" type="text/css" media="screen" title="main" charset="utf-8">
+
+        <script data-main = './jquery/kbase/kbpaths'
+            src = './jquery/ext/requirejs/2.1.9/require.js'></script>
+
+        <script type = 'text/javascript'>
+            <!--
+
+                require(['kbpaths'], function() {
+                    require(['jquery', 'bootstrap', 'kbaseIrisWhatsNew'], function($) {
+                        $(function() {
+                            $(document).trigger('libsLoaded');
+                        });
+                    });
+                });
+
+            //-->
+
+        </script>
+
+        <title>What's new in IRIS</title>
+
+    </head>
+
+    <body>
+
+        <div id = 'whatsnew' data-kbwidget = 'kbaseIrisWhatsNew'></div>
+
+    </body>
+
+</html>
