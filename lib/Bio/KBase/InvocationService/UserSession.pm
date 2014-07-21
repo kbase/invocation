@@ -596,13 +596,13 @@ sub run_pipeline
 	if ($err)
 	{
 	    push(@$errors, "Error invoking pipeline");
-	    warn "error invooking pipeline: $err";
+	    warn "error invoking pipeline: $err";
 	}
 	
 	my @res = $h->results();
 	for (my $i = 0; $i <= $#res; $i++)
 	{
-	    if ($res[$i] != 0 || $self->impl->verbose_status)
+	    if (($i == $#res && $res[$i] != 0) || $self->impl->verbose_status)
 	    {
 		push(@$errors, "Return code from $cmd_list[$i]: $res[$i]");
 	    }
