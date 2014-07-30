@@ -22,6 +22,9 @@ IRIS_WEBROOT = $(SERVICE_DIR)/webroot/Iris
 # For deployment, this will be overridden by the value from the deployment config file.
 #
 SERVICE_URL = http://localhost:$(SERVICE_PORT)
+TUTORIAL_CFG_URL = http://kbase.us/docs/tutorials.cfg
+DEF_TUTORIAL_URL = http://kbase.us/docs/getstarted/getstarted_iris/getstarted_iris.html
+SEARCH_URL =
 
 TPAGE_ARGS = --define kb_top=$(TARGET) --define kb_runtime=$(DEPLOY_RUNTIME) --define kb_service_name=$(SERVICE) \
 	--define kb_service_port=$(SERVICE_PORT) --define kb_service_url=$(SERVICE_URL) \
