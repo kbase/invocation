@@ -214,8 +214,33 @@
                             client : $term.client(),
                             invocationURL   : $term.options.invocationURL,
                             addFileCallback : function (file, $fb) {
-                                file = file.replace(new RegExp('^' + $fb.options.root), '');
-                                $term.appendInput(file + ' ');
+
+                                var fileParts = file.split(/\//);
+                                var cwdParts = $term.cwd.split(/\//);
+
+                                //files start with /, so the first one is always empty.
+                                fileParts.shift();
+                                cwdParts.shift();
+
+                                if (cwdParts[cwdParts.length - 1] == '') {
+                                    cwdParts.pop();
+                                }
+
+                                while (fileParts[0] == cwdParts[0]) {
+                                    fileParts.shift();
+                                    cwdParts.shift();
+                                }
+
+                                var path = '';
+                                for (var i = 0; i < cwdParts.length; i++) {
+                                    path += '../';
+                                }
+
+                                path += fileParts.join('/');
+
+                                file = file.replace(new RegExp('^' + $term.cwd), '');
+
+                                $term.appendInput(path + ' ');
                             },
                             editFileCallback : function (file, $fb) {
                                 file = $fb.options.root + '/' + $term.cwd + '/' + file;
