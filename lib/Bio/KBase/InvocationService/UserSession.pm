@@ -31,7 +31,7 @@ use File::Path;
 use File::Basename;
 use File::Copy;
 
-my @valid_shell_commands = qw(sort grep cut cat head tail date echo wc diff join uniq tr);
+my @valid_shell_commands = qw(sort grep cut cat head tail date echo wc diff join uniq tr tar zip unzip);
 my %valid_shell_commands = map { $_ => 1 } @valid_shell_commands;
 
 __PACKAGE__->mk_accessors(qw(impl session_id ctx));
@@ -90,7 +90,7 @@ sub _session_dir
     if ($self->ctx && $self->ctx->authenticated)
     {
 	$dir = File::Spec->catfile($self->impl->auth_storage_dir, $self->ctx->user_id);
-	print STDERR "Construct dir from storage=" . $self->impl->auth_storage_dir . " userid=" . $self->ctx->user_id . "\n";
+	# print STDERR "Construct dir from storage=" . $self->impl->auth_storage_dir . " userid=" . $self->ctx->user_id . "\n";
 
 	#
 	# If we come in here and somehow the directory isn't yet created, go ahead and create it.
@@ -102,7 +102,7 @@ sub _session_dir
     }
     else
     {
-	print STDERR "Construct dir from nonauth storage=" . $self->impl->nonauth_storage_dir . " sessionid=" . $self->session_id . "\n";
+	# print STDERR "Construct dir from nonauth storage=" . $self->impl->nonauth_storage_dir . " sessionid=" . $self->session_id . "\n";
 	$dir = File::Spec->catfile($self->impl->nonauth_storage_dir, $self->session_id);
 	#
 	# If we come in here and somehow the directory isn't yet created, go ahead and create it.
@@ -122,21 +122,29 @@ sub _expand_filename
     {
 	return $self->validate_path($cwd);
     }
-    elsif ($file =~ m!^(/?)([\w:.-]*)(\/[\w:.-]*)*$!) 
+    elsif ($file =~ m,^/,)
     {
-	if ($1)
-	{
-	    return $self->validate_path($file);
-	}
-	else
-	{
-	    return $self->validate_path($cwd."/".$file);
-	}
+	return $self->validate_path($file);
     }
     else
     {
-	die "Invalid filename $file";
+	return $self->validate_path($cwd."/".$file);
     }
+#    elsif ($file =~ m!^(/?)([\w:.-]*)(\/[\w:.-]*)*$!) 
+#    {
+#	if ($1)
+#	{
+#	    return $self->validate_path($file);
+#	}
+#	else
+#	{
+#	    return $self->validate_path($cwd."/".$file);
+#	}
+#    }
+##    else
+#    {
+#	die "Invalid filename $file";
+#    }
     
     #return $self->_session_dir($session) . "/$file";
 }
@@ -515,6 +523,7 @@ sub run_pipeline
 	push(@cmds, [$cmd_path, map { s/\\t/\t/g; $_ } @$args]);
 	push @cmds, init => sub {
 	    $ENV{$_} = $env{$_} foreach keys %env;
+	    $ENV{HOME} = $self->_session_dir();
 	    chdir $dir or die $!;
 	};
 	my $have_output_redirect;
@@ -595,13 +604,13 @@ sub run_pipeline
 	if ($err)
 	{
 	    push(@$errors, "Error invoking pipeline");
-	    warn "error invooking pipeline: $err";
+	    warn "error invoking pipeline: $err";
 	}
 	
 	my @res = $h->results();
 	for (my $i = 0; $i <= $#res; $i++)
 	{
-	    if ($res[$i] != 0 || $self->impl->verbose_status)
+	    if (($i == $#res && $res[$i] != 0) || $self->impl->verbose_status)
 	    {
 		push(@$errors, "Return code from $cmd_list[$i]: $res[$i]");
 	    }
