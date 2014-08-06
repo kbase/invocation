@@ -9,6 +9,8 @@
 
         <link rel="stylesheet" href="iris.css" type="text/css" media="screen" title="main" charset="utf-8">
 
+        <script src = 'ext/bowser/bowser.min.js'></script>
+
         <script data-main = 'src/kbpaths'
             src = 'ext/requirejs/2.1.9/require.js'></script>
 
@@ -34,6 +36,16 @@
 
         <script type = 'text/javascript'>
             <!--
+
+            if (bowser != undefined && bowser.msie && bowser.version <= 9) {
+                alert(
+                    "Unsupported browser detected!\n\n"
+                    + "For a better experience, we recommend using recent versions of "
+                    + "Safari, Firefox, Chrome, or Internet Explorer.\n\n"
+                    + "You appear to be using Internet Explorer " + bowser.version + ".<br><br>Unfortunately, we "
+                    + "don't support that web browser. Some functions may behave erractically."
+                );
+            }
 
                 function getParameterByName(name) {
                   name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
