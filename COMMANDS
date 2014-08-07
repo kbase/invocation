@@ -1,8 +1,2 @@
-#group-name	invocation	IRIS Commands
-authenticate	invocation
-unauthenticate	invocation
-invocation_info	invocation
-commands	invocation
-tutorial	invocation
-upload	invocation
-whatsnew	invocation
+#group-name invocation  Invocation
+invocation_info invocation
