@@ -46,6 +46,8 @@ $(SERVICE_MODULE): $(SERVICE_SPEC)
 		--js $(BASE_NAME) \
 		--py biokbase/$(BASE_NAME)/Client \
 		$(SERVICE_SPEC) lib
+	rm lib/$(BASE_NAME).js
+	git checkout lib/$(BASE_NAME).js
 
 bin: $(BIN_PERL)
 
