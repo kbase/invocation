@@ -38,13 +38,12 @@
             <!--
 
             if (bowser != undefined && bowser.msie && bowser.version <= 9) {
-                alert(
-                    "Unsupported browser detected!\n\n"
-                    + "For a better experience, we recommend using recent versions of "
-                    + "Safari, Firefox, or Chrome.\n\n"
-                    + "You appear to be using Internet Explorer " + bowser.version + ".\nUnfortunately, we "
-                    + "don't support that web browser. Some functions may behave erractically."
-                );
+                var redirectUrl = '//kbase.us/help/messages/unsupported-browser';
+
+                if (bowser.msie && bowser.version <= 9) {
+                    var protocol = window.location.protocol;
+                    window.location = protocol + redirectUrl;
+                }
             }
 
                 function getParameterByName(name) {
