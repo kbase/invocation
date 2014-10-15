@@ -70,9 +70,9 @@ deploy-iris:
 	@ git submodule init
 	@ git submodule update
 	mkdir -p $(IRIS_WEBROOT)/Iris
-	rm $(IRIS_WEBROOT)/$(BASE_NAME).js
-	rm -r $(IRIS_WEBROOT)/src
-	rm -r $(IRIS_WEBROOT)/ext
+	[ -e $(IRIS_WEBROOT)/$(BASE_NAME).js ] && rm $(IRIS_WEBROOT)/$(BASE_NAME).js
+	[ -e $(IRIS_WEBROOT)/src ] && rm -r $(IRIS_WEBROOT)/src
+	[ -e $(IRIS_WEBROOT)/ext ] && rm -r $(IRIS_WEBROOT)/ext
 	rsync -arv Iris/. $(IRIS_WEBROOT)
 	rm $(IRIS_WEBROOT)/$(BASE_NAME).js
 	rm -r $(IRIS_WEBROOT)/src
