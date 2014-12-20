@@ -74,9 +74,9 @@ deploy-iris:
 	rm -rf $(IRIS_WEBROOT)/src
 	rm -rf $(IRIS_WEBROOT)/ext
 	rsync -arv Iris/. $(IRIS_WEBROOT)
-	rm $(IRIS_WEBROOT)/$(BASE_NAME).js
-	rm -r $(IRIS_WEBROOT)/src
-	rm -r $(IRIS_WEBROOT)/ext
+	rm -f $(IRIS_WEBROOT)/$(BASE_NAME).js
+	rm -rf $(IRIS_WEBROOT)/src
+	rm -rf $(IRIS_WEBROOT)/ext
 	cp lib/$(BASE_NAME).js $(IRIS_WEBROOT)/$(BASE_NAME).js
 	cp -r modules/ui-common/src $(IRIS_WEBROOT)/.
 	cp -r modules/ui-common/ext $(IRIS_WEBROOT)/.
